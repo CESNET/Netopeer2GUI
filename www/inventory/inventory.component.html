@@ -1,0 +1,6 @@
+<nav>
+  <a *ngFor="let component of inventoryComponents"
+    routerLink="{{component}}" routerLinkActive="active">{{ component | titlecase }}</a>
+</nav>
+
+<router-outlet></router-outlet>

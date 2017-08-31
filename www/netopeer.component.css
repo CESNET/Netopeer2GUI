@@ -1,0 +1,44 @@
+#netopeer-header {
+	margin: -0.5em -1em 0em -1em;
+	padding-top: 1em;
+    background-color: #313747;
+    color: #FAFAFA;
+}
+
+#netopeer-header h1 {
+	margin-left: 1em;
+}
+
+#netopeer-component {
+	margin: 0em -1em 0em -1em;
+}
+
+.netopeer-content {
+	padding: 0.7em 1em 1em 2em;
+	background-color: #FAFAFA;
+	color: #000;
+}
+
+nav {
+	with: 100%;
+	padding-left: 1em;
+}
+
+nav a {
+	text-decoration: none;
+	display: inline-block;
+	padding: 0.5em 1em 0.5em 0.5em;
+	color: #FAFAFA;
+}
+
+nav a:visited, a:link {
+	color: inherited;
+}
+
+nav a:hover, a.active {
+	background-color: #3B4257;
+}
+
+nav a.active:hover {
+	cursor: default;
+}

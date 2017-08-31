@@ -1,0 +1,60 @@
+nav {
+	background-color: #3B4257;
+	padding-left: 1em;
+}
+
+nav a {
+	text-decoration: none;
+	display: inline-block;
+	padding: 0.2em 1em 0.1em 1em;
+	color: #FAFAFA;
+}
+
+nav a:visited, a:link {
+	color: inherited;
+}
+
+nav a:hover, nav a.active {
+	background-color: #FAFAFA;
+	color: #000
+}
+
+nav a.active:hover {
+	cursor: default;	
+}
+
+.item {
+	cursor: pointer;
+	border-radius: 4px;
+	margin-right: 0.5em;
+	padding: 0.3em 1em 0.3em 0.7em;
+	display: inline-block;
+	position: relative;
+	left: 0.5em;
+	top: 0.5em;
+	color: black;
+}
+
+.item.selected {
+	background-color: #454D67;
+	color: #FAFAFA;	
+}
+
+.item.selected:hover {
+	cursor: default;
+}
+
+.item:hover {
+	background-color: #454D67;
+	color: #FAFAFA;
+}
+
+.schema {
+	display: block;
+}
+
+.schema-revision {
+	display: block;
+	font-family: monospace;
+	font-size: x-small;
+}

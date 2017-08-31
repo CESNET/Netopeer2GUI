@@ -1,0 +1,13 @@
+<div id="netopeer-header">
+  <h1><span routerLink="/netopeer">Netopeer</span> {{componentTitle}}</h1>
+ 
+  <nav>
+    <a *ngFor="let component of netopeerComponents"
+       routerLink="{{component.route}}" routerLinkActive="active">{{component.name}}</a>
+  </nav>
+
+</div>
+<div id="netopeer-component">
+  <netopeer-dashboard *ngIf="componentTitle == ''"></netopeer-dashboard>
+  <router-outlet (activate)="onActivate($event)" (deactivate)="onDeactivate($event)"></router-outlet>
+</div>

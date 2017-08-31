@@ -1,0 +1,28 @@
+<div class="items_manipulation">
+  <button (click)="getSchemas()">Refresh</button>
+  <button (click)="showAddSchema()">Add</button>
+  <div *ngIf="addingSchema">
+    <hr/>
+    <div class="buttons">
+      <input #uploadSchema type="file" (change)="upload(uploadSchema.files[0])" name="schema" placeholder="Upload schema"/>      
+      <p [ngSwitch]="addingResult">
+        <span *ngSwitchCase="0" class="msg_failure">Parsing {{uploadSchema.value.replace("C:\\fakepath\\","")}} failed.</span>
+        <span *ngSwitchCase="1" class="msg_success">Schema {{uploadSchema.value.replace("C:\\fakepath\\","")}} successfully added.</span>
+      </p>
+    </div>
+  </div>
+  <hr/>
+</div>
+
+<div class="items">
+  <div class="item"
+    *ngFor="let schema of schemas"
+    [class.selected]="schema === selectedSchema"
+    (click)="onSelect(schema)">
+    <span class="schema">{{schema.name}}</span><span class="schema-revision">{{schema.revision}}</span>
+  </div>
+</div>
+
+<div *ngIf="selectedSchema">
+  <h3>{{selectedSchema.name}}<span *ngIf="selectedSchema.revision">@{{selectedSchema.revision}}</span></h3>
+</div>
