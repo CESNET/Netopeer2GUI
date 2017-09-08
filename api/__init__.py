@@ -19,3 +19,4 @@ from .schemas import *
 
 module_bp.add_url_rule('/inventory/schemas/list', view_func = schemas_list, methods=['GET'])
 module_bp.add_url_rule('/inventory/schemas', view_func = schemas_add, methods=['POST'])
+module_bp.add_url_rule('/inventory/schemas', view_func = schemas_rm, methods = ['DELETE'])
