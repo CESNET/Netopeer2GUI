@@ -34,12 +34,14 @@ export class InventorySchemasComponent implements OnInit {
           return;
       }
 
-      /* upload the schema file to the server */
+      /* upload the schema file to the server, if success the schema list is refreshed */
       this.schemasService.addSchema(schema).subscribe(
-              result => this.addingResult = result['success'] ? 1 : 0);
+              result => {this.addingResult = result['success'] ? 1 : 0; this.getSchemas()});
+  }
 
-      /* refresh schemas list */
-      this.getSchemas();
+  remove(schema: Schema) {
+      this.schemasService.rmSchema(schema).subscribe(
+              result => {if (result['success']) { this.getSchemas()}});
   }
 
   ngOnInit(): void {

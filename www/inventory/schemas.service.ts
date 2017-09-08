@@ -25,4 +25,11 @@ export class SchemasService {
           .map((resp: Response) => resp.json())
           .catch((err: Response | any) => Observable.throw(err));
   }
+
+  rmSchema(schema: Schema) {
+      let options = new RequestOptions({ body: JSON.stringify(schema) });
+      return this.http.delete('/netopeer/inventory/schemas', options)
+          .map((resp: Response) => resp.json())
+          .catch((err: Response | any) => Observable.throw(err));
+  }
 }
