@@ -15,11 +15,11 @@
 </div>
 
 <div class="items">
-  <div class="item"
-    *ngFor="let schema of schemas"
-    [class.selected]="schema === selectedSchema"
-    (click)="onSelect(schema)">
-    <span class="schema">{{schema.name}}</span><span class="schema-revision">{{schema.revision}}</span>
+  <div class="item" [class.selected]="schema === selectedSchema" *ngFor="let schema of schemas">
+    <div class="item_actions"><span class="item_action_delete" (click)="remove(schema)">x</span></div>
+    <div class="schema" (click)="onSelect(schema)">
+      <span class="schema-name">{{schema.name}}</span><span class="schema-revision">{{schema.revision}}</span>
+    </div>
   </div>
 </div>
 
