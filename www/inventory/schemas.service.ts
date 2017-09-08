@@ -5,7 +5,6 @@ import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
 
 import { Schema } from './schema';
-import { SCHEMAS } from './mock-schemas'
 
 @Injectable()
 export class SchemasService {
