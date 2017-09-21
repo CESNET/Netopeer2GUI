@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 @Component({
   selector : 'netopeer-plugins',
   templateUrl : './plugins.component.html',
-  styleUrls : ['../netopeer.content.css']
+  styleUrls : ['../netopeer.css']
 })
 
 export class PluginsComponent {

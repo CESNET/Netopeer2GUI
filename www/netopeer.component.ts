@@ -16,7 +16,7 @@ const NCOMPONENTS: NComponent[] = [
 @Component({
   selector : 'netopeer',
   templateUrl : './netopeer.component.html',
-  styleUrls : ['./netopeer.component.css']
+  styleUrls : ['./netopeer.css'],
 })
 
 export class NetopeerComponent {

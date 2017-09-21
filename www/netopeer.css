@@ -14,6 +14,7 @@
 }
 
 .netopeer-content {
+	display: block;
 	padding: 0.7em 1em 1em 2em;
 	background-color: #FAFAFA;
 	color: #000;
@@ -41,4 +42,37 @@ nav a:hover, a.active {
 
 nav a.active:hover {
 	cursor: default;
+}
+
+.msg-rounded {
+    border-radius: 5px;
+}
+
+.msg-close {
+    padding-right: 10px;
+    padding-left: 10px;
+    font-weight: bold;
+    font-family: monospace;
+    font-size: large;
+	cursor: pointer;
+}
+
+.msg-success {
+    background-color: #def2de;
+	color: green;
+	padding: 5px 1em 5px 0em;
+}
+
+.msg-success.msg-close {
+    color: green;
+}
+
+.msg-failure {
+    background-color: #f2dede;
+    color: red;
+	padding: 5px 1em 5px 0em;
+}
+
+.msg-failure.msg-close {
+    color: red;
 }

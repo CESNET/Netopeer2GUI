@@ -8,7 +8,7 @@ import { SchemasService } from './schemas.service'
 @Component({
   selector : 'inventorySchemas',
   templateUrl : './schemas.component.html',
-  styleUrls : ['../netopeer.content.css', './inventory.component.css'],
+  styleUrls : ['../netopeer.css', './inventory.component.css'],
   providers: [SchemasService]
 })
 

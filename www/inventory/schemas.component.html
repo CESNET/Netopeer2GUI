@@ -1,3 +1,5 @@
+<div class="netopeer-content">
+
 <div class="items_manipulation">
   <button (click)="getSchemas()">Refresh</button>
   <button (click)="showAddSchema()">Add</button>
@@ -25,4 +27,6 @@
 
 <div *ngIf="selectedSchema">
   <h3>{{selectedSchema.name}}<span *ngIf="selectedSchema.revision">@{{selectedSchema.revision}}</span></h3>
+</div>
+
 </div>
