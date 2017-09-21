@@ -10,6 +10,7 @@ import libyang as ly
 import json
 import os, errno, time, sys
 
+from .inventory import inventory_check
 from .error import NetopeerException
 
 __INVENTORY = config.modules['netopeer']['usersdata_path']
@@ -113,25 +114,13 @@ def __schemas_update(path):
 	# return the up-to-date list 
 	return schemas['schemas']['schema']
 
-def __schemas_check(path):
-	try:
-		os.makedirs(path, mode=0o750)
-	except OSError as e:
-		if e.errno == errno.EEXIST and os.path.isdir(path):
-			pass
-		elif e.errno == errno.EEXIST:
-			raise NetopeerException('User\'s schemas inventory (' + path + ') already exists and it\'s not a directory.')
-		else:
-			raise NetopeerException('Unable to use schemas inventory path ' + path +' (' + str(e) + ').') 
-
-
 @auth.required()
 def schemas_list():
 	session = auth.lookup(request.headers.get('Authorization', None))
 	user = session['user']
 	path = os.path.join(__INVENTORY, user.username)
 	
-	__schemas_check(path)
+	inventory_check(path)
 	schemas = __schemas_update(path)
 	
 	return(json.dumps(schemas))
