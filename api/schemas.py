@@ -10,10 +10,9 @@ import libyang as ly
 import json
 import os, errno, time, sys
 
-from .inventory import inventory_check
+from .inventory import INVENTORY, inventory_check
 from .error import NetopeerException
 
-__INVENTORY = config.modules['netopeer']['usersdata_path']
 __SCHEMAS_EMPTY = '{"schemas":{"timestamp":0,"schema":[]}}'
 
 def __schema_parse(path, format=ly.LYS_IN_UNKNOWN):
@@ -118,7 +117,7 @@ def __schemas_update(path):
 def schemas_list():
 	session = auth.lookup(request.headers.get('Authorization', None))
 	user = session['user']
-	path = os.path.join(__INVENTORY, user.username)
+	path = os.path.join(INVENTORY, user.username)
 	
 	inventory_check(path)
 	schemas = __schemas_update(path)
@@ -135,7 +134,7 @@ def schemas_add():
 	file = request.files['schema']
 	
 	# store the file
-	path = os.path.join(__INVENTORY, user.username, file.filename)
+	path = os.path.join(INVENTORY, user.username, file.filename)
 	file.save(path)
 	
 	# parse file
@@ -158,7 +157,7 @@ def schemas_add():
 def schemas_rm():
 	session = auth.lookup(request.headers.get('Authorization', None))
 	user = session['user']
-	path = os.path.join(__INVENTORY, user.username)
+	path = os.path.join(INVENTORY, user.username)
 
 	schema_rm = request.get_json()
 	if not schema_rm:

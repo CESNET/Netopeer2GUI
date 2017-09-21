@@ -8,6 +8,8 @@ import os, errno
 
 from .error import NetopeerException
 
+INVENTORY = config.modules['netopeer']['usersdata_path']
+
 def inventory_check(path):
 	try:
 		os.makedirs(path, mode=0o750)
