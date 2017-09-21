@@ -4,7 +4,10 @@ File: schemas.py
 Author: Radek Krejci <rkrejci@cesnet.cz>
 """
 
-import os, errno
+import os
+import errno
+
+from liberouterapi import config
 
 from .error import NetopeerException
 

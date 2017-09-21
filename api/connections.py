@@ -4,11 +4,12 @@ File: connections.py
 Author: Radek Krejci <rkrejci@cesnet.cz>
 """
 
+import json
+import os
+
 from liberouterapi import auth
 from flask import request
 import netconf2 as nc
-import json
-import os
 
 from .inventory import INVENTORY
 from .devices import devices_get

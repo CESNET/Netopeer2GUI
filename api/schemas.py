@@ -4,11 +4,14 @@ File: schemas.py
 Author: Radek Krejci <rkrejci@cesnet.cz>
 """
 
-from liberouterapi import auth, config
+import json
+import os
+import errno
+import time
+
+from liberouterapi import auth
 from flask import request
 import libyang as ly
-import json
-import os, errno, time, sys
 
 from .inventory import INVENTORY, inventory_check
 from .error import NetopeerException

@@ -4,11 +4,12 @@ File: devices.py
 Author: Radek Krejci <rkrejci@cesnet.cz>
 """
 
-from liberouterapi import auth, config
-from flask import request
 import json
 import os
 import errno
+
+from liberouterapi import auth
+from flask import request
 
 from .inventory import INVENTORY, inventory_check
 from .error import NetopeerException
