@@ -1,1 +1,69 @@
-List of devices ... TBD
+<div class="netopeer-content">
+
+<div class="items_manipulation">
+  <button (click)="getDevices()">Refresh</button>
+  <button (click)="showAddDevice()">Add</button>
+  <div *ngIf="addingDevice">
+    <hr/>
+    <form (submit)="addDevice(action.value)" #newDeviceForm>
+      <div class="input_block">
+        <label for="hostname" class="input_line">Hostname / IP</label>
+        <label for="port" class="input_line">Port</label>
+        <label for="username" class="input_line">Username</label>
+        <label for="password" class="input_line">Password</label>
+        <label for="action" class="input_line">What next</label>
+      </div>
+      <div class="input_block">
+        <div class="input_line">
+          <input type="text" name="hostname" required
+            #host [(class.invalid)]="!validHost" [(ngModel)]="newDevice.hostname" (keyup)="checkHost(host.value)"/>
+          <div [hidden]="validHost" class="input_line_alert">Hostname or IP address is required</div>
+        </div>
+        <div class="input_line">
+          <input type="number" name="port" required
+            #port [(class.invalid)]="!validPort" [(ngModel)]="newDevice.port" (keyup)="checkPort(port.value)" (change)="checkPort(port.value)"/>
+          <div [hidden]="validPort" class="input_line_alert">Port must be in range 1 - 65535</div>
+        </div>
+        <div class="input_line">
+          <input type="text" name="username"
+            #user [class.invalid]="false" [(ngModel)]="newDevice.username"/>
+        </div>
+        <div class="input_line">
+          <input type="password" name="password"
+            #pass [class.invalid]="false" [(ngModel)]="newDevice.password"/>
+        </div>
+        <div class="input_line">
+          <select name="action" required #action>
+            <option [value]="store">store</option>
+            <option [value]="connect">connect</option>
+            <option [value]="store_connect" selected="selected">store & connect</option>
+          </select>
+        </div>
+      </div>
+      <div>
+        <button type="submit" [disabled]="!validHost || !validPort">Done</button>
+        <span [ngSwitch]="addingResult">
+          <span *ngSwitchCase="0" class="msg-rounded msg-failure"><span class="msg-close" (click)="addingResult=-1">x</span>failed.</span>
+          <span *ngSwitchCase="1" class="msg-rounded msg-success"><span class="msg-close" (click)="addingResult=-1">x</span>successfully added.</span>
+        </span>
+      </div>
+    </form>
+  </div>
+  <hr/>
+</div>
+
+<p class="msg-failure msg-rounded" *ngIf="err_msg"><span class="msg-close" (click)="err_msg=''">x</span>{{err_msg}}</p>
+<table class="items">
+  <tr class="item_header">
+    <th class="item_header_left">&nbsp;</th>
+    <th>hostname : port</th>
+    <th class="item_header_right">username</th>
+  </tr>
+  <tr class="item" *ngFor="let device of devices">
+    <td class="item_actions"><span class="item_action_delete" (click)="rmDevice(device)">x</span></td>
+    <td class="device" (click)="connect(device)">{{device.hostname}} : {{device.port}}</td>
+    <td class="device-login" (click)="connect(device)">{{device.username}}</td>
+  </tr>
+</table>
+
+</div>

@@ -23,9 +23,13 @@ nav a.active:hover {
 	cursor: default;	
 }
 
+.items {
+    width: 100%;
+    border-radius: 3px;
+}
+
 .item {
 	cursor: pointer;
-	border-radius: 4px;
 	margin-right: 0.5em;
 	padding: 0.3em 1em 0.3em 0.7em;
 	left: 0.5em;
@@ -33,9 +37,19 @@ nav a.active:hover {
 	color: black;
 }
 
-.item.selected {
+.item.selected, .item_header {
 	background-color: #454D67;
-	color: #FAFAFA;	
+	color: #FAFAFA;
+}
+
+.item_header_left {
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
+}
+
+.item_header_right {
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
 }
 
 .item.selected:hover {
@@ -48,27 +62,64 @@ nav a.active:hover {
 }
 
 .item_actions {
-    display: inline-block;
-    margin-right: 15px;
-}
-
-.item_action_delete {
-    color:red;
+    width: 2em;
+    padding-right: 10px;
+    padding-left: 10px;
+    border-top-left-radius: 5px;
+    border-bottom-left-radius: 5px;
     font-weight: bold;
     font-family: monospace;
     font-size: large;
+    color: grey;
 }
 
-.schema {
-	display: inline-block;
-}
-
-.schema-name {
-    display: inline-block;
-    width: 30em;
+.item_action_delete:hover {
+    color:red;
 }
 
 .schema-revision {
 	font-family: monospace;
 	font-size: x-small;
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.device-login {
+    border-top-right-radius: 5px;
+    border-bottom-right-radius: 5px;
+}
+
+.input_block {
+    display: inline-block;
+}
+
+.input_line {
+    display: block;
+    margin-right: 2em;
+}
+
+.input_line input {
+    display: inline-block;
+    padding-left: 1em;
+}
+
+.input_line_alert {
+    display: inline-block;
+    background-color: #f2dede;
+    color: red;
+}
+
+form input, form select {
+    border-left: 5px solid green;
+}
+
+form input.invalid, form select.invalid {
+    border-left: 5px solid red;
+    width: 5em;
+}
+
+.input_switch {
+    display: inline-block;
+    text-align: center;
+    margin-right: 1.5em;
 }
