@@ -97,7 +97,6 @@ def __schemas_update(path):
 		schemapath = os.path.join(path, file);
 		if os.path.getmtime(schemapath) > timestamp:
 			# update the list
-			print("updating by " + schemapath)
 			try:
 				module = __schema_parse(schemapath, format)
 				if module.rev_size():
