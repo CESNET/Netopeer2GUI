@@ -1,0 +1,43 @@
+.add-tab,
+.close-tab {
+    cursor: pointer;
+    padding-right: 0.5em;
+    padding-left: 0.3em;
+    font-weight: bold;
+    font-family: monospace;
+    font-size: large;
+}
+
+.add-tab:hover {
+    color: green;
+}
+
+.close-tab:hover {
+    color: red;
+}
+
+nav {
+	background-color: #3B4257;
+	padding-left: 1em;
+}
+
+nav a {
+    cursor: pointer;
+	text-decoration: none;
+	display: inline-block;
+	padding: 0.2em 0em 0.1em 1em;
+	color: #FAFAFA;
+}
+
+nav a:visited, a:link {
+	color: inherited;
+}
+
+nav a:hover, nav a.active {
+	background-color: #FAFAFA;
+	color: #000
+}
+
+nav a.active:hover {
+	cursor: default;	
+}

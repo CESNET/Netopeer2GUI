@@ -19,6 +19,8 @@ import { YANGComponent } from './yang/yang.component';
 import { MonitoringComponent } from './monitoring/monitoring.component';
 import { PluginsComponent } from './plugins/plugins.component';
 
+import { SessionsService } from 'app/modules/netopeer/config/sessions.service'
+
 
 const routes: Routes = [
   { path : 'netopeer', component : NetopeerComponent, canActivate : [AuthGuard],
@@ -58,6 +60,9 @@ const routes: Routes = [
     YANGComponent,
     MonitoringComponent,
     PluginsComponent
+  ],
+  providers: [
+    SessionsService
   ],
   entryComponents : [
     NetopeerComponent

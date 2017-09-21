@@ -1,1 +1,18 @@
-Configuration - TBD
+<nav>
+  <a *ngFor="let session of sessionsService.sessions" [class.active]="session.key==sessionsService.activeSession"
+      (click)="sessionsService.activeSession = session.key">{{session.device.hostname}}:{{session.device.port}}
+      <span class="close-tab" (click)="disconnect(session.key)">x</span>
+  </a><a (click)="addSession()"><span class="add-tab">+</span></a>
+</nav>
+<p class="msg-failure msg-rounded" *ngIf="err_msg"><span class="msg-close" (click)="err_msg=''">x</span>{{err_msg}}</p>
+
+<div class="netopeer-content">
+
+<div *ngIf="sessionsService.activeSession">
+    <button (click)="disconnect(sessionsService.activeSession)">Disconnect</button>
+
+    <p>{{err_msg}}</p>
+    <pre>{{data | json}}</pre>
+</div>
+
+</div>
