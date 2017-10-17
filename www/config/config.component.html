@@ -11,8 +11,10 @@
 <div *ngIf="sessionsService.activeSession">
     <button (click)="disconnect(sessionsService.activeSession)">Disconnect</button>
 
-    <p>{{err_msg}}</p>
-    <pre>{{data | json}}</pre>
+    <p><a (click)="getCapabilities(sessionsService.activeSession)">Capabilities</a></p>
+    <pre *ngIf="cpblts">{{cpblts | json}}</pre>
+    <p><a (click)="rpcGet(sessionsService.activeSession)">Running Data</a></p>
+    <pre *ngIf="data">{{data | json}}</pre>
 </div>
 
 </div>

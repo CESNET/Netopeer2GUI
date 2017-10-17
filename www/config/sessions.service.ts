@@ -67,6 +67,15 @@ export class SessionsService {
             .catch((err: Response | any) => Observable.throw(err));
     }
 
+    rpcGet(key: string): Observable<string[]> {
+        let params = new URLSearchParams();
+        params.set('key', key);
+        let options = new RequestOptions({ search: params });
+        return this.http.get('/netopeer/session/rpcGet', options)
+            .map((resp: Response) => resp.json())
+            .catch((err: Response | any) => Observable.throw(err));
+    }
+
     close(key: string) {
         let params = new URLSearchParams();
         params.set('key', key);

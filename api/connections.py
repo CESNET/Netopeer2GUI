@@ -9,6 +9,7 @@ import os
 
 from liberouterapi import auth
 from flask import request
+import libyang as ly
 import netconf2 as nc
 
 from .inventory import INVENTORY
@@ -70,6 +71,34 @@ def session_get_capabilities():
 		cpblts.append(c)
 
 	return(json.dumps({'success': True, 'capabilities': cpblts}))
+
+@auth.required()
+def session_get():
+	session = auth.lookup(request.headers.get('Authorization', None))
+	user = session['user']
+	req = request.args.to_dict()
+
+	if not 'key' in req:
+		return(json.dumps({'success': False, 'error-msg': 'Missing session key.'}))
+
+	if not user.username in sessions:
+		sessions[user.username] = {}
+
+	key = req['key']
+	if not key in sessions[user.username]:
+		return(json.dumps({'success': False, 'error-msg': 'Invalid session key.'}))
+
+	session = sessions[user.username][key]
+	try:
+		data = session.rpcGet()
+	except nc.ReplyError as e:
+		reply = {'success': False, 'error': []}
+		for err in e.args[0]:
+			reply['error'].append(json.loads(str(err)))
+		return(json.dumps(reply))
+
+	return(json.dumps({'success': True, 'data': json.loads(data.print_mem(ly.LYD_JSON, ly.LYP_WITHSIBLINGS))}))
+
 
 @auth.required()
 def session_close():
