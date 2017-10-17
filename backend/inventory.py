@@ -11,7 +11,7 @@ from liberouterapi import config
 
 from .error import NetopeerException
 
-INVENTORY = config.modules['netopeer']['usersdata_path']
+INVENTORY = config['netopeer'].get('usersdata_path', './')
 
 def inventory_check(path):
 	try:

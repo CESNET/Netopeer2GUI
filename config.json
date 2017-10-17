@@ -1,0 +1,8 @@
+{
+    "module": {
+        "file": "netopeer.module.ts",
+        "class" : "NetopeerModule",
+        "frontend" : "frontend",
+        "backend" : "backend"
+    }
+}

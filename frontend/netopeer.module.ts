@@ -19,7 +19,7 @@ import { YANGComponent } from './yang/yang.component';
 import { MonitoringComponent } from './monitoring/monitoring.component';
 import { PluginsComponent } from './plugins/plugins.component';
 
-import { SessionsService } from 'app/modules/netopeer/config/sessions.service'
+import { SessionsService } from './config/sessions.service'
 
 
 const routes: Routes = [
