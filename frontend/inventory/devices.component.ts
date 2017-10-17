@@ -19,8 +19,7 @@ export class InventoryDevicesComponent implements OnInit {
     devices: Device[];
     addingDevice = false;
     addingResult = -1;
-    validHost = false;
-    validPort = true; /* it has default value */
+    validAddForm = 1; /* 1 - port (has default value), 2 - password, 4 - username, 8 - hostname */
     newDevice: Device;
     id: number;
     err_msg = "";
@@ -44,7 +43,9 @@ export class InventoryDevicesComponent implements OnInit {
     showAddDevice(): void {
         if (!this.addingDevice) {
             this.newDevice = new Device(this.id);
-            this.checkHost(this.newDevice.hostname);
+            this.checkString(this.newDevice.hostname, 8);
+            this.checkString(this.newDevice.username, 4);
+            this.checkString(this.newDevice.password, 2);
             this.checkPort(this.newDevice.port);
         } else {
             this.newDevice = null;
@@ -55,9 +56,20 @@ export class InventoryDevicesComponent implements OnInit {
     }
 
     addDevice(action: string) {
-        /* upload the schema file to the server, if success the schema list is refreshed */
-        this.devicesService.addDevice(this.newDevice).subscribe(
-            result => {this.addingResult = result['success'] ? 1 : 0; this.getDevices()});
+        if (action == 'store' || action == 'store_connect') {
+            this.devicesService.addDevice(this.newDevice).subscribe(
+                result => {this.addingResult = result['success'] ? 1 : 0;
+                if (action == 'store') {
+                    this.getDevices();
+                } else { /* store & connect */
+                    this.connect(this.newDevice);
+                }
+            });
+        } else { /* connect only */
+            this.newDevice.id = 0;
+            this.connect(this.newDevice);
+            this.newDevice.id = this.id;
+        }
     }
 
     rmDevice(device: Device) {
@@ -65,19 +77,27 @@ export class InventoryDevicesComponent implements OnInit {
             result => {if (result['success']) {this.getDevices()} });
     }
 
-    checkHost(host: string) {
+    checkString(host: string, item: number) {
         if (!host || !host.trim().length) {
-            this.validHost = false;
+            this.validAddForm &= ~item;
         } else {
-            this.validHost = true;
+            this.validAddForm |= item;
         }
     }
 
     checkPort(port: number): void {
         if (!port || port == 0 || port > 65535) {
-            this.validPort = false;
+            this.validAddForm &= ~1;
         } else {
-            this.validPort = true;
+            this.validAddForm |= 1;
+        }
+    }
+
+    bitStatus(bit: number): boolean {
+        if (this.validAddForm & bit) {
+            return true;
+        } else {
+            return false;
         }
     }
 

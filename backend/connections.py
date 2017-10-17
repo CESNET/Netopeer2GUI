@@ -24,11 +24,16 @@ def connect():
 	user = session['user']
 	path = os.path.join(INVENTORY, user.username)
 
-	device_id = request.get_json()['id']
-	if not device_id:
-		raise NetopeerException('Invalid connect request.')
-	
-	device = devices_get(device_id, user.username)
+	data = request.get_json()
+	if 'id' in data:
+		# stored device
+		device = devices_get(data['id'], user.username)
+	elif 'device' in data:
+		# one-time connect, the device is specified in request
+		device = data['device']
+	else:
+		raise NetopeerException('Invalid connection request.')
+
 	if not device:
 		raise NetopeerException('Unknown device to connect to request.')
 

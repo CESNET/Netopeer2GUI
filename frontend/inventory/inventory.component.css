@@ -115,7 +115,7 @@ form input, form select {
 
 form input.invalid, form select.invalid {
     border-left: 5px solid red;
-    width: 5em;
+//    width: 5em;
 }
 
 .input_switch {

@@ -16,32 +16,34 @@
       <div class="input_block">
         <div class="input_line">
           <input type="text" name="hostname" required
-            #host [(class.invalid)]="!validHost" [(ngModel)]="newDevice.hostname" (keyup)="checkHost(host.value)"/>
-          <div [hidden]="validHost" class="input_line_alert">Hostname or IP address is required</div>
+            #host [class.invalid]="!bitStatus(8)" [(ngModel)]="newDevice.hostname" (keyup)="checkString(host.value, 8)"/>
+          <div [hidden]="bitStatus(8)" class="input_line_alert">Hostname or IP address is required</div>
         </div>
         <div class="input_line">
           <input type="number" name="port" required
-            #port [(class.invalid)]="!validPort" [(ngModel)]="newDevice.port" (keyup)="checkPort(port.value)" (change)="checkPort(port.value)"/>
-          <div [hidden]="validPort" class="input_line_alert">Port must be in range 1 - 65535</div>
+            #port [class.invalid]="!bitStatus(1)" [(ngModel)]="newDevice.port" (keyup)="checkPort(port.value)" (change)="checkPort(port.value)"/>
+          <div [hidden]="bitStatus(1)" class="input_line_alert">Port must be in range 1 - 65535</div>
         </div>
         <div class="input_line">
           <input type="text" name="username"
-            #user [class.invalid]="false" [(ngModel)]="newDevice.username"/>
+            #user [class.invalid]="!bitStatus(4)" [(ngModel)]="newDevice.username" (keyup)="checkString(user.value, 4)"/>
+          <div [hidden]="bitStatus(4)" class="input_line_alert">User login is required to connect to the device.</div>
         </div>
         <div class="input_line">
           <input type="password" name="password"
-            #pass [class.invalid]="false" [(ngModel)]="newDevice.password"/>
+            #pass [class.invalid]="!bitStatus(2)" [(ngModel)]="newDevice.password" (keyup)="checkString(pass.value, 2)"/>
+          <div [hidden]="bitStatus(2)" class="input_line_alert">User password must be specified to connect to the device.</div>
         </div>
         <div class="input_line">
           <select name="action" required #action>
-            <option [value]="store">store</option>
-            <option [value]="connect">connect</option>
-            <option [value]="store_connect" selected="selected">store & connect</option>
+            <option [value]="'store'">store</option>
+            <option [value]="'connect'">connect</option>
+            <option [value]="'store_connect'" selected="selected">store & connect</option>
           </select>
         </div>
       </div>
       <div>
-        <button type="submit" [disabled]="!validHost || !validPort">Done</button>
+        <button type="submit" [disabled]="validAddForm != 15">Done</button>
         <span [ngSwitch]="addingResult">
           <span *ngSwitchCase="0" class="msg-rounded msg-failure"><span class="msg-close" (click)="addingResult=-1">x</span>failed.</span>
           <span *ngSwitchCase="1" class="msg-rounded msg-success"><span class="msg-close" (click)="addingResult=-1">x</span>successfully added.</span>

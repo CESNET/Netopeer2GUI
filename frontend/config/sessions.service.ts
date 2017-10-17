@@ -100,7 +100,12 @@ export class SessionsService {
     }
 
     connect(dev: Device) {
-        let options = new RequestOptions({body: JSON.stringify({'id': dev.id})});
+        let options = null; // = new RequestOptions({body: JSON.stringify({'id': dev.id})});
+        if (dev.id) {
+            options = new RequestOptions({body: JSON.stringify({'id': dev.id})});
+        } else {
+            options = new RequestOptions({body: JSON.stringify({'device': {'hostname': dev.hostname, 'port': dev.port, 'username': dev.username, 'password': dev.password}})});
+        }
         return this.http.post('/netopeer/session', null, options)
             .map((resp: Response) => resp.json())
             .do(resp => {
