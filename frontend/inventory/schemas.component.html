@@ -18,14 +18,14 @@
 
 <table class="items">
   <tr class="item_header">
-    <th class="item_header_left">&nbsp;</th>
+    <th class="item_left">&nbsp;</th>
     <th>name</th>
-    <th class="item_header_right">revision</th>
+    <th class="item_right">revision</th>
   </tr>
   <tr class="item" [class.selected]="schema === selectedSchema" *ngFor="let schema of schemas">
-    <td class="item_actions"><span class="item_action_delete" (click)="remove(schema)">x</span></td>
+    <td class="item_left item_actions"><span class="item_action_delete" (click)="remove(schema)">x</span></td>
     <td class="schema schema-name" (click)="onSelect(schema)">{{schema.name}}</td>
-    <td class="schema schema-revision" (click)="onSelect(schema)">{{schema.revision}}</td>
+    <td class="item_right schema schema-revision" (click)="onSelect(schema)">{{schema.revision}}</td>
   </tr>
 </table>
 

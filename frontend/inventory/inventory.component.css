@@ -26,6 +26,7 @@ nav a.active:hover {
 .items {
     width: 100%;
     border-radius: 3px;
+    margin-bottom: 0.5em;
 }
 
 .item {
@@ -42,12 +43,12 @@ nav a.active:hover {
 	color: #FAFAFA;
 }
 
-.item_header_left {
+.item_left {
     border-top-left-radius: 5px;
     border-bottom-left-radius: 5px;
 }
 
-.item_header_right {
+.item_right {
     border-top-right-radius: 5px;
     border-bottom-right-radius: 5px;
 }
@@ -62,11 +63,10 @@ nav a.active:hover {
 }
 
 .item_actions {
+	cursor: pointer;
     width: 2em;
     padding-right: 10px;
     padding-left: 10px;
-    border-top-left-radius: 5px;
-    border-bottom-left-radius: 5px;
     font-weight: bold;
     font-family: monospace;
     font-size: large;
@@ -80,13 +80,9 @@ nav a.active:hover {
 .schema-revision {
 	font-family: monospace;
 	font-size: x-small;
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
 }
 
 .device-login {
-    border-top-right-radius: 5px;
-    border-bottom-right-radius: 5px;
 }
 
 .input_block {
