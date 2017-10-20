@@ -1,6 +1,6 @@
 <nav #navbar>
   <a *ngFor="let session of sessionsService.sessions" [class.active]="session.key==activeSession.key"
-      (click)="activeSession.key = session.key">{{session.device.hostname}}:{{session.device.port}}
+      (click)="changeActiveSession(session.key)">{{session.device.hostname}}:{{session.device.port}}
       <span *ngIf="session.key==activeSession.key" class="tab-reload tab-action-first" (click)="reloadData(session.key)">o</span>
       <span class="tab-close tab-action-last" (click)="disconnect(session.key)">x</span>
   </a><a (click)="addSession()"><span class="tab-add tab-action-first tab-action-last">+</span></a>

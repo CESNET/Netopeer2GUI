@@ -125,6 +125,11 @@ export class ConfigComponent implements OnInit, OnDestroy {
         this.activeSession = this.sessionsService.getActiveSession(this.sessionsService.activeSession);
     }
 
+    changeActiveSession(key: string) {
+        this.sessionsService.activeSession = key;
+        this.activeSession = this.sessionsService.getActiveSession(this.sessionsService.activeSession);
+    }
+
     ngOnDestroy(): void {
         this.sessionsService.changingView();
     }
