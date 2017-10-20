@@ -127,7 +127,7 @@ export class SessionsService{
             .map((resp: Response) => resp.json())
             .do(resp => {
                 if (resp['success']) {
-                    this.sessions.push(new Session(resp['session-key'], dev));
+                    this.sessions.push(new Session(resp['session-key'], dev, "", "", false, false));
                     this.activeSession = resp['session-key'];
                     localStorage.setItem('sessions', JSON.stringify(this.sessions));
                     localStorage.setItem('activeSession', this.activeSession);
