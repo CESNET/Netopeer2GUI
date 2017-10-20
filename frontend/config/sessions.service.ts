@@ -9,7 +9,7 @@ import { Device } from '../inventory/device';
 import { Session } from './session';
 
 @Injectable()
-export class SessionsService {
+export class SessionsService{
     public sessions: Session[];
     public activeSession;
 
@@ -19,6 +19,23 @@ export class SessionsService {
             this.activeSession = "";
         }
         this.checkSessions();
+    }
+
+    getActiveSession(key: string): Session {
+        if (!this.activeSession) {
+            return null;
+        }
+        for (let i = this.sessions.length; i > 0; i--) {
+            if (this.sessions[i - 1].key == this.activeSession) {
+                return this.sessions[i - 1];
+            }
+        }
+        return null;
+    }
+
+    changingView() {
+        localStorage.setItem('sessions', JSON.stringify(this.sessions));
+        localStorage.setItem('activeSession', this.activeSession);
     }
 
     checkSessions() {

@@ -1,4 +1,4 @@
-<div id="netopeer-header">
+<div id="netopeer-header" #header>
   <h1><span routerLink="/netopeer">Netopeer</span> {{componentTitle}}</h1>
  
   <nav>
@@ -7,7 +7,7 @@
   </nav>
 
 </div>
-<div id="netopeer-component">
+<div id="netopeer-component" [style.margin-top]="'calc(' + header.offsetHeight + 'px - 0.5em)'">
   <netopeer-dashboard *ngIf="componentTitle == ''"></netopeer-dashboard>
   <router-outlet (activate)="onActivate($event)" (deactivate)="onDeactivate($event)"></router-outlet>
 </div>

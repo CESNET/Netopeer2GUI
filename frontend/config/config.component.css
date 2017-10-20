@@ -1,22 +1,31 @@
-.add-tab,
-.close-tab {
+.tab-add,
+.tab-reload,
+.tab-close {
     cursor: pointer;
-    padding-right: 0.5em;
-    padding-left: 0.3em;
     font-weight: bold;
     font-family: monospace;
     font-size: large;
 }
-
-.add-tab:hover {
-    color: green;
+.tab-action-first {
+    padding-left: 0.3em;
+}
+.tab-action-last {
+    padding-right: 0.5em;
 }
 
-.close-tab:hover {
+.tab-add:hover {
+    color: green;
+}
+.tab-close:hover {
     color: red;
+}
+.tab-reload:hover {
+    color: blue;
 }
 
 nav {
+    position: fixed;
+    width: 100%;
 	background-color: #3B4257;
 	padding-left: 1em;
 }
@@ -40,4 +49,33 @@ nav a:hover, nav a.active {
 
 nav a.active:hover {
 	cursor: default;	
+}
+
+#config-toc {
+    position: fixed;
+    width: 10em;
+    border-right: 1px solid #313747;
+}
+
+.config-toc-item {
+    cursor: pointer;
+    padding: 0em 0em 0.2em 0.5em;
+}
+.config-toc-item:hover {
+	background-color: #3B4257;
+    color: #FFF;
+}
+
+#config-data {
+    padding-left: 11em;
+    display: inline-block;
+    width: 100%;
+}
+
+.item_action_collapse:hover {
+    color:red;
+}
+
+.item_action_expand:hover {
+    color:green;
 }

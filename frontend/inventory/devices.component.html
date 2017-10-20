@@ -57,14 +57,14 @@
 <p class="msg-failure msg-rounded" *ngIf="err_msg"><span class="msg-close" (click)="err_msg=''">x</span>{{err_msg}}</p>
 <table class="items">
   <tr class="item_header">
-    <th class="item_header_left">&nbsp;</th>
+    <th class="item_left">&nbsp;</th>
     <th>hostname : port</th>
-    <th class="item_header_right">username</th>
+    <th class="item_right">username</th>
   </tr>
   <tr class="item" *ngFor="let device of devices">
-    <td class="item_actions"><span class="item_action_delete" (click)="rmDevice(device)">x</span></td>
+    <td class="item_left item_actions"><span class="item_action_delete" (click)="rmDevice(device)">x</span></td>
     <td class="device" (click)="connect(device)">{{device.hostname}} : {{device.port}}</td>
-    <td class="device-login" (click)="connect(device)">{{device.username}}</td>
+    <td class="item_right device-login" (click)="connect(device)">{{device.username}}</td>
   </tr>
 </table>
 

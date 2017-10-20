@@ -1,20 +1,55 @@
-<nav>
-  <a *ngFor="let session of sessionsService.sessions" [class.active]="session.key==sessionsService.activeSession"
-      (click)="sessionsService.activeSession = session.key">{{session.device.hostname}}:{{session.device.port}}
-      <span class="close-tab" (click)="disconnect(session.key)">x</span>
-  </a><a (click)="addSession()"><span class="add-tab">+</span></a>
+<nav #navbar>
+  <a *ngFor="let session of sessionsService.sessions" [class.active]="session.key==activeSession.key"
+      (click)="activeSession.key = session.key">{{session.device.hostname}}:{{session.device.port}}
+      <span *ngIf="session.key==activeSession.key" class="tab-reload tab-action-first" (click)="reloadData(session.key)">o</span>
+      <span class="tab-close tab-action-last" (click)="disconnect(session.key)">x</span>
+  </a><a (click)="addSession()"><span class="tab-add tab-action-first tab-action-last">+</span></a>
 </nav>
-<p class="msg-failure msg-rounded" *ngIf="err_msg"><span class="msg-close" (click)="err_msg=''">x</span>{{err_msg}}</p>
 
-<div class="netopeer-content">
-
+<div class="netopeer-content" [style.padding-top]="'calc(' + navbar.offsetHeight + 'px - -0.7em)'">
 <div *ngIf="sessionsService.activeSession">
-    <button (click)="disconnect(sessionsService.activeSession)">Disconnect</button>
+    <p class="msg-failure msg-rounded" *ngIf="err_msg"><span class="msg-close" (click)="err_msg=''">x</span>{{err_msg}}</p>
 
-    <p><a (click)="getCapabilities(sessionsService.activeSession)">Capabilities</a></p>
-    <pre *ngIf="cpblts">{{cpblts | json}}</pre>
-    <p><a (click)="rpcGet(sessionsService.activeSession)">Running Data</a></p>
-    <pre *ngIf="data">{{data | json}}</pre>
+    <table class="items">
+        <tr class="item_header">
+            <th class="item_left item_actions" [ngSwitch]="activeSession.cpbltsVisibility">
+                <span *ngSwitchCase="false" class="item_action_expand" (click)="getCapabilities(activeSession.key);activeSession.cpbltsVisibility=true">v</span>
+                <span *ngSwitchCase="true" class="item_action_collapse" (click)="activeSession.cpbltsVisibility=false">x</span>
+            </th>
+            <th>Capability / Module</th>
+            <th class="item_right">Version</th>
+        </tr>
+        <ng-container *ngIf="activeSession.cpbltsVisibility==true && activeSession.cpblts">
+        <tr class="item" *ngFor="let cap of activeSession.cpblts">
+            <td class="item_left">&nbsp;</td>
+            <td>{{parseCapabilityName(cap)}}</td>
+            <td class="item_right">{{parseCapabilityRevision(cap)}}</td>
+        </tr>
+        </ng-container>
+    </table>
+
+    <table class="items">
+        <tr class="item_header">
+            <th class="item_left item_actions" [ngSwitch]="activeSession.dataVisibility">
+                <span *ngSwitchCase="false" class="item_action_expand" (click)="rpcGet(activeSession.key);activeSession.dataVisibility=true">v</span>
+                <span *ngSwitchCase="true" class="item_action_collapse" (click)="activeSession.dataVisibility=false">x</span>
+            </th>
+            <th class="item_right">Data</th>
+        </tr>
+    </table>
+    <ng-container *ngIf="activeSession.dataVisibility==true && activeSession.data">
+<!--
+    <div id="config-toc">
+        <div class="config-toc-item" [ngSwitch]="activeSession.dataVisibility">
+            <a *ngSwitchCase="false" (click)="rpcGet(activeSession.key);activeSession.dataVisibility=true">show data</a>
+            <a *ngSwitchCase="true" (click)="activeSession.dataVisibility=false">hide data</a>
+        </div>
+    </div>
+-->
+    <div id="config-data">
+        <pre >{{activeSession.data | json}}</pre>
+    </div>
+    </ng-container>
 </div>
 
 </div>
