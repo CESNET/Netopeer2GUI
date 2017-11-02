@@ -4,9 +4,10 @@ export class Session {
   constructor (
     public key: string,
     public device: Device,
-    public data: string = "",
+    public data = null,
     public cpblts: string = "",
-    public dataVisibility: boolean = false,
-    public cpbltsVisibility: boolean = false
+    public dataVisibility: string = 'none',
+    public statusVisibility: boolean = true,
+    public cpbltsVisibility: boolean = false,
   ) {}
 }

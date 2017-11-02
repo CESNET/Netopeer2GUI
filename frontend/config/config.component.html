@@ -1,20 +1,34 @@
-<nav #navbar>
-  <a *ngFor="let session of sessionsService.sessions" [class.active]="session.key==activeSession.key"
-      (click)="changeActiveSession(session.key)">{{session.device.hostname}}:{{session.device.port}}
-      <span *ngIf="session.key==activeSession.key" class="tab-reload tab-action-first" (click)="reloadData(session.key)">o</span>
-      <span class="tab-close tab-action-last" (click)="disconnect(session.key)">x</span>
-  </a><a (click)="addSession()"><span class="tab-add tab-action-first tab-action-last">+</span></a>
+<nav #confignav id="confignav">
+    <a *ngFor="let session of sessionsService.sessions" [class.active]="session.key==activeSession.key"
+        (click)="changeActiveSession(session.key)">{{session.device.hostname}}:{{session.device.port}}
+        <!--<span *ngIf="session.key==activeSession.key" class="tab-reload tab-action-first" (click)="reloadData(session.key)">o</span>-->
+        <img *ngIf="session.key==activeSession.key" class="tab-icon tab-reload tab-action-first" src="assets/netopeer/icons/reload.svg"  alt="o" title="reload"
+            onmouseover="this.src='assets/netopeer/icons/reload_active.svg'"
+            onmouseout="this.src='assets/netopeer/icons/reload.svg'" (click)="reloadData()"/>
+        <img class="tab-icon tab-close tab-action-last" src="assets/netopeer/icons/close.svg"  alt="x" title="disconnect"
+            onmouseover="this.src='assets/netopeer/icons/close_active.svg'"
+            onmouseout="this.src='assets/netopeer/icons/close.svg'" (click)="disconnect(session.key)"/>
+    </a><a (click)="addSession()" onmouseout="getElementById('tabadd').style.filter='invert(100%)'" onmouseover="getElementById('tabadd').style.filter='invert(0%)'">
+        <img id="tabadd" class="tab-icon tab-add tab-action-last" src="assets/netopeer/icons/add.svg" alt="+" title="add connection"
+            onmouseover="this.src='assets/netopeer/icons/add_active.svg'"
+            onmouseout="this.src='assets/netopeer/icons/add.svg'"/>
+    </a>
 </nav>
 
-<div class="netopeer-content" [style.padding-top]="'calc(' + navbar.offsetHeight + 'px - -0.7em)'">
+<div class="netopeer-content" [style.padding-top]="'calc(' + confignav.offsetHeight + 'px - -0.7em)'">
 <div *ngIf="sessionsService.activeSession">
-    <p class="msg-failure msg-rounded" *ngIf="err_msg"><span class="msg-close" (click)="err_msg=''">x</span>{{err_msg}}</p>
-
+    <p class="msg-failure msg-rounded" *ngIf="err_msg"><img class="msg-close" (click)="err_msg=''" src="assets/netopeer/icons/close_active.svg" alt="x" title="close"/>{{err_msg}}</p>
     <table class="items">
         <tr class="item_header">
             <th class="item_left item_actions" [ngSwitch]="activeSession.cpbltsVisibility">
-                <span *ngSwitchCase="false" class="item_action_expand" (click)="getCapabilities(activeSession.key);activeSession.cpbltsVisibility=true">v</span>
-                <span *ngSwitchCase="true" class="item_action_collapse" (click)="activeSession.cpbltsVisibility=false">x</span>
+                <img *ngSwitchCase="false" class="item_action_expand" (click)="getCapabilities(activeSession.key);activeSession.cpbltsVisibility=true"
+                    src="assets/netopeer/icons/show.svg" alt="v" title="show"
+                    onmouseover="this.src='assets/netopeer/icons/show_active.svg'"
+                    onmouseout="this.src='assets/netopeer/icons/show.svg'"/>
+                <img *ngSwitchCase="true" class="item_action_collapse" (click)="activeSession.cpbltsVisibility=false"
+                    src="assets/netopeer/icons/close.svg" alt="x" title="close"
+                    onmouseover="this.src='assets/netopeer/icons/close_active.svg'"
+                    onmouseout="this.src='assets/netopeer/icons/close.svg'"/>
             </th>
             <th>Capability / Module</th>
             <th class="item_right">Version</th>
@@ -30,24 +44,29 @@
 
     <table class="items">
         <tr class="item_header">
-            <th class="item_left item_actions" [ngSwitch]="activeSession.dataVisibility">
-                <span *ngSwitchCase="false" class="item_action_expand" (click)="rpcGet(activeSession.key);activeSession.dataVisibility=true">v</span>
-                <span *ngSwitchCase="true" class="item_action_collapse" (click)="activeSession.dataVisibility=false">x</span>
-            </th>
-            <th class="item_right">Data</th>
+            <th class="item_left item_actions" style="cursor: default;">&nbsp;</th>
+            <th class="item_right" >Data</th>
         </tr>
     </table>
-    <ng-container *ngIf="activeSession.dataVisibility==true && activeSession.data">
-<!--
-    <div id="config-toc">
-        <div class="config-toc-item" [ngSwitch]="activeSession.dataVisibility">
-            <a *ngSwitchCase="false" (click)="rpcGet(activeSession.key);activeSession.dataVisibility=true">show data</a>
-            <a *ngSwitchCase="true" (click)="activeSession.dataVisibility=false">hide data</a>
-        </div>
-    </div>
--->
+    <div>
+        <img *ngIf="activeSession.dataVisibility!='root'" class="icon_action" (click)="rpcGet(false);activeSession.dataVisibility='root'"
+            src="assets/netopeer/icons/show_children.svg" alt="v" title="expand roots"
+            onmouseover="this.src='assets/netopeer/icons/show_children_active.svg'"
+            onmouseout="this.src='assets/netopeer/icons/show_children.svg'"/>
+        <img *ngIf="activeSession.dataVisibility!='all'" class="icon_action" (click)="rpcGet(true);activeSession.dataVisibility='all'"
+            src="assets/netopeer/icons/show_all.svg" alt="w" title="expand all"
+            onmouseover="this.src='assets/netopeer/icons/show_all_active.svg'"
+            onmouseout="this.src='assets/netopeer/icons/show_all.svg'"/>
+        <img *ngIf="activeSession.dataVisibility!='none'" class="icon_action" (click)="activeSession.dataVisibility='none'"
+            src="assets/netopeer/icons/close.svg" alt="x" title="close"
+            onmouseover="this.src='assets/netopeer/icons/close_active.svg'"
+            onmouseout="this.src='assets/netopeer/icons/close.svg'"/>
+        <span><input type="checkbox" name="statusVisibility" [checked]="activeSession.statusVisibility" (change)="activeSession.statusVisibility = !activeSession.statusVisibility"/> include status data</span>
+    </div><br/>
+    <ng-container *ngIf="activeSession.dataVisibility!='none' && activeSession.data">
     <div id="config-data">
-        <pre >{{activeSession.data | json}}</pre>
+        <tree-view [treeData]="activeSession.data"></tree-view>
+        <!--<pre>{{activeSession.data | json}}</pre>-->
     </div>
     </ng-container>
 </div>

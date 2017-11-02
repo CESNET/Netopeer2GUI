@@ -3,12 +3,11 @@ import {Router} from '@angular/router';
 
 import {SessionsService} from './sessions.service';
 import {Session} from './session';
-import {Device} from '../inventory/device';
 
 @Component({
     selector: 'netopeer-config',
     templateUrl: './config.component.html',
-    styleUrls: ['../netopeer.css', './config.component.css', '../inventory/inventory.component.css']
+    styleUrls: ['../netopeer.css', './config.component.css', './tree.component.css', '../inventory/inventory.component.css']
 })
 
 export class ConfigComponent implements OnInit, OnDestroy {
@@ -16,15 +15,20 @@ export class ConfigComponent implements OnInit, OnDestroy {
     activeSession: Session;
     err_msg = "";
 
+    objectKeys = Object.keys;
     constructor(private sessionsService: SessionsService, private router: Router) {}
 
     addSession() {
         this.router.navigateByUrl('/netopeer/inventory/devices');
     }
 
-    reloadData(key: string) {
+    reloadData() {
         this.activeSession.data = null;
-        this.rpcGet(key);
+        if (this.activeSession.dataVisibility == 'all') {
+            this.rpcGet(true);
+        } else if(this.activeSession.dataVisibility == 'root') {
+            this.rpcGet(false);
+        }
     }
 
     disconnect(key: string) {
@@ -45,9 +49,10 @@ export class ConfigComponent implements OnInit, OnDestroy {
         }
         this.sessionsService.getCpblts(key).subscribe(result => {
             if (result['success']) {
-                this.activeSession.cpblts = result['capabilities']
+                this.activeSession.cpblts = result['capabilities'];
             } else {
-                this.err_msg = result['error-msg']
+                this.activeSession.cpbltsVisibility = false;
+                this.err_msg = result['error-msg'];
             }
         });
     }
@@ -105,17 +110,23 @@ export class ConfigComponent implements OnInit, OnDestroy {
         return version;
     }
 
-    rpcGet(key: string) {
+    rpcGet(all: boolean) {
         if (this.activeSession.data) {
-            return;
+            if ((all && this.activeSession.dataVisibility == 'all') ||
+                (!all && this.activeSession.dataVisibility == 'root')) {
+                return;
+            }
         }
-        this.sessionsService.rpcGet(key).subscribe(result => {
+        this.sessionsService.rpcGetSubtree(this.activeSession.key, all).subscribe(result => {
             if (result['success']) {
-                this.activeSession.data = result['data']
-            } else if ('error-msg' in result) {
-                this.err_msg = result['error-msg']
+                this.activeSession.data = result['data'];
             } else {
-                this.err_msg = result['error'][0]['message']
+                this.activeSession.dataVisibility = 'none';
+                if ('error-msg' in result) {
+                    this.err_msg = result['error-msg'];
+                } else {
+                    this.err_msg = result['error'][0]['message'];
+                }
             }
         });
     }

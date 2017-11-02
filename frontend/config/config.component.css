@@ -13,6 +13,15 @@
     padding-right: 0.5em;
 }
 
+.tab-icon {
+    vertical-align: middle;
+    height: 1em;
+}
+
+.tab-add {
+    filter: invert(100%);
+}
+
 .tab-add:hover {
     color: green;
 }
@@ -23,14 +32,14 @@
     color: blue;
 }
 
-nav {
+#confignav {
     position: fixed;
     width: 100%;
 	background-color: #3B4257;
 	padding-left: 1em;
 }
 
-nav a {
+#confignav a {
     cursor: pointer;
 	text-decoration: none;
 	display: inline-block;
@@ -38,16 +47,18 @@ nav a {
 	color: #FAFAFA;
 }
 
-nav a:visited, a:link {
+#confignav a:visited,
+#confignav a:link {
 	color: inherited;
 }
 
-nav a:hover, nav a.active {
+#confignav a:hover,
+#confignav a.active {
 	background-color: #FAFAFA;
-	color: #000
+	color: #000;
 }
 
-nav a.active:hover {
+#confignav a.active:hover {
 	cursor: default;	
 }
 
@@ -67,9 +78,12 @@ nav a.active:hover {
 }
 
 #config-data {
-    padding-left: 11em;
-    display: inline-block;
     width: 100%;
+}
+
+.item_action_expand,
+.item_action_collapse {
+    height: 1em;
 }
 
 .item_action_collapse:hover {

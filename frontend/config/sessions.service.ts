@@ -84,9 +84,13 @@ export class SessionsService{
             .catch((err: Response | any) => Observable.throw(err));
     }
 
-    rpcGet(key: string): Observable<string[]> {
+    rpcGetSubtree(key: string, all: boolean, path: string = ""): Observable<string[]> {
         let params = new URLSearchParams();
         params.set('key', key);
+        params.set('recursive', String(all));
+        if (path.length) {
+            params.set('path', path);
+        }
         let options = new RequestOptions({ search: params });
         return this.http.get('/netopeer/session/rpcGet', options)
             .map((resp: Response) => resp.json())
@@ -127,7 +131,7 @@ export class SessionsService{
             .map((resp: Response) => resp.json())
             .do(resp => {
                 if (resp['success']) {
-                    this.sessions.push(new Session(resp['session-key'], dev, "", "", false, false));
+                    this.sessions.push(new Session(resp['session-key'], dev));
                     this.activeSession = resp['session-key'];
                     localStorage.setItem('sessions', JSON.stringify(this.sessions));
                     localStorage.setItem('activeSession', this.activeSession);

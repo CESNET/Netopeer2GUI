@@ -23,28 +23,35 @@
 	color: #000;
 }
 
-nav {
+#mainnav {
 	with: 100%;
 	padding-left: 1em;
 }
 
-nav a {
+#mainnav a:visited,
+#mainnav a:link {
+	color: inherit;
+}
+
+#mainnav a:hover {
+    border-top-color: #3B4257;
+	background-color: #3B4257;
+}
+
+#mainnav a.active {
+    border-top-color: #BAE4F0;
+	background-color: #3B4257;
+}
+#mainnav a.active:hover {
+	cursor: default;
+}
+
+#mainnav a {
 	text-decoration: none;
 	display: inline-block;
 	padding: 0.5em 1em 0.5em 0.5em;
 	color: #FAFAFA;
-}
-
-nav a:visited, a:link {
-	color: inherited;
-}
-
-nav a:hover, a.active {
-	background-color: #3B4257;
-}
-
-nav a.active:hover {
-	cursor: default;
+    border-top: 0.2em solid #313747;
 }
 
 .msg-rounded {
@@ -58,6 +65,7 @@ nav a.active:hover {
     font-family: monospace;
     font-size: large;
 	cursor: pointer;
+    height: 1em;
 }
 
 .msg-success {
@@ -76,6 +84,6 @@ nav a.active:hover {
 	padding: 5px 1em 5px 0em;
 }
 
-.msg-failure.msg-close {
+.msg-failure .msg-close {
     color: red;
 }

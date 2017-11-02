@@ -1,0 +1,44 @@
+<ng-container *ngFor="let node of treeData">
+<div class="subtree" *ngIf="node['info']['config'] || activeSession.statusVisibility" [class.status]="!node['info']['config']">
+    <div class="node">
+        <ng-container *ngFor="let indent of indentation">
+            <img *ngIf="!indent" class="indentation" src="assets/netopeer/icons/tree_cont.svg"/>
+            <img *ngIf="indent" class="indentation" src="assets/netopeer/icons/tree_empty.svg"/>
+        </ng-container>
+        <img *ngIf="node['last']" class="indentation" src="assets/netopeer/icons/tree_last_branch.svg"/>
+        <img *ngIf="!node['last']" class="indentation" src="assets/netopeer/icons/tree_branch.svg"/>
+        <ng-container [ngSwitch]="node['info']['type']">
+            <img *ngSwitchCase="1" class="icon" src="assets/netopeer/icons/container.svg" alt="container" title="container"/>
+            <img *ngSwitchCase="4" class="icon" src="assets/netopeer/icons/leaf.svg" alt="leaf" title="leaf"/>
+            <img *ngSwitchCase="8" class="icon" src="assets/netopeer/icons/leaflist.svg" alt="leaf-list" title="leaf-list"/>
+            <img *ngSwitchCase="16" class="icon" src="assets/netopeer/icons/container.svg" alt="list" title="list"/>
+            <img *ngSwitchCase="32800" class="icon" src="assets/netopeer/icons/anydata.svg" alt="anydata" title="anydata"/>
+        </ng-container>
+        <img class="icon" src="assets/netopeer/icons/info.svg"
+            onmouseover="this.src='assets/netopeer/icons/info_active.svg'"
+            onmouseout="this.src='assets/netopeer/icons/info.svg'" alt="info" title="{{node['info']['dsc']}}"/>
+        <ng-container *ngIf="expandable(node)">
+            <img *ngIf="hasHiddenChild(node)" (click)="getSubtree(node, true)"
+                class="icon_action" src="assets/netopeer/icons/show_all.svg"
+                onmouseover="this.src='assets/netopeer/icons/show_all_active.svg'"
+                onmouseout="this.src='assets/netopeer/icons/show_all.svg'" alt="show-all" title="expand subtree"/>
+            <img *ngIf="!node['children']" (click)="getSubtree(node, false)"
+                class="icon_action" src="assets/netopeer/icons/show_children.svg"
+                onmouseover="this.src='assets/netopeer/icons/show_children_active.svg'"
+                onmouseout="this.src='assets/netopeer/icons/show_children.svg'" alt="show-children" title="expand children"/>
+            <img *ngIf="node['children']" (click)="collapse(node)"
+                class="icon_action" src="assets/netopeer/icons/collapse.svg"  alt="collapse" title="collapse"
+                onmouseover="this.src='assets/netopeer/icons/collapse_active.svg'"
+                onmouseout="this.src='assets/netopeer/icons/collapse.svg'"/>
+        </ng-container>
+        <div>{{node['info']['name']}}</div>
+        <ng-container *ngIf="node['value']">
+            :<div class="value" >{{node['value']}}</div>
+        </ng-container>
+        <div class="module_name">{{node['info']['module']}}</div>
+    </div>
+    <div class="children" *ngIf="node['children']">
+        <tree-view [treeData]="node['children']" [indentation]="inheritIndentation(node)"></tree-view>
+    </div>
+</div>
+</ng-container>

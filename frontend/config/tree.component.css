@@ -1,0 +1,46 @@
+.subtree {
+    cursor: default;
+    display: block;
+    width: 100%;
+}
+
+.node {
+    width: 100%;
+}
+.node:hover {
+    background-color: #e1e1e1
+}
+.node div {
+    display: inline-block;
+}
+
+.status {
+    color: grey;
+}
+
+.icon,
+.icon_action {
+    font-size: xx-small;
+    height: 2em;
+}
+
+.icon_action {
+    cursor: pointer;
+}
+
+.module_name {
+    float: right;
+}
+
+.children {
+    padding-left: 0em;
+}
+
+.value {
+    display: inline-block;
+    padding-left: 1.5em;
+}
+
+.indentation {
+    height: 1.7em;
+}

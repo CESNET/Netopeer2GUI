@@ -15,6 +15,7 @@ import netconf2 as nc
 from .inventory import INVENTORY
 from .devices import devices_get
 from .error import NetopeerException
+from .data import *
 
 sessions = {}
 
@@ -85,6 +86,8 @@ def session_get():
 
 	if not 'key' in req:
 		return(json.dumps({'success': False, 'error-msg': 'Missing session key.'}))
+	if not 'recursive' in req:
+		return(json.dumps({'success': False, 'error-msg': 'Missing recursive flag.'}))
 
 	if not user.username in sessions:
 		sessions[user.username] = {}
@@ -102,7 +105,10 @@ def session_get():
 			reply['error'].append(json.loads(str(err)))
 		return(json.dumps(reply))
 
-	return(json.dumps({'success': True, 'data': json.loads(data.print_mem(ly.LYD_JSON, ly.LYP_WITHSIBLINGS))}))
+	if not 'path' in req:
+		return(dataInfoRoots(data, True if req['recursive'] == 'true' else False))
+	else:
+		return(dataInfoSubtree(data, req['path'], True if req['recursive'] == 'true' else False))
 
 
 @auth.required()
