@@ -62,7 +62,12 @@
     <th class="item_right">username</th>
   </tr>
   <tr class="item" *ngFor="let device of devices">
-    <td class="item_left item_actions"><span class="item_action_delete" (click)="rmDevice(device)">x</span></td>
+    <td class="item_left item_actions">
+        <img class="item_action_delete" (click)="rmDevice(device)"
+            src="assets/netopeer/icons/close.svg" alt="x" title="delete"
+            onmouseover="this.src='assets/netopeer/icons/close_active.svg'"
+            onmouseout="this.src='assets/netopeer/icons/close.svg'"/>
+      </td>
     <td class="device" (click)="connect(device)">{{device.hostname}} : {{device.port}}</td>
     <td class="item_right device-login" (click)="connect(device)">{{device.username}}</td>
   </tr>

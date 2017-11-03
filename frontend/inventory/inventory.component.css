@@ -73,8 +73,13 @@ nav a.active:hover {
     color: grey;
 }
 
+.item_action_delete{
+    height: 1.3em;
+    vertical-align: middle;
+}
+
 .item_action_delete:hover {
-    color:red;
+    color: red;
 }
 
 .schema-revision {
