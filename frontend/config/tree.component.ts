@@ -25,6 +25,9 @@ export class TreeView implements OnInit {
         this.sessionsService.rpcGetSubtree(this.activeSession.key, all, node['path']).subscribe(result => {
             if (result['success']) {
                 node['children'] = result['data']['children'];
+                for (let iter of this.activeSession.data) {
+                    this.hasHiddenChild(iter, true);
+                }
             }
         });
     }
@@ -54,11 +57,16 @@ export class TreeView implements OnInit {
             return node['hasHiddenChild'];
         }
         node['hasHiddenChild'] = false;
-        if (!node['children']) {
+        if (!this.expandable(node)) {
+            /* terminal node (leaf or leaf-list) */
+            return node['hasHiddenChild'];
+        } else if (!('children' in node)) {
+            /* internal node without children */
             node['hasHiddenChild'] = true;
         } else {
+            /* go recursively */
             for (let child of node['children']) {
-                if (!('children' in child) || this.hasHiddenChild(child, clean)) {
+                if (this.hasHiddenChild(child, clean)) {
                     node['hasHiddenChild'] = true;
                     break;
                 }
@@ -83,7 +91,7 @@ export class TreeView implements OnInit {
     }
 
     collapse(node) {
-        node['children'] = null;
+        delete node['children'];
         this.activeSession.dataVisibility = 'mixed';
         for (let iter of this.activeSession.data) {
             this.hasHiddenChild(iter, true);
