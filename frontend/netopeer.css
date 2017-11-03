@@ -1,3 +1,9 @@
+a:not([href]) {
+    cursor: pointer;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
 #netopeer-header {
     position: fixed;
     width: 100%;

@@ -61,7 +61,9 @@
             src="assets/netopeer/icons/collapse.svg" alt="x" title="collapse"
             onmouseover="this.src='assets/netopeer/icons/collapse_active.svg'"
             onmouseout="this.src='assets/netopeer/icons/collapse.svg'"/>
-        <span><input type="checkbox" name="statusVisibility" [checked]="activeSession.statusVisibility" (change)="invertStatus()"/> include status data</span>
+        <span *ngIf="activeSession.statusVisibility"><a (click)="invertStatus()">hide</a> status data</span>
+        <span *ngIf="!activeSession.statusVisibility"><a (click)="invertStatus()">show</a> status data</span>
+        <!--<span><input type="checkbox" name="statusVisibility" [checked]="activeSession.statusVisibility" (change)="invertStatus()"/> include status data</span>-->
     </div><br/>
     <ng-container *ngIf="activeSession.dataVisibility!='none' && activeSession.data">
     <div id="config-data">

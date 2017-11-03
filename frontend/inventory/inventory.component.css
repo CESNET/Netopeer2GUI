@@ -10,11 +10,13 @@ nav a {
 	color: #FAFAFA;
 }
 
-nav a:visited, a:link {
-	color: inherited;
+nav a:visited,
+nav a:link {
+	color: inherit;
 }
 
-nav a:hover, nav a.active {
+nav a:hover,
+nav a.active {
 	background-color: #FAFAFA;
 	color: #000
 }
@@ -38,7 +40,8 @@ nav a.active:hover {
 	color: black;
 }
 
-.item.selected, .item_header {
+.item.selected,
+.item_header {
 	background-color: #454D67;
 	color: #FAFAFA;
 }
@@ -110,11 +113,13 @@ nav a.active:hover {
     color: red;
 }
 
-form input, form select {
+form input,
+form select {
     border-left: 5px solid green;
 }
 
-form input.invalid, form select.invalid {
+form input.invalid,
+form select.invalid {
     border-left: 5px solid red;
 //    width: 5em;
 }
