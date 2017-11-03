@@ -21,21 +21,32 @@ export class SessionsService{
         this.checkSessions();
     }
 
-    getActiveSession(key: string): Session {
-        if (!this.activeSession) {
+    storeData() {
+        localStorage.setItem('sessions', JSON.stringify(this.sessions));
+    }
+
+    getActiveSession(key: string = this.activeSession): Session {
+        if (!key) {
             return null;
         }
         for (let i = this.sessions.length; i > 0; i--) {
-            if (this.sessions[i - 1].key == this.activeSession) {
+            if (this.sessions[i - 1].key == key) {
                 return this.sessions[i - 1];
             }
         }
         return null;
     }
 
-    changingView() {
-        localStorage.setItem('sessions', JSON.stringify(this.sessions));
-        localStorage.setItem('activeSession', this.activeSession);
+    changeActiveSession(key: string): Session {
+        if (!this.activeSession) {
+            return null;
+        }
+        let result = this.getActiveSession(key);
+        if (result) {
+            this.activeSession = key;
+            localStorage.setItem('activeSession', this.activeSession);
+        }
+        return result;
     }
 
     checkSessions() {

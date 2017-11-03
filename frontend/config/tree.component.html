@@ -18,11 +18,11 @@
             onmouseover="this.src='assets/netopeer/icons/info_active.svg'"
             onmouseout="this.src='assets/netopeer/icons/info.svg'" alt="info" title="{{node['info']['dsc']}}"/>
         <ng-container *ngIf="expandable(node)">
-            <img *ngIf="hasHiddenChild(node)" (click)="getSubtree(node, true)"
+            <img *ngIf="hasHiddenChild(node)" (click)="expand(node, true)"
                 class="icon_action" src="assets/netopeer/icons/show_all.svg"
                 onmouseover="this.src='assets/netopeer/icons/show_all_active.svg'"
                 onmouseout="this.src='assets/netopeer/icons/show_all.svg'" alt="show-all" title="expand subtree"/>
-            <img *ngIf="!node['children']" (click)="getSubtree(node, false)"
+            <img *ngIf="!node['children']" (click)="expand(node, false)"
                 class="icon_action" src="assets/netopeer/icons/show_children.svg"
                 onmouseover="this.src='assets/netopeer/icons/show_children_active.svg'"
                 onmouseout="this.src='assets/netopeer/icons/show_children.svg'" alt="show-children" title="expand children"/>

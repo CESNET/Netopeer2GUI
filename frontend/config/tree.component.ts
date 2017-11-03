@@ -21,27 +21,19 @@ export class TreeView implements OnInit {
         this.activeSession = this.sessionsService.getActiveSession(this.sessionsService.activeSession);
     }
 
-    getSubtree(node, all: boolean) {
-        this.sessionsService.rpcGetSubtree(this.activeSession.key, all, node['path']).subscribe(result => {
-            if (result['success']) {
-                node['children'] = result['data']['children'];
-                for (let iter of this.activeSession.data) {
-                    this.hasHiddenChild(iter, true);
-                }
-            }
-        });
-    }
-
-    getType(object) {
-        let result = 'data';
-        if (typeof object == 'object') {
-            if (object instanceof Array) {
-                result = 'array';
-            } else {
-                result = 'object';
-            }
+    inheritIndentation(node) {
+        let newIndent;
+        if (node['last']) {
+            newIndent = [true];
+        } else {
+            newIndent = [false];
         }
-        return result;
+
+        if (!this.indentation) {
+            return newIndent;
+        } else {
+            return this.indentation.concat(newIndent);
+        }
     }
 
     expandable(node): boolean {
@@ -75,26 +67,24 @@ export class TreeView implements OnInit {
         return node['hasHiddenChild'];
     }
 
-    inheritIndentation(node) {
-        let newIndent;
-        if (node['last']) {
-            newIndent = [true];
-        } else {
-            newIndent = [false];
-        }
-
-        if (!this.indentation) {
-            return newIndent;
-        } else {
-            return this.indentation.concat(newIndent);
-        }
-    }
-
     collapse(node) {
         delete node['children'];
         this.activeSession.dataVisibility = 'mixed';
         for (let iter of this.activeSession.data) {
             this.hasHiddenChild(iter, true);
         }
+        this.sessionsService.storeData();
+    }
+
+    expand(node, all: boolean) {
+        this.sessionsService.rpcGetSubtree(this.activeSession.key, all, node['path']).subscribe(result => {
+            if (result['success']) {
+                node['children'] = result['data']['children'];
+                for (let iter of this.activeSession.data) {
+                    this.hasHiddenChild(iter, true);
+                }
+                this.sessionsService.storeData();
+            }
+        });
     }
 }

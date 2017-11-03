@@ -1,4 +1,4 @@
-import {Component, OnInit, OnDestroy} from '@angular/core';
+import {Component, OnInit} from '@angular/core';
 import {Router} from '@angular/router';
 
 import {SessionsService} from './sessions.service';
@@ -10,7 +10,7 @@ import {Session} from './session';
     styleUrls: ['../netopeer.css', './config.component.css', './tree.component.css', '../inventory/inventory.component.css']
 })
 
-export class ConfigComponent implements OnInit, OnDestroy {
+export class ConfigComponent implements OnInit {
     title = 'Configuration';
     activeSession: Session;
     err_msg = "";
@@ -43,17 +43,36 @@ export class ConfigComponent implements OnInit, OnDestroy {
         });
     }
 
+    setCpbltsVisibility(value: boolean) {
+        this.activeSession.cpbltsVisibility = value;
+        this.sessionsService.storeData();
+    }
+
+    setDataVisibility(value: string) {
+        this.activeSession.dataVisibility = value;
+        this.sessionsService.storeData();
+    }
+
+    invertStatus() {
+        this.activeSession.statusVisibility = !this.activeSession.statusVisibility;
+        this.sessionsService.storeData();
+    }
+
     getCapabilities(key: string) {
         if (this.activeSession.cpblts) {
+            this.activeSession.cpbltsVisibility = true;
+            this.sessionsService.storeData();
             return;
         }
         this.sessionsService.getCpblts(key).subscribe(result => {
             if (result['success']) {
                 this.activeSession.cpblts = result['capabilities'];
+                this.activeSession.cpbltsVisibility = true;
             } else {
                 this.activeSession.cpbltsVisibility = false;
                 this.err_msg = result['error-msg'];
             }
+            this.sessionsService.storeData();
         });
     }
 
@@ -120,6 +139,11 @@ export class ConfigComponent implements OnInit, OnDestroy {
         this.sessionsService.rpcGetSubtree(this.activeSession.key, all).subscribe(result => {
             if (result['success']) {
                 this.activeSession.data = result['data'];
+                if (all) {
+                    this.activeSession.dataVisibility = 'all';
+                } else {
+                    this.activeSession.dataVisibility = 'root';
+                }
             } else {
                 this.activeSession.dataVisibility = 'none';
                 if ('error-msg' in result) {
@@ -128,20 +152,16 @@ export class ConfigComponent implements OnInit, OnDestroy {
                     this.err_msg = result['error'][0]['message'];
                 }
             }
+            this.sessionsService.storeData();
         });
     }
 
     ngOnInit(): void {
         this.sessionsService.checkSessions();
-        this.activeSession = this.sessionsService.getActiveSession(this.sessionsService.activeSession);
+        this.activeSession = this.sessionsService.getActiveSession();
     }
 
     changeActiveSession(key: string) {
-        this.sessionsService.activeSession = key;
-        this.activeSession = this.sessionsService.getActiveSession(this.sessionsService.activeSession);
-    }
-
-    ngOnDestroy(): void {
-        this.sessionsService.changingView();
+        this.activeSession = this.sessionsService.changeActiveSession(key);
     }
 }
