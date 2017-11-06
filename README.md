@@ -4,6 +4,8 @@ Web-based NETCONF management center
 This tool is currently under development and not intended for production use.
 However, we welcome your feedback provided via the [issue tracker](https://github.com/CESNET/Netopeer2GUI/issues).
 
+![Netopeer2GUI schema](./schema.svg)
+
 # Features List
 
 - [x] manage devices to connect to
