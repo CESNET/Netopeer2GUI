@@ -9,7 +9,6 @@ import os
 
 from liberouterapi import auth
 from flask import request
-import libyang as ly
 import netconf2 as nc
 
 from .inventory import INVENTORY
@@ -18,6 +17,10 @@ from .error import NetopeerException
 from .data import *
 
 sessions = {}
+
+def hostkey_check(hostname, state, keytype, hexa, priv):
+	# TODO real check
+	return True
 
 @auth.required()
 def connect():
@@ -41,6 +44,7 @@ def connect():
 	nc.setSearchpath(path)
 
 	ssh = nc.SSH(device['username'], password=device['password'])
+	ssh.setAuthHostkeyCheckClb(hostkey_check)
 	try:
 		session = nc.Session(device['hostname'], device['port'], ssh)
 	except Exception as e:
