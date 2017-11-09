@@ -54,6 +54,7 @@ cmake .. && make && make install
 cd ../../server; mkdir build; cd build
 cmake .. && make && make install
 cd ../../..
+chown -R vagrant:vagrant ./sysrepo/build/repository
 SCRIPT
 
 $liberoutergui = <<SCRIPT
