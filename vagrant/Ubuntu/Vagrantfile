@@ -74,6 +74,7 @@ cd frontend
 npm install --unsafe-perm -g @angular/cli
 npm install --unsafe-perm
 cd ../..
+useradd -p fYNPZFGfqq2rw vagrant 2>/dev/null
 SCRIPT
 
 $backend = <<SCRIPT
@@ -89,9 +90,9 @@ cd ../..
 SCRIPT
 
 $netconf = <<SCRIPT
-/usr/local/bin/sysrepod &
-/home/ubuntu/sysrepo/build/examples/application_example turing-machine &
-/usr/local/bin/netopeer2-server &
+/usr/local/bin/sysrepod -d > sysrepod.log 2>&1 &
+/home/ubuntu/sysrepo/build/examples/application_example turing-machine > turing_machine.log 2>&1 &
+/usr/local/bin/netopeer2-server -d > netopeer2.log 2>&1 &
 SCRIPT
 
 Vagrant.configure("2") do |config|

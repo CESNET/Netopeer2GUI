@@ -82,9 +82,9 @@ cd ../..
 SCRIPT
 
 $netconf = <<SCRIPT
-/usr/local/bin/sysrepod &
-/home/vagrant/sysrepo/build/examples/application_example turing-machine &
-/usr/local/bin/netopeer2-server &
+/usr/local/bin/sysrepod -d > sysrepod.log 2>&1 &
+/home/vagrant/sysrepo/build/examples/application_example turing-machine > turing-machine.log 2>&1 &
+/usr/local/bin/netopeer2-server -d > netopeer2.log 2>&1 &
 SCRIPT
 
 Vagrant.configure("2") do |config|
