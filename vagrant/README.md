@@ -28,8 +28,8 @@ installed virtual machine is just started). Besides the GUI, it installs also
 an example NETCONF server (Netopeer2 with sysrepo) where you can connect with
 the Netopeer2GUI. As well as the Netopeer2GUI server, the NETCONF server is
 available from the Vagrant host. The ports are not static to avoid collisions
-with the currently used ports, so when Vagrant is ready, you are supposed to
-get the information about ports mapping:
+with the currently used ports, so when Vagrant is done, you are supposed to get
+the information about ports mapping:
 ```
 $ vagrant port
 The forwarded ports for the machine are listed below. Please note that
@@ -45,9 +45,20 @@ and Netopeer2GUI is available on the following address from your browser:
 ```
 http://localhost:2201
 ```
-When you first open the address, there is no user set, so you can use
-any credential but when pushing the `Login` button, you will be redirected
-to the setup page to create a new user.
+Note that when vagrant finishes installation, Netopeer2GUI is still just
+starting and it can take some more time before the address is accessible. When
+you open the address for the first time, there is no user set, so you can use
+any credential but when pushing the `Login` button, you will be redirected to
+the setup page to create a new user.
+
+You can connect to a NETCONF device through the Netopeer2GUI's `Configuration`
+or `Inventory` tabs. To connect to the NETCONF server running in your
+vagrant, use the following credentials:
+
+- Hostname / IP: localhost
+- Port         : 830
+- Username     : vagrant
+- Password     : vagrant
 
 Usefull Vagrant commands
 ------------------------
