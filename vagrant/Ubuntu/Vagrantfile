@@ -1,0 +1,124 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+$tools = <<SCRIPT
+apt-get update
+apt-get upgrade
+apt-get install -y git cmake clang
+apt-get install -y libpcre3-dev python3-dev swig
+apt-get install -y libssl-dev
+apt-get install -y protobuf-c-compiler libavl-dev libev-dev
+apt-get install -y python3-pip python3-flask npm nodejs-legacy
+# get the newer version, npm in 16.04 is too old
+npm install -g n
+n stable
+ln -fs /usr/local/bin/node /usr/bin/node
+ln -fs /usr/local/bin/npm /usr/bin/npm
+ln -fs /usr/local/bin/npx /usr/bin/npx
+SCRIPT
+
+$libyang = <<SCRIPT
+rm -rf libyang
+git clone -b devel https://github.com/CESNET/libyang.git
+cd libyang; mkdir build; cd build
+cmake -DGEN_LANGUAGE_BINDINGS=ON .. && make && make install
+cd ../..
+ldconfig
+SCRIPT
+
+$libssh = <<SCRIPT
+rm -rf libssh-0.7.5*
+wget https://git.libssh.org/projects/libssh.git/snapshot/libssh-0.7.5.tar.gz
+tar -xzf libssh-0.7.5.tar.gz
+mkdir libssh-0.7.5/build && cd libssh-0.7.5/build
+cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr .. && make -j2 && sudo make install
+cd ../..
+SCRIPT
+
+$libnetconf2 = <<SCRIPT
+rm -rf libnetconf2
+git clone -b devel https://github.com/CESNET/libnetconf2.git
+cd libnetconf2; mkdir build; cd build
+cmake -DENABLE_PYTHON=ON .. && make && make install
+cd ../..
+ldconfig
+SCRIPT
+
+$sysrepo = <<SCRIPT
+rm -rf sysrepo
+git clone -b devel https://github.com/sysrepo/sysrepo.git
+cd sysrepo; mkdir build; cd build
+cmake -DGEN_LANGUAGE_BINDINGS=OFF .. && make && make install
+cd ../..
+ldconfig
+SCRIPT
+
+$netopeer = <<SCRIPT
+rm -rf Netopeer2
+git clone -b devel-server https://github.com/CESNET/Netopeer2.git
+cd Netopeer2/keystored; mkdir build; cd build
+cmake .. && make && make install
+cd ../../server; mkdir build; cd build
+cmake .. && make && make install
+cd ../../..
+SCRIPT
+
+$liberoutergui = <<SCRIPT
+rm -rf liberouter-gui
+git clone https://github.com/CESNET/liberouter-gui.git
+ln -s /home/ubuntu/Netopeer2GUI liberouter-gui/modules/netopeer
+cd liberouter-gui
+python3 ./bootstrap.py
+pip3 install -r backend/requirements.txt
+cd frontend
+npm install --unsafe-perm -g @angular/cli
+npm install --unsafe-perm
+cd ../..
+SCRIPT
+
+$backend = <<SCRIPT
+cd liberouter-gui
+python3 backend > backend.log 2>&1 &
+cd ..
+SCRIPT
+
+$frontend = <<SCRIPT
+cd liberouter-gui/frontend
+/usr/local/bin/ng serve --host 0.0.0.0 --proxy proxy.json > ../frontend.log 2>&1 &
+cd ../..
+SCRIPT
+
+$netconf = <<SCRIPT
+/usr/local/bin/sysrepod &
+/home/ubuntu/sysrepo/build/examples/application_example turing-machine &
+/usr/local/bin/netopeer2-server &
+SCRIPT
+
+Vagrant.configure("2") do |config|
+  config.vm.provider :virtualbox do |vb|
+    vb.customize ["modifyvm", :id, "--memory", "1024"]
+    vb.customize ["modifyvm", :id, "--cpus", "1"]
+    vb.customize ["modifyvm", :id, "--hwvirtex", "on"]
+    vb.customize ["modifyvm", :id, "--audio", "none"]
+    vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
+  end
+
+  config.vm.define "Netopeer2GUI" do |gui|
+    gui.vm.synced_folder "../../", "/home/ubuntu/Netopeer2GUI", create: true 
+    gui.vm.box = "ubuntu/xenial64"
+    gui.vm.network "forwarded_port", host: "4200", guest: "4200", auto_correct: true
+    gui.vm.network "forwarded_port", host: "830", guest: "830", auto_correct: true
+    gui.ssh.shell = "sh"
+
+    gui.vm.provision :shell, inline: $tools
+    gui.vm.provision :shell, inline: $libyang
+    gui.vm.provision :shell, inline: $libssh
+    gui.vm.provision :shell, inline: $libnetconf2
+    gui.vm.provision :shell, inline: $sysrepo
+    gui.vm.provision :shell, inline: $netopeer
+    gui.vm.provision :shell, inline: $liberoutergui
+    gui.vm.provision :shell, inline: $netconf, run: "always"
+    gui.vm.provision :shell, inline: $backend, run: "always"
+    gui.vm.provision :shell, inline: $frontend, run: "always"
+  end
+end

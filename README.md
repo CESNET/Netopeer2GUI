@@ -42,3 +42,9 @@ $ cmake -DENABLE_PYTHON=ON ..
 $ make
 # make install
 ```
+
+# Vagrant
+For fast and simple testing/development deployment, you can use the prepared
+Vagrantfiles for instantiating virtual machine. More information can be found
+[here](./vagrant/).
+
