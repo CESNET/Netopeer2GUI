@@ -10,12 +10,21 @@ import os
 import libyang as ly
 import netconf2 as nc
 
-def dataInfoNode(node, recursion=False):
+def dataInfoNode(node, parent=None, recursion=False):
 	schema = node.schema()
 	casted = node.subtype()
 
 	if node.dflt():
 		return None
+
+	if parent and schema.nodetype() == ly.LYS_LEAFLIST:
+		# find previous instance and just add value
+		for child in parent["children"]:
+			if child["info"]["name"] == schema.name():
+				child["value"].append(casted.value_str())
+				if not node.next():
+					child["last"] = True
+				return None
 
 	info = {}
 	info["type"] = schema.nodetype()
@@ -25,13 +34,15 @@ def dataInfoNode(node, recursion=False):
 	info["config"] = True if schema.flags() & ly.LYS_CONFIG_W else False
 
 	result = {}
-	if info["type"] == ly.LYS_LEAF or info["type"] == ly.LYS_LEAFLIST:
+	if info["type"] == ly.LYS_LEAF:
 		result["value"] = casted.value_str()
+	elif info["type"] == ly.LYS_LEAFLIST:
+		result["value"] = [casted.value_str()]
 	elif recursion:
 		result["children"] = []
 		if node.child():
 			for child in node.child().tree_for():
-				childNode = dataInfoNode(child, True)
+				childNode = dataInfoNode(child, result, True)
 				if not childNode:
 					continue
 				if not child.next():
@@ -55,7 +66,7 @@ def dataInfoSubtree(data, path, recursion=False):
 	result["children"] = []
 	if node.child():
 		for child in node.child().tree_for():
-			childNode = dataInfoNode(child, recursion)
+			childNode = dataInfoNode(child, result, recursion)
 			if not childNode:
 				continue
 			if not child.next():
@@ -66,13 +77,14 @@ def dataInfoSubtree(data, path, recursion=False):
 
 
 def dataInfoRoots(data, recursion=False):
-	result = []
+	top = {}
+	top["children"] = []
 	for root in data.tree_for():
-		rootNode = dataInfoNode(root, recursion)
+		rootNode = dataInfoNode(root, top, recursion)
 		if not rootNode:
 			continue
 		if not root.next():
 			rootNode["last"] = True
-		result.append(rootNode)
+		top["children"].append(rootNode)
 
-	return(json.dumps({'success': True, 'data': result}))
+	return(json.dumps({'success': True, 'data': top["children"]}))

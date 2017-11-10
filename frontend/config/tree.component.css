@@ -10,11 +10,12 @@
 .node:hover {
     background-color: #e1e1e1
 }
-.node div {
+.node > div {
     display: inline-block;
 }
 
-.status {
+.status,
+.node_info {
     color: grey;
 }
 
@@ -38,9 +39,14 @@
 
 .value {
     display: inline-block;
-    padding-left: 1.5em;
+    margin-left: 1.5em;
+}
+
+.value_standalone {
+    margin-left: 3em;
 }
 
 .indentation {
     height: 1.7em;
 }
+
