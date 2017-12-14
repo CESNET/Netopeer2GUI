@@ -6,14 +6,13 @@ Author: Radek Krejci <rkrejci@cesnet.cz>
 Backend initialization via liberouter GUI.
 """
 
-from liberouterapi import app, config
-from ..module import Module
+from liberouterapi import config, modules
 
 # Get Netopeer backend config
 config.load(path = __path__[0] + '/config.ini')
 
 # Register a blueprint
-module_bp = Module('netopeer', __name__, url_prefix = '/netopeer', no_version = True)
+module_bp = modules.module.Module('netopeer', __name__, url_prefix = '/netopeer', no_version = True)
 
 from .schemas import *
 from .devices import *
