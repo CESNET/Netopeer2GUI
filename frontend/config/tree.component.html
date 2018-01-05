@@ -14,7 +14,10 @@
                 <img class="icon" src="assets/netopeer/icons/info.svg"
                     onmouseover="this.src='assets/netopeer/icons/info_active.svg'"
                     onmouseout="this.src='assets/netopeer/icons/info.svg'" alt="info" title="{{node['info']['dsc']}}"/>
-                <ng-container *ngIf="node['info']['config']">
+                <ng-container *ngIf="node['info']['key']">
+                    <img class="icon_action" src="assets/netopeer/icons/key.svg" alt="key" title="list key"/>
+                </ng-container>
+                <ng-container *ngIf="node['info']['config'] && !node['info']['key']">
                     <img *ngIf="!node['edit']" (click)="node['edit']=true" class="icon_action" src="assets/netopeer/icons/edit.svg"
                         onmouseover="this.src='assets/netopeer/icons/edit_active.svg'"
                         onmouseout="this.src='assets/netopeer/icons/edit.svg'" alt="edit" title="edit value"/>
@@ -89,7 +92,12 @@
                         onmouseover="this.src='assets/netopeer/icons/collapse_active.svg'"
                         onmouseout="this.src='assets/netopeer/icons/collapse.svg'"/>
                 </ng-container>
-                <div>{{node['info']['name']}}</div>
+                <ng-container [ngSwitch]="node['info']['type']">
+                    <ng-container *ngSwitchCase="16">
+                        <div>{{node['info']['name']}}<span class="node_info">* [{{node['keys']}}]</span></div>
+                    </ng-container>
+                    <div *ngSwitchDefault>{{node['info']['name']}}</div>
+                </ng-container>
                 <div class="module_name">{{node['info']['module']}}</div>
             </div>
         </ng-container>

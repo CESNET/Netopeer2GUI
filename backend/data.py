@@ -48,6 +48,17 @@ def dataInfoNode(node, parent=None, recursion=False):
 				if not child.next():
 					childNode["last"] = True
 				result["children"].append(childNode)
+
+		if info["type"] == ly.LYS_LIST:
+			result["keys"] = []
+			index = 0
+			for key in schema.subtype().keys():
+				if len(result["children"]) <= index:
+					break
+				if key.subtype().name() == result["children"][index]["info"]["name"]:
+					result["keys"].append(result["children"][index]["value"])
+					result["children"][index]["info"]["key"] = True
+				index = index + 1
 	result["info"] = info
 	result["path"] = node.path()
 
