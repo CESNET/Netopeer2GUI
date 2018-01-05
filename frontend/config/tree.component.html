@@ -4,13 +4,13 @@
 
         <!-- leaf -->
         <ng-container *ngSwitchCase="4">
-            <div class="node">
+            <div #nodeContainer class="node">
                 <ng-container *ngFor="let indent of indentation">
-                    <img *ngIf="!indent" class="indentation" src="assets/netopeer/icons/tree_cont.svg"/>
-                    <img *ngIf="indent" class="indentation" src="assets/netopeer/icons/tree_empty.svg"/>
+                    <img *ngIf="!indent" [style.height.px]="nodeContainer.offsetHeight" class="indentation" src="assets/netopeer/icons/tree_cont.svg"/>
+                    <img *ngIf="indent" [style.height.px]="nodeContainer.offsetHeight" class="indentation" src="assets/netopeer/icons/tree_empty.svg"/>
                 </ng-container>
-                <img *ngIf="node['last']" class="indentation" src="assets/netopeer/icons/tree_last_branch.svg"/>
-                <img *ngIf="!node['last']" class="indentation" src="assets/netopeer/icons/tree_branch.svg"/>
+                <img *ngIf="node['last']" [style.height.px]="nodeContainer.offsetHeight" class="indentation" src="assets/netopeer/icons/tree_last_branch.svg"/>
+                <img *ngIf="!node['last']" [style.height.px]="nodeContainer.offsetHeight" class="indentation" src="assets/netopeer/icons/tree_branch.svg"/>
                 <img class="icon" src="assets/netopeer/icons/info.svg"
                     onmouseover="this.src='assets/netopeer/icons/info_active.svg'"
                     onmouseout="this.src='assets/netopeer/icons/info.svg'" alt="info" title="{{node['info']['dsc']}}"/>
@@ -29,52 +29,52 @@
                 <div class="value" *ngIf="!node['edit']">{{node['value']}}</div>
                 <div class="module_name">{{node['info']['module']}}</div>
             </div>
-            <div class="node" *ngIf="node['edit']">
+            <div #nodeContainer class="node" *ngIf="node['edit']">
                 <ng-container *ngFor="let indent of indentation">
-                    <img *ngIf="!indent" class="indentation" src="assets/netopeer/icons/tree_cont.svg"/>
-                    <img *ngIf="indent" class="indentation" src="assets/netopeer/icons/tree_empty.svg"/>
+                    <img *ngIf="!indent" [style.height.px]="nodeContainer.offsetHeight" class="indentation" src="assets/netopeer/icons/tree_cont.svg"/>
+                    <img *ngIf="indent" [style.height.px]="nodeContainer.offsetHeight" class="indentation" src="assets/netopeer/icons/tree_empty.svg"/>
                 </ng-container>
-                <img *ngIf="node['last']" class="indentation" src="assets/netopeer/icons/tree_empty.svg"/>
-                <img *ngIf="!node['last']" class="indentation" src="assets/netopeer/icons/tree_cont.svg"/>
+                <img *ngIf="node['last']" [style.height.px]="nodeContainer.offsetHeight" class="indentation" src="assets/netopeer/icons/tree_empty.svg"/>
+                <img *ngIf="!node['last']" [style.height.px]="nodeContainer.offsetHeight" class="indentation" src="assets/netopeer/icons/tree_cont.svg"/>
                 <div class="value_standalone">{{node['value']}}</div>
             </div>
         </ng-container>
 
         <!-- leaflist -->
         <ng-container *ngSwitchCase="8">
-            <div class="node">
+            <div #nodeContainer class="node">
                 <ng-container *ngFor="let indent of indentation">
-                    <img *ngIf="!indent" class="indentation" src="assets/netopeer/icons/tree_cont.svg"/>
-                    <img *ngIf="indent" class="indentation" src="assets/netopeer/icons/tree_empty.svg"/>
+                    <img *ngIf="!indent" [style.height.px]="nodeContainer.offsetHeight" class="indentation" src="assets/netopeer/icons/tree_cont.svg"/>
+                    <img *ngIf="indent" [style.height.px]="nodeContainer.offsetHeight" class="indentation" src="assets/netopeer/icons/tree_empty.svg"/>
                 </ng-container>
-                <img *ngIf="node['last']" class="indentation" src="assets/netopeer/icons/tree_last_branch.svg"/>
-                <img *ngIf="!node['last']" class="indentation" src="assets/netopeer/icons/tree_branch.svg"/>
+                <img *ngIf="node['last']" [style.height.px]="nodeContainer.offsetHeight" class="indentation" src="assets/netopeer/icons/tree_last_branch.svg"/>
+                <img *ngIf="!node['last']" [style.height.px]="nodeContainer.offsetHeight" class="indentation" src="assets/netopeer/icons/tree_branch.svg"/>
                 <img class="icon" src="assets/netopeer/icons/info.svg"
                     onmouseover="this.src='assets/netopeer/icons/info_active.svg'"
                     onmouseout="this.src='assets/netopeer/icons/info.svg'" alt="info" title="{{node['info']['dsc']}}"/>
                 <div>{{node['info']['name']}}</div> :
                 <div class="module_name">{{node['info']['module']}}</div>
             </div>
-            <div class="node" *ngFor="let value of node['value']">
+            <div #nodeContainer class="node" *ngFor="let value of node['value']">
                 <ng-container *ngFor="let indent of indentation">
-                    <img *ngIf="!indent" class="indentation" src="assets/netopeer/icons/tree_cont.svg"/>
-                    <img *ngIf="indent" class="indentation" src="assets/netopeer/icons/tree_empty.svg"/>
+                    <img *ngIf="!indent" [style.height.px]="nodeContainer.offsetHeight" class="indentation" src="assets/netopeer/icons/tree_cont.svg"/>
+                    <img *ngIf="indent" [style.height.px]="nodeContainer.offsetHeight" class="indentation" src="assets/netopeer/icons/tree_empty.svg"/>
                 </ng-container>
-                <img *ngIf="node['last']" class="indentation" src="assets/netopeer/icons/tree_empty.svg"/>
-                <img *ngIf="!node['last']" class="indentation" src="assets/netopeer/icons/tree_cont.svg"/>
+                <img *ngIf="node['last']" [style.height.px]="nodeContainer.offsetHeight" class="indentation" src="assets/netopeer/icons/tree_empty.svg"/>
+                <img *ngIf="!node['last']" [style.height.px]="nodeContainer.offsetHeight" class="indentation" src="assets/netopeer/icons/tree_cont.svg"/>
                 <div class="value_standalone">{{value}}</div>
             </div>
         </ng-container>
 
         <!-- rest -->
         <ng-container *ngSwitchDefault>
-            <div class="node">
+            <div #nodeContainer class="node">
                 <ng-container *ngFor="let indent of indentation">
-                    <img *ngIf="!indent" class="indentation" src="assets/netopeer/icons/tree_cont.svg"/>
-                    <img *ngIf="indent" class="indentation" src="assets/netopeer/icons/tree_empty.svg"/>
+                    <img *ngIf="!indent" [style.height.px]="nodeContainer.offsetHeight" class="indentation" src="assets/netopeer/icons/tree_cont.svg"/>
+                    <img *ngIf="indent" [style.height.px]="nodeContainer.offsetHeight" class="indentation" src="assets/netopeer/icons/tree_empty.svg"/>
                 </ng-container>
-                <img *ngIf="node['last']" class="indentation" src="assets/netopeer/icons/tree_last_branch.svg"/>
-                <img *ngIf="!node['last']" class="indentation" src="assets/netopeer/icons/tree_branch.svg"/>
+                <img *ngIf="node['last']" [style.height.px]="nodeContainer.offsetHeight" class="indentation" src="assets/netopeer/icons/tree_last_branch.svg"/>
+                <img *ngIf="!node['last']" [style.height.px]="nodeContainer.offsetHeight" class="indentation" src="assets/netopeer/icons/tree_branch.svg"/>
                 <img class="icon" src="assets/netopeer/icons/info.svg"
                     onmouseover="this.src='assets/netopeer/icons/info_active.svg'"
                     onmouseout="this.src='assets/netopeer/icons/info.svg'" alt="info" title="{{node['info']['dsc']}}"/>

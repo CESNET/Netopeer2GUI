@@ -6,6 +6,7 @@
 
 .node {
     width: 100%;
+    overflow: hidden;
 }
 .node:hover {
     background-color: #e1e1e1
@@ -31,6 +32,9 @@
 
 .module_name {
     float: right;
+    text-align: right;
+    max-width: 10em;
+    word-wrap: break-word;
 }
 
 .children {
@@ -44,9 +48,15 @@
 
 .value_standalone {
     margin-left: 3em;
+    width: calc(100% - 13em);
+}
+
+.value,
+.value_standalone {
+    word-wrap: break-word;
 }
 
 .indentation {
-    height: 1.7em;
+    width: 1.7em;
 }
 

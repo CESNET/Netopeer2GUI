@@ -12,7 +12,7 @@ nav a {
 
 nav a:visited,
 nav a:link {
-	color: inherit;
+	color: #FAFAFA;
 }
 
 nav a:hover,
@@ -121,7 +121,6 @@ form select {
 form input.invalid,
 form select.invalid {
     border-left: 5px solid red;
-//    width: 5em;
 }
 
 .input_switch {
