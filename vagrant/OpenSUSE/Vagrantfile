@@ -62,6 +62,7 @@ rm -rf liberouter-gui
 git clone https://github.com/CESNET/liberouter-gui.git
 ln -s /home/vagrant/Netopeer2GUI liberouter-gui/modules/netopeer
 cd liberouter-gui
+cp -f modules/netopeer/app.config.json modules/
 python3 ./bootstrap.py
 pip3 install -r backend/requirements.txt
 cd frontend

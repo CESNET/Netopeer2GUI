@@ -1,0 +1,10 @@
+{
+  "logo" : "assets/netopeer/logo.png",
+  "name" : "Netopeer",
+  "api" : {
+    "url" : "/libapi",
+    "host" : null,
+    "port" : null,
+    "proto" : null
+  }
+}
