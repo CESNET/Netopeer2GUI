@@ -55,7 +55,8 @@ def connect():
 
 	# use key (as hostname:port:session-id) to store the created NETCONF session
 	key = session.host + ":" + str(session.port) + ":" + session.id
-	sessions[user.username][key] = session
+	sessions[user.username][key] = {}
+	sessions[user.username][key]['session'] = session
 
 	return(json.dumps({'success': True, 'session-key': key}))
 
@@ -77,7 +78,7 @@ def session_get_capabilities():
 		return(json.dumps({'success': False, 'error-msg': 'Invalid session key.'}))
 
 	cpblts = []
-	for c in sessions[user.username][key].capabilities:
+	for c in sessions[user.username][key]['session'].capabilities:
 		cpblts.append(c)
 
 	return(json.dumps({'success': True, 'capabilities': cpblts}))
@@ -100,9 +101,8 @@ def session_get():
 	if not key in sessions[user.username]:
 		return(json.dumps({'success': False, 'error-msg': 'Invalid session key.'}))
 
-	session = sessions[user.username][key]
 	try:
-		data = session.rpcGet()
+		sessions[user.username][key]['data'] = sessions[user.username][key]['session'].rpcGet()
 	except nc.ReplyError as e:
 		reply = {'success': False, 'error': []}
 		for err in e.args[0]:
@@ -110,9 +110,42 @@ def session_get():
 		return(json.dumps(reply))
 
 	if not 'path' in req:
-		return(dataInfoRoots(data, True if req['recursive'] == 'true' else False))
+		return(dataInfoRoots(sessions[user.username][key]['data'], True if req['recursive'] == 'true' else False))
 	else:
-		return(dataInfoSubtree(data, req['path'], True if req['recursive'] == 'true' else False))
+		return(dataInfoSubtree(sessions[user.username][key]['data'], req['path'], True if req['recursive'] == 'true' else False))
+
+
+@auth.required()
+def session_checkvalue():
+	session = auth.lookup(request.headers.get('Authorization', None))
+	user = session['user']
+	req = request.args.to_dict()
+
+	if not 'key' in req:
+		return(json.dumps({'success': False, 'error-msg': 'Missing session key.'}))
+	if not 'path' in req:
+		return(json.dumps({'success': False, 'error-msg': 'Missing path to validate value.'}))
+	if not 'value' in req:
+		return(json.dumps({'success': False, 'error-msg': 'Missing value to validate.'}))
+
+	if not user.username in sessions:
+		sessions[user.username] = {}
+
+	key = req['key']
+	if not key in sessions[user.username]:
+		return(json.dumps({'success': False, 'error-msg': 'Invalid session key.'}))
+
+	search = sessions[user.username][key]['data'].find_path(req['path'])
+	if search.number() != 1:
+		return(json.dumps({'success': False, 'error-msg': 'Invalid data path.'}))
+	node = search.data()[0]
+
+	try:
+		node.validate_value(req['value'])
+	except:
+		return(json.dumps({'success': False, 'error-msg': ly.Error().errmsg()}))
+
+	return(json.dumps({'success': True}))
 
 
 @auth.required()

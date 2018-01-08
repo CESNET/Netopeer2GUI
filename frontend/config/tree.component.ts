@@ -36,6 +36,19 @@ export class TreeView implements OnInit {
         }
     }
 
+    checkValue(node, target) {
+        let confirm = target.previousElementSibling;
+        this.sessionsService.checkValue(this.activeSession.key, node['path'], target.value).subscribe(result => {
+            if (result['success']) {
+                target.classList.remove("invalid");
+                confirm.style.visibility = "visible";
+            } else {
+                target.classList.add("invalid");
+                confirm.style.visibility = "hidden";
+            }
+        });
+    }
+
     expandable(node): boolean {
         if (node['info']['type'] == 1 || /* container */
             node['info']['type'] == 16) { /* list */

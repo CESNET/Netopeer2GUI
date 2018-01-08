@@ -8,9 +8,33 @@
     width: 100%;
     overflow: hidden;
 }
-.node:hover {
+.node:hover,
+.node_edit:hover {
     background-color: #e1e1e1
 }
+
+.node_edit {
+	display: table;
+	width: 100%;
+    overflow: hidden;
+}
+.node_edit img,
+.node_edit input {
+	display: inline-table;
+	margin-right: 0.25em;
+}
+.node_edit input {
+	height: 2em;
+    padding-left: 0.3em;
+    background-color: #def2de;
+}
+.node_edit input.invalid {
+    background-color: #f2dede;
+}
+.node_edit .indentation {
+	height:2.1em;
+}
+
 .node > div {
     display: inline-block;
 }
@@ -30,6 +54,10 @@
     cursor: pointer;
 }
 
+.icon_hidden {
+	visibility: hidden;
+}
+
 .module_name {
     float: right;
     text-align: right;
@@ -44,11 +72,6 @@
 .value {
     display: inline-block;
     margin-left: 1.5em;
-}
-
-.value_standalone {
-    margin-left: 3em;
-    width: calc(100% - 13em);
 }
 
 .value,

@@ -77,6 +77,17 @@ export class SessionsService{
         }
     }
 
+    checkValue(key: string, path: string, value: string): Observable<string[]> {
+        let params = new URLSearchParams();
+        params.set('key', key);
+        params.set('path', path);
+        params.set('value', value);
+        let options = new RequestOptions({ search: params });
+        return this.http.get('/netopeer/session/element/checkvalue', options)
+            .map((resp: Response) => resp.json())
+            .catch((err: Response | any) => Observable.throw(err));
+    }
+
     alive(key: string): Observable<string[]> {
         let params = new URLSearchParams();
         params.set('key', key);
