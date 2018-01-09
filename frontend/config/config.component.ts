@@ -15,7 +15,6 @@ export class ConfigComponent implements OnInit {
     activeSession: Session;
     err_msg = "";
 
-    objectKeys = Object.keys;
     constructor(private sessionsService: SessionsService, private router: Router) {}
 
     addSession() {
@@ -155,7 +154,47 @@ export class ConfigComponent implements OnInit {
             this.sessionsService.storeData();
         });
     }
+    
+    cancelChangesNode(node, recursion = true) {
+        
+        if (node['path'] in this.activeSession.modifications) {
+            node['dirty'] = false;
+            if (this.activeSession.modifications[node['path']]['type'] == 'change') {
+                node['value'] = this.activeSession.modifications[node['path']]['original'];
+            }
+            delete this.activeSession.modifications[node['path']]; 
+            if (!Object.keys(this.activeSession.modifications).length) {
+                delete this.activeSession.modifications;
+                return;
+            }
+        }
 
+        /* recursion */
+        if (recursion && 'children' in node) {
+            for (let child of node['children']) {
+                this.cancelChangesNode(child);
+                if (!this.activeSession.modifications) {
+                    return;
+                }
+            }
+        }
+    }
+    
+    cancelChanges() {
+        for (let iter of this.activeSession.data) {
+            this.cancelChangesNode(iter);
+            if (!this.activeSession.modifications) {
+                break;
+            }
+        }
+        this.sessionsService.storeData();
+    }
+
+    applyChanges() {
+        /* TODO */
+        this.cancelChanges();
+    }
+    
     ngOnInit(): void {
         this.sessionsService.checkSessions();
         this.activeSession = this.sessionsService.getActiveSession();

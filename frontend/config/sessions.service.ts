@@ -106,6 +106,27 @@ export class SessionsService{
             .catch((err: Response | any) => Observable.throw(err));
     }
 
+    setDirty(node) {
+        let activeSession = this.getActiveSession();
+        if (!activeSession.modifications) {
+            return;
+        }
+        
+        if (node['path'] in activeSession.modifications) {
+            node['dirty'] = true;
+            if (activeSession.modifications[node['path']]['type'] == 'change') {
+                activeSession.modifications[node['path']]['original'] = node['value'];
+            }
+            node['value'] = activeSession.modifications[node['path']]['value']; 
+        }
+        /* recursion */
+        if ('children' in node) {
+            for (let child of node['children']) {
+                this.setDirty(child);
+            }
+        }
+    }
+    
     rpcGetSubtree(key: string, all: boolean, path: string = ""): Observable<string[]> {
         let params = new URLSearchParams();
         params.set('key', key);
@@ -115,7 +136,22 @@ export class SessionsService{
         }
         let options = new RequestOptions({ search: params });
         return this.http.get('/netopeer/session/rpcGet', options)
-            .map((resp: Response) => resp.json())
+            .map((resp: Response) => {
+                let result = resp.json();
+                //console.log(result);
+                if (result['success']) {
+                    if (path.length) {
+                        for (let iter of result['data']['children']) {
+                            this.setDirty(iter);
+                        }
+                    } else {
+                        for (let iter of result['data']) {
+                            this.setDirty(iter);
+                        }
+                    }
+                }
+                return result;
+            })
             .catch((err: Response | any) => Observable.throw(err));
     }
 

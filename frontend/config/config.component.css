@@ -93,3 +93,15 @@
 .item_action_expand:hover {
     color:green;
 }
+
+.modifications-status {
+	position: fixed;
+	bottom: 2em;
+	right: 2em;
+	background-color: #fafad2;
+	border: 2px solid #e4e4a4;
+}
+.modifications-status-place {
+	margin-bottom: 2em;
+	margin-right: 2em;
+}

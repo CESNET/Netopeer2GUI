@@ -5,6 +5,7 @@ export class Session {
     public key: string,
     public device: Device,
     public data = null,
+    public modifications = null,
     public cpblts: string = "",
     public dataVisibility: string = 'none',
     public statusVisibility: boolean = true,

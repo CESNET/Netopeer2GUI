@@ -4,7 +4,7 @@
 
         <!-- leaf -->
         <ng-container *ngSwitchCase="4">
-            <div #nodeContainer class="node">
+            <div #nodeContainer class="node" [class.dirty]="node['dirty']">
                 <ng-container *ngFor="let indent of indentation">
                     <img *ngIf="!indent" [style.height.px]="nodeContainer.offsetHeight" class="indentation" src="assets/netopeer/icons/tree_cont.svg"/>
                     <img *ngIf="indent" [style.height.px]="nodeContainer.offsetHeight" class="indentation" src="assets/netopeer/icons/tree_empty.svg"/>
@@ -18,32 +18,38 @@
                     <img class="icon" src="assets/netopeer/icons/key.svg" alt="key" title="list key"/>
                 </ng-container>
                 <ng-container *ngIf="node['info']['config'] && !node['info']['key']">
-                    <img *ngIf="!node['edit']" (click)="node['edit']=true" class="icon_action" src="assets/netopeer/icons/edit.svg"
+                    <img *ngIf="!node['edit']" class="icon_action" src="assets/netopeer/icons/edit.svg"
+                    	alt="edit" title="edit value" tabindex=0
+                    	(click)="startEditing(node, $event.target);" (keyup.enter)="startEditing(node, $event.target);" 
                         onmouseover="this.src='assets/netopeer/icons/edit_active.svg'"
-                        onmouseout="this.src='assets/netopeer/icons/edit.svg'" alt="edit" title="edit value"/>
+                        onmouseout="this.src='assets/netopeer/icons/edit.svg'"/>
                     <img *ngIf="node['edit']" class="icon" src="assets/netopeer/icons/edit.svg" alt="edit" title="editing value"/>
                 </ng-container>
                 <div>{{node['info']['name']}}</div> :
-                <div class="value" *ngIf="!node['edit']">{{node['value']}}</div>
+                <div class="value" *ngIf="!node['edit']" (click)="startEditing(node, $event.target);">{{node['value']}}</div>
                 <div class="value" *ngIf="node['edit']">{{node['info']['datatype']}} <span *ngIf="node['info']['datatype'] != node['info']['datatypebase']">({{node['info']['datatypebase']}})</span></div>
                 <div class="module_name">{{node['info']['module']}}</div>
             </div>
-            <div #nodeContainer class="node_edit" *ngIf="node['edit']">
+            <div #nodeContainer class="node_edit" [class.dirty]="node['dirty']" *ngIf="node['edit']">
                 <ng-container *ngFor="let indent of indentation">
                     <img *ngIf="!indent" class="indentation" src="assets/netopeer/icons/tree_cont.svg"/>
                     <img *ngIf="indent" class="indentation" src="assets/netopeer/icons/tree_empty.svg"/>
                 </ng-container>
                 <img *ngIf="node['last']" class="indentation" src="assets/netopeer/icons/tree_empty.svg"/>
                 <img *ngIf="!node['last']" class="indentation" src="assets/netopeer/icons/tree_cont.svg"/>
-                <img *ngIf="node['edit']" (click)="node['edit']=false" class="icon_action" src="assets/netopeer/icons/close.svg"
+                <img *ngIf="node['edit']" class="icon_action" src="assets/netopeer/icons/close.svg"
+                	alt="cancel" title="cancel editing" tabindex=0
+                	(click)="node['edit']=false" (keyup.enter)="node['edit']=false"
                     onmouseover="this.src='assets/netopeer/icons/close_active.svg'"
-                    onmouseout="this.src='assets/netopeer/icons/close.svg'" alt="cancel" title="cancel editing"/>
-                <img *ngIf="node['edit']" (click)="node['edit']=false" class="icon_action icon_hidden" src="assets/netopeer/icons/confirm.svg"
-                    id="{{node['path']}}_value_confirm"
+                    onmouseout="this.src='assets/netopeer/icons/close.svg'" />
+                <img *ngIf="node['edit']" class="icon_action icon_hidden" src="assets/netopeer/icons/confirm.svg"
+                    id="{{node['path']}}_value_confirm" alt="done" title="store changes" tabindex=0
+                    (click)="changeValue(node, $event.target)" (keyup.enter)="changeValue(node, $event.target)" 
                     onmouseover="this.src='assets/netopeer/icons/confirm_active.svg'"
-                    onmouseout="this.src='assets/netopeer/icons/confirm.svg'" alt="done" title="store changes" />
-                <input type="text" class="value_standalone" value="{{node['value']}}"
-                       (keyup)="checkValue(node, $event.target)" (change)="checkValue(node, $event.target)"/>
+                    onmouseout="this.src='assets/netopeer/icons/confirm.svg'"/>
+                <input type="text" class="value" value="{{node['value']}}" tabindex=0
+                    (keyup)="checkValue(node, $event.target)" (change)="checkValue(node, $event.target)"
+                    (keyup.enter)="changeValue(node, $event.target)" (keyup.escape)="node['edit']=false"/>
             </div>
         </ng-container>
 

@@ -39,6 +39,10 @@
     display: inline-block;
 }
 
+.dirty {
+	background-color: #fafad2;
+}
+
 .status,
 .node_info {
     color: grey;
@@ -74,8 +78,7 @@
     margin-left: 1.5em;
 }
 
-.value,
-.value_standalone {
+.value {
     word-wrap: break-word;
 }
 

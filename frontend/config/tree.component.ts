@@ -1,4 +1,4 @@
-import {Component, Input, OnInit} from '@angular/core';
+import {Component, Input, OnInit, ChangeDetectorRef} from '@angular/core';
 
 import {Session} from './session';
 import {SessionsService} from './sessions.service';
@@ -14,11 +14,10 @@ export class TreeView implements OnInit {
     @Input() indentation;
     c = 1; i = 1;
     activeSession: Session;
-    objectKeys = Object.keys;
-    constructor(private sessionsService: SessionsService) {}
+    constructor(private sessionsService: SessionsService, private changeDetector: ChangeDetectorRef) {}
 
     ngOnInit(): void {
-        this.activeSession = this.sessionsService.getActiveSession(this.sessionsService.activeSession);
+        this.activeSession = this.sessionsService.getActiveSession();
     }
 
     inheritIndentation(node) {
@@ -36,6 +35,15 @@ export class TreeView implements OnInit {
         }
     }
 
+    startEditing(node, target) {        
+        let parent = target.parentElement;
+
+        node['edit'] = true;
+        this.changeDetector.detectChanges();
+
+        parent.nextElementSibling.lastElementChild.focus();        
+    }
+    
     checkValue(node, target) {
         let confirm = target.previousElementSibling;
         this.sessionsService.checkValue(this.activeSession.key, node['path'], target.value).subscribe(result => {
@@ -47,6 +55,52 @@ export class TreeView implements OnInit {
                 confirm.style.visibility = "hidden";
             }
         });
+    }
+    
+    changeValue(node, target) {
+        let input;
+        if (target.classList.contains('value')) {
+            if (target.classList.contains('invalid')) {
+                return;
+            }
+            input = target;            
+        } else {
+            input = target.nextElementSibling;
+        }
+
+        if (!this.activeSession.modifications) {
+            this.activeSession.modifications = {};
+        }
+        if (!(node['path'] in this.activeSession.modifications)) {
+            /* new record */
+            if (node['value'] == input['value']) {
+                /* no change to the original value */
+                return;
+            }
+            this.activeSession.modifications[node['path']] = {};
+            this.activeSession.modifications[node['path']]['type'] = 'change';
+            this.activeSession.modifications[node['path']]['original'] = node['value'];
+            this.activeSession.modifications[node['path']]['value'] = input.value;  
+            node['dirty'] = true;          
+        } else if (this.activeSession.modifications[node['path']]['type'] == 'change' &&
+                   this.activeSession.modifications[node['path']]['original'] == input['value']) {
+            /* change to the original value, remove the change record */
+            delete this.activeSession.modifications[node['path']];
+            node['dirty'] = false;
+            
+            if (!Object.keys(this.activeSession.modifications).length) {
+                delete this.activeSession.modifications;
+            }
+        } else {
+            /* another change of existing change record */
+            this.activeSession.modifications[node['path']]['value'] = input.value;
+            node['dirty'] = true;
+        }
+        console.log('Modifications list: ' + this.activeSession.modifications);
+        
+        node['value'] = input.value;
+        node['edit'] = false;
+        this.sessionsService.storeData();
     }
 
     expandable(node): boolean {
@@ -79,7 +133,7 @@ export class TreeView implements OnInit {
         }
         return node['hasHiddenChild'];
     }
-
+    
     collapse(node) {
         delete node['children'];
         this.activeSession.dataVisibility = 'mixed';

@@ -70,6 +70,14 @@
         <tree-view [treeData]="activeSession.data"></tree-view>
         <!--<pre>{{activeSession.data | json}}</pre>-->
     </div>
+	<div #modificationsStatus *ngIf="activeSession.modifications" class="modifications-status-place">&nbsp;
+		<div *ngIf="activeSession.modifications" class="modifications-status msg-rounded" [style.width.px]="modificationsStatus.offsetWidth">
+		Configuration data were changed. Do you wish to
+		<button (click)="applyChanges()">apply</button> /
+		<button (click)="cancelChanges()">cancel</button>
+		all changes?
+		</div>
+	</div>
     </ng-container>
 </div>
 
