@@ -102,7 +102,7 @@ Vagrant.configure("2") do |config|
     gui.vm.synced_folder "../../", "/home/vagrant/Netopeer2GUI", create: true 
     gui.vm.box = "opensuse/openSUSE-Tumbleweed-x86_64"
     gui.vm.network "forwarded_port", host: "4200", guest: "4200", auto_correct: true
-    gui.vm.network "forwarded_port", host: "830", guest: "830", auto_correct: true
+    gui.vm.network "forwarded_port", host: "8830", host_ip: "127.0.0.1", guest: "830", auto_correct: true
     gui.ssh.shell = "sh"
 
     gui.vm.provision :shell, inline: $tools
