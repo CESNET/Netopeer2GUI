@@ -6,7 +6,7 @@ import {SessionsService} from './sessions.service';
 @Component({
     selector: 'tree-view',
     templateUrl: './tree.component.html',
-    styleUrls: ['../netopeer.css', './tree.component.css']
+    styleUrls: ['./tree.component.scss']
 })
 
 export class TreeView implements OnInit {

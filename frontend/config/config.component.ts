@@ -7,7 +7,7 @@ import {Session} from './session';
 @Component({
     selector: 'netopeer-config',
     templateUrl: './config.component.html',
-    styleUrls: ['../netopeer.css', './config.component.css', './tree.component.css', '../inventory/inventory.component.css']
+    styleUrls: ['./config.component.scss']
 })
 
 export class ConfigComponent implements OnInit {

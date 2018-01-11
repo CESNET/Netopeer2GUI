@@ -3,7 +3,7 @@ import { Component } from '@angular/core';
 @Component({
   selector : 'netopeer-dashboard',
   templateUrl : './dashboard.component.html',
-  styleUrls : ['./netopeer.css']
+  styleUrls : ['./netopeer.scss']
 })
 
 export class DashboardComponent { }

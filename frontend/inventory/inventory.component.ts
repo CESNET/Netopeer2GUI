@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 @Component({
   selector : 'netopeer-inventory',
   templateUrl : './inventory.component.html',
-  styleUrls : ['./inventory.component.css']
+  styleUrls : ['./inventory.component.scss']
 })
 
 export class InventoryComponent implements OnInit {

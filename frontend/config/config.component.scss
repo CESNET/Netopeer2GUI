@@ -1,3 +1,7 @@
+@import '../netopeer-common';
+@import '../inventory/inventory.component';
+@import './tree.component';
+
 .tab-add,
 .tab-reload,
 .tab-close {
@@ -20,11 +24,12 @@
 
 .tab-add {
     filter: invert(100%);
+    
+    &:hover {
+    	color: green;
+    }
 }
 
-.tab-add:hover {
-    color: green;
-}
 .tab-close:hover {
     color: red;
 }
@@ -37,44 +42,27 @@
     width: 100%;
 	background-color: #3B4257;
 	padding-left: 1em;
-}
-
-#confignav a {
-    cursor: pointer;
-	text-decoration: none;
-	display: inline-block;
-	padding: 0.2em 0em 0.1em 1em;
-	color: #FAFAFA;
-}
-
-#confignav a:visited,
-#confignav a:link {
-	color: inherited;
-}
-
-#confignav a:hover,
-#confignav a.active {
-	background-color: #FAFAFA;
-	color: #000;
-}
-
-#confignav a.active:hover {
-	cursor: default;	
-}
-
-#config-toc {
-    position: fixed;
-    width: 10em;
-    border-right: 1px solid #313747;
-}
-
-.config-toc-item {
-    cursor: pointer;
-    padding: 0em 0em 0.2em 0.5em;
-}
-.config-toc-item:hover {
-	background-color: #3B4257;
-    color: #FFF;
+	
+	a {
+    	cursor: pointer;
+		text-decoration: none;
+		display: inline-block;
+		padding: 0.2em 0em 0.1em 1em;
+		color: #FAFAFA;
+		
+		&:visited,
+		&:link {
+			color: inherited;
+		}
+		&:hover,
+		&.active {
+			background-color: #FAFAFA;
+			color: #000;
+		}
+		&active:hover {
+			cursor: default;
+		}
+	}
 }
 
 #config-data {
@@ -95,13 +83,16 @@
 }
 
 .modifications-status {
-	position: fixed;
-	bottom: 2em;
-	right: 2em;
-	background-color: #fafad2;
-	border: 2px solid #e4e4a4;
-}
-.modifications-status-place {
 	margin-bottom: 2em;
 	margin-right: 2em;
+	padding: 0.5em 1em;
+	
+	div {
+		position: fixed;
+		bottom: 2em;
+		right: 2em;
+		background-color: #fafad2;
+		border: 2px solid #e4e4a4;
+		padding: 0.5em 1em;
+	}
 }

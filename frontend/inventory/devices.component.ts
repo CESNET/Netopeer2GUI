@@ -11,7 +11,7 @@ import {SessionsService} from '../config/sessions.service'
 @Component({
     selector: 'inventoryDevices',
     templateUrl: './devices.component.html',
-    styleUrls: ['../netopeer.css', './inventory.component.css'],
+    styleUrls: ['./inventory.component.scss'],
     providers: [DevicesService]
 })
 

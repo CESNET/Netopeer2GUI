@@ -1,0 +1,51 @@
+$colorSuccess: #def2de;
+$colorSuccessBorder: green;
+$colorFailure: #f2dede;
+$colorFailureBorder: red;
+
+a:not([href]) {
+    cursor: pointer;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.netopeer-content {
+	display: block;
+	padding: 0.7em 1em 1em 2em;
+	background-color: #FAFAFA;
+	color: #000;
+}
+
+.msg-rounded {
+    border-radius: 5px;
+}
+
+.msg-close {
+    padding-right: 10px;
+    padding-left: 10px;
+    font-weight: bold;
+    font-family: monospace;
+    font-size: large;
+	cursor: pointer;
+    height: 1em;
+}
+
+.msg-success {
+    background-color: $colorSuccess;
+	color: green;
+	padding: 5px 1em 5px 0em;
+	
+	.msg-close {
+    	color: $colorSuccessBorder;
+	}
+}
+
+.msg-failure {
+    background-color: $colorFailure;
+    color: red;
+	padding: 5px 1em 5px 0em;
+
+	.msg-close {
+    	color: $colorFailureBorder;
+	}
+}
