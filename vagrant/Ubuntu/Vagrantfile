@@ -4,6 +4,7 @@
 $tools = <<SCRIPT
 apt-get update
 apt-get upgrade
+apt-get install -y pkg-config
 apt-get install -y git cmake clang
 apt-get install -y libpcre3-dev python3-dev swig
 apt-get install -y libssl-dev
@@ -61,12 +62,13 @@ cmake .. && make && make install
 cd ../../server; mkdir build; cd build
 cmake .. && make && make install
 cd ../../..
+useradd -p fYNPZFGfqq2rw vagrant 2>/dev/null
 chown -R vagrant:vagrant ./sysrepo/build/repository
 SCRIPT
 
 $liberoutergui = <<SCRIPT
 rm -rf liberouter-gui
-git clone https://github.com/CESNET/liberouter-gui.git
+git clone -b devel https://github.com/CESNET/liberouter-gui.git
 ln -s /home/ubuntu/Netopeer2GUI liberouter-gui/modules/netopeer
 cd liberouter-gui
 python3 ./bootstrap.py
@@ -75,7 +77,6 @@ cd frontend
 npm install --unsafe-perm -g @angular/cli
 npm install --unsafe-perm
 cd ../..
-useradd -p fYNPZFGfqq2rw vagrant 2>/dev/null
 SCRIPT
 
 $backend = <<SCRIPT
@@ -109,7 +110,7 @@ Vagrant.configure("2") do |config|
     gui.vm.synced_folder "../../", "/home/ubuntu/Netopeer2GUI", create: true 
     gui.vm.box = "ubuntu/xenial64"
     gui.vm.network "forwarded_port", host: "4200", guest: "4200", auto_correct: true
-    gui.vm.network "forwarded_port", host: "830", guest: "830", auto_correct: true
+    gui.vm.network "forwarded_port", host: "8830", host_ip: "127.0.0.1", guest: "830", auto_correct: true
     gui.ssh.shell = "sh"
 
     gui.vm.provision :shell, inline: $tools
