@@ -12,16 +12,17 @@ import netconf2 as nc
 
 def infoBuiltInType(base):
 	return {
-		0 : 'error',
-		1 : 'derived',
-		2 : 'binary',
-		3 : 'bits',
-		4 : 'boolean',
-		5 : 'decimal64',
-		6 : 'empty',
-		7 : 'identityref',
-		8 : 'instance-identifier',
-		9 : 'leafref',
+		- 1 : 'error',
+		 0 : 'derived',
+		 1 : 'binary',
+		 2 : 'bits',
+		 3 : 'boolean',
+		 4 : 'decimal64',
+		 5 : 'empty',
+		 6 : 'enumeration',
+		 7 : 'identityref',
+		 8 : 'instance-identifier',
+		 9 : 'leafref',
 		10: 'string',
 		11: 'union',
 		12: 'int8',
@@ -34,10 +35,45 @@ def infoBuiltInType(base):
 		19: 'uint64',
 	}[base]
 
-def infoType(info, node):
-	type = node.leaf_type()
-	info["datatype"] = type.der().name()
-	info["datatypebase"] = infoBuiltInType(type.base())
+
+def schemaInfoType(schema, info):
+	info["datatype"] = schema.type().der().name()
+	info["datatypebase"] = infoBuiltInType(schema.type().base())
+
+
+def schemaInfoNode(schema):
+	info = {}
+
+	info["type"] = schema.nodetype()
+	info["module"] = schema.module().name()
+	info["name"] = schema.name()
+	info["dsc"] = schema.dsc()
+	info["config"] = True if schema.flags() & ly.LYS_CONFIG_W else False
+	if info["type"] == 1:
+		info["presence"] = schema.subtype().presence()
+	info["path"] = schema.path()
+
+	if info["type"] == ly.LYS_LEAF:
+		schemaInfoType(schema.subtype(), info)
+		info["key"] = False if schema.subtype().is_key() == -1 else True
+		dflt = schema.subtype().dflt()
+		if dflt:
+			info["default"] = dflt
+		else:
+			tpdf = schema.subtype().type().der()
+			while tpdf and not tpdf.dflt():
+				tpdf = tpdf.type().der()
+			if tpdf:
+				info["default"] = tpdf.dflt()
+	elif info["type"] == ly.LYS_LEAFLIST:
+		schemaInfoType(schema.subtype(), info)
+	elif info["type"] == ly.LYS_LIST:
+		info["keys"] = []
+		for key in schema.subtype().keys():
+			info["keys"].append(key.name())
+
+	return info
+
 
 def dataInfoNode(node, parent=None, recursion=False):
 	schema = node.schema()
@@ -55,20 +91,13 @@ def dataInfoNode(node, parent=None, recursion=False):
 					child["last"] = True
 				return None
 
-	info = {}
-	info["type"] = schema.nodetype()
-	info["module"] = schema.module().name()
-	info["name"] = schema.name()
-	info["dsc"] = schema.dsc()
-	info["config"] = True if schema.flags() & ly.LYS_CONFIG_W else False
+	info = schemaInfoNode(schema);
 
 	result = {}
 	if info["type"] == ly.LYS_LEAF:
 		result["value"] = casted.value_str()
-		infoType(info, casted)
 	elif info["type"] == ly.LYS_LEAFLIST:
 		result["value"] = [casted.value_str()]
-		infoType(info, casted)
 	elif recursion:
 		result["children"] = []
 		if node.child():
@@ -88,7 +117,6 @@ def dataInfoNode(node, parent=None, recursion=False):
 					break
 				if key.subtype().name() == result["children"][index]["info"]["name"]:
 					result["keys"].append(result["children"][index]["value"])
-					result["children"][index]["info"]["key"] = True
 				index = index + 1
 	result["info"] = info
 	result["path"] = node.path()

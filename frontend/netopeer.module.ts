@@ -15,7 +15,7 @@ import { InventoryComponent } from './inventory/inventory.component';
 import { InventorySchemasComponent } from './inventory/schemas.component';
 import { InventoryDevicesComponent } from './inventory/devices.component';
 import { ConfigComponent } from './config/config.component';
-import { TreeView } from './config/tree.component';
+import { TreeView, TreeIndent, TreeScrollTo, CheckLeafValue } from './config/tree.component';
 import { YANGComponent } from './yang/yang.component';
 import { MonitoringComponent } from './monitoring/monitoring.component';
 import { PluginsComponent } from './plugins/plugins.component';
@@ -58,6 +58,9 @@ const routes: Routes = [
     InventorySchemasComponent,
     InventoryDevicesComponent,
     ConfigComponent,
+    CheckLeafValue,
+    TreeScrollTo,
+    TreeIndent,
     TreeView,
     YANGComponent,
     MonitoringComponent,

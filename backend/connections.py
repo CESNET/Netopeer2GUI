@@ -115,11 +115,8 @@ def session_get():
 		return(dataInfoSubtree(sessions[user.username][key]['data'], req['path'], True if req['recursive'] == 'true' else False))
 
 
-@auth.required()
-def session_checkvalue():
-	session = auth.lookup(request.headers.get('Authorization', None))
-	user = session['user']
-	req = request.args.to_dict()
+def _checkvalue(session, req, schema):
+	user = session['user'];
 
 	if not 'key' in req:
 		return(json.dumps({'success': False, 'error-msg': 'Missing session key.'}))
@@ -128,24 +125,90 @@ def session_checkvalue():
 	if not 'value' in req:
 		return(json.dumps({'success': False, 'error-msg': 'Missing value to validate.'}))
 
-	if not user.username in sessions:
-		sessions[user.username] = {}
+	key = req['key']
+	if not key in sessions[user.username]:
+		return(json.dumps({'success': False, 'error-msg': 'Invalid session key.'}))
+
+	if schema:
+		# TODO - go via context to cover case there is no data
+		print(req['path'])
+		search = sessions[user.username][key]['session'].context.find_path(req['path'])
+		print(search.number())
+	else:
+		search = sessions[user.username][key]['data'].find_path(req['path'])
+
+	if search.number() != 1:
+		return(json.dumps({'success': False, 'error-msg': 'Invalid data path.'}))
+
+	if schema:
+		node = search.schema()[0]
+	else:
+		node = search.data()[0]
+
+	if node.validate_value(req['value']):
+		return(json.dumps({'success': False, 'error-msg': ly.Error().errmsg()}))
+
+	return(json.dumps({'success': True}))
+
+@auth.required()
+def data_checkvalue():
+	session = auth.lookup(request.headers.get('Authorization', None))
+	req = request.args.to_dict()
+
+	return _checkvalue(session, req, False)
+
+
+@auth.required()
+def schema_checkvalue():
+	session = auth.lookup(request.headers.get('Authorization', None))
+	req = request.args.to_dict()
+
+	return _checkvalue(session, req, True)
+
+
+@auth.required()
+def schema_info():
+	session = auth.lookup(request.headers.get('Authorization', None))
+	user = session['user']
+	req = request.args.to_dict()
+
+	if not 'key' in req:
+		return(json.dumps({'success': False, 'error-msg': 'Missing session key.'}))
+	if not 'path' in req:
+		return(json.dumps({'success': False, 'error-msg': 'Missing path to validate value.'}))
 
 	key = req['key']
 	if not key in sessions[user.username]:
 		return(json.dumps({'success': False, 'error-msg': 'Invalid session key.'}))
 
-	search = sessions[user.username][key]['data'].find_path(req['path'])
-	if search.number() != 1:
-		return(json.dumps({'success': False, 'error-msg': 'Invalid data path.'}))
-	node = search.data()[0]
+	if req['path'] == '/':
+		# TODO top level
+		return(json.dumps({'success': False, 'error-msg': 'Not implemented yet.'}))
+	else:
+		search = sessions[user.username][key]['session'].context.find_path(req['path'])
+		if search.number() != 1:
+			return(json.dumps({'success': False, 'error-msg': 'Invalid data path.'}))
+		node = search.schema()[0]
 
-	try:
-		node.validate_value(req['value'])
-	except:
-		return(json.dumps({'success': False, 'error-msg': ly.Error().errmsg()}))
+	result = [];
+	if 'relative' in req:
+		if req['relative'] == 'children':
+			for child in node.child_instantiables(0):
+				if child.flags() & ly.LYS_CONFIG_R:
+					# ignore status nodes
+					continue
+				result.append(schemaInfoNode(child))
+		elif req['relative'] == 'siblings':
+			if node.parent():
+				for child in node.parent().child_instantiables(0):
+					result.append(schemaInfoNode(child))
+			# TODO top level - !node.parent()
+		else:
+			return(json.dumps({'success': False, 'error-msg': 'Invalid relative parameter.'}))
+	else:
+		result.append(schemaInfoNode(node))
 
-	return(json.dumps({'success': True}))
+	return(json.dumps({'success': True, 'data': result}))
 
 
 @auth.required()

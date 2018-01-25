@@ -24,14 +24,14 @@
 
 .tab-add {
     filter: invert(100%);
-    
+
     &:hover {
     	color: green;
     }
 }
 
 .tab-close:hover {
-    color: red;
+    color: $colorFailureBorder;
 }
 .tab-reload:hover {
     color: blue;
@@ -91,8 +91,8 @@
 		position: fixed;
 		bottom: 2em;
 		right: 2em;
-		background-color: #fafad2;
-		border: 2px solid #e4e4a4;
+		background-color: $colorChanged;
+		border: 2px solid $colorChangedBorder;
 		padding: 0.5em 1em;
 	}
 }

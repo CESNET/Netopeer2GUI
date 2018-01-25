@@ -29,4 +29,6 @@ module_bp.add_url_rule('/session', view_func = session_close, methods = ['DELETE
 module_bp.add_url_rule('/session/alive', view_func = session_alive, methods=['GET'])
 module_bp.add_url_rule('/session/capabilities', view_func = session_get_capabilities, methods=['GET'])
 module_bp.add_url_rule('/session/rpcGet', view_func = session_get, methods=['GET'])
-module_bp.add_url_rule('/session/element/checkvalue', view_func = session_checkvalue, methods = ['GET'])
+module_bp.add_url_rule('/session/element/checkvalue', view_func = data_checkvalue, methods = ['GET'])
+module_bp.add_url_rule('/session/schema', view_func = schema_info, methods = ['GET'])
+module_bp.add_url_rule('/session/schema/checkvalue', view_func = schema_checkvalue, methods = ['GET'])

@@ -154,18 +154,27 @@ export class ConfigComponent implements OnInit {
             this.sessionsService.storeData();
         });
     }
-    
+
     cancelChangesNode(node, recursion = true) {
-        
-        if (node['path'] in this.activeSession.modifications) {
+        if ('creatingChild' in node) {
+            delete node['creatingChild'];
+        }
+        if ('deleted' in node) {
             node['dirty'] = false;
-            if (this.activeSession.modifications[node['path']]['type'] == 'change') {
-                node['value'] = this.activeSession.modifications[node['path']]['original'];
-            }
-            delete this.activeSession.modifications[node['path']]; 
-            if (!Object.keys(this.activeSession.modifications).length) {
-                delete this.activeSession.modifications;
-                return;
+            node['deleted'] = false;
+        }
+
+        if (this.activeSession.modifications) {
+            let record = this.sessionsService.getModificationsRecord(node['path']);
+            if (record) {
+                node['dirty'] = false;
+                if (record['type'] == 'change') {
+                    node['value'] = record['original'];
+                }
+                this.sessionsService.removeModificationsRecord(node['path']);
+                if (!this.activeSession.modifications) {
+                    return;
+                }
             }
         }
 
@@ -173,28 +182,33 @@ export class ConfigComponent implements OnInit {
         if (recursion && 'children' in node) {
             for (let child of node['children']) {
                 this.cancelChangesNode(child);
-                if (!this.activeSession.modifications) {
-                    return;
+            }
+            if ('newChildren' in node) {
+                for (let child of node['newChildren']) {
+                    this.sessionsService.removeModificationsRecord(child['path']);
+                }
+                delete node['newChildren'];
+                if (('children' in node) && node['children'].length) {
+                    node['children'][node['children'].length - 1]['last'] = true;
                 }
             }
         }
     }
-    
+
     cancelChanges() {
+        console.log(JSON.stringify(this.activeSession.modifications))
         for (let iter of this.activeSession.data) {
             this.cancelChangesNode(iter);
-            if (!this.activeSession.modifications) {
-                break;
-            }
         }
         this.sessionsService.storeData();
+        console.log(JSON.stringify(this.activeSession.modifications))
     }
 
     applyChanges() {
         /* TODO */
         this.cancelChanges();
     }
-    
+
     ngOnInit(): void {
         this.sessionsService.checkSessions();
         this.activeSession = this.sessionsService.getActiveSession();

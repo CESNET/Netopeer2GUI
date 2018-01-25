@@ -25,6 +25,10 @@ export class SessionsService{
         localStorage.setItem('sessions', JSON.stringify(this.sessions));
     }
 
+    loadData() {
+        this.sessions = JSON.parse(localStorage.getItem('sessions'));
+    }
+
     getActiveSession(key: string = this.activeSession): Session {
         if (!key) {
             return null;
@@ -50,7 +54,7 @@ export class SessionsService{
     }
 
     checkSessions() {
-        this.sessions = JSON.parse(localStorage.getItem('sessions'));
+        this.loadData();
         if (!this.sessions) {
             this.sessions = [];
         } else {
@@ -77,15 +81,89 @@ export class SessionsService{
         }
     }
 
+    createModificationsRecord(path) {
+        let activeSession = this.getActiveSession();
+        if (!activeSession.modifications) {
+            activeSession.modifications = {};
+        }
+
+        if (!(path in activeSession.modifications)) {
+            activeSession.modifications[path] = {};
+        }
+        return activeSession.modifications[path];
+    }
+
+    getModificationsRecord(path) {
+        let activeSession = this.getActiveSession();
+        if (!activeSession.modifications) {
+            return null;
+        }
+
+        if (!(path in activeSession.modifications)) {
+            return null;
+        }
+        return activeSession.modifications[path];
+    }
+
+    removeModificationsRecord(path = null) {
+        let activeSession = this.getActiveSession();
+        if (!activeSession.modifications) {
+            return;
+        }
+
+        if (path && (path in activeSession.modifications)) {
+            delete activeSession.modifications[path];
+        }
+
+        if (!Object.keys(activeSession.modifications).length) {
+            delete activeSession.modifications;
+        }
+    }
+
     checkValue(key: string, path: string, value: string): Observable<string[]> {
         let params = new URLSearchParams();
         params.set('key', key);
         params.set('path', path);
         params.set('value', value);
         let options = new RequestOptions({ search: params });
-        return this.http.get('/netopeer/session/element/checkvalue', options)
+        return this.http.get('/netopeer/session/schema/checkvalue', options)
             .map((resp: Response) => resp.json())
             .catch((err: Response | any) => Observable.throw(err));
+    }
+
+    childrenSchemas(key: string, path: string, node = null) {
+        let params = new URLSearchParams();
+        params.set('key', key);
+        params.set('path', path);
+        params.set('relative', 'children');
+        let options = new RequestOptions({ search: params });
+        return this.http.get('/netopeer/session/schema', options)
+            .map((resp: Response) => {
+                let result = resp.json();
+                console.log(result)
+                if (result['success'] && node) {
+                    for (let iter of node['children']) {
+                        if (iter['deleted'] || (iter['info']['type'] & 0x18)) {
+                            /* ignore deleted nodes and nodes that can be instantiated multiple times */
+                            continue;
+                        }
+                        for (let index in result['data']) {
+                            if (!result['data'][index]['config'] ||
+                                    (result['data'][index]['name'] == iter['info']['name'] && result['data'][index]['module'] == iter['info']['module'])) {
+                                /* 1. read-only node */
+                                /* 2. the node is already instantiated */
+                                result['data'].splice(index, 1);
+                                break;
+                            }
+                        }
+                    }
+                }
+                if (result['success']) {
+                    return result['data'];
+                } else {
+                    return [];
+                }
+            }).toPromise();
     }
 
     alive(key: string): Observable<string[]> {
@@ -111,7 +189,7 @@ export class SessionsService{
         if (!activeSession.modifications) {
             return;
         }
-        
+
         if (node['path'] in activeSession.modifications) {
             node['dirty'] = true;
             if (activeSession.modifications[node['path']]['type'] == 'change') {
@@ -126,7 +204,7 @@ export class SessionsService{
             }
         }
     }
-    
+
     rpcGetSubtree(key: string, all: boolean, path: string = ""): Observable<string[]> {
         let params = new URLSearchParams();
         params.set('key', key);
@@ -171,7 +249,7 @@ export class SessionsService{
                             this.activeSession = ""
                         }
                     }
-                    localStorage.setItem('sessions', JSON.stringify(this.sessions));
+                    this.storeData();
                     localStorage.setItem('activeSession', this.activeSession);
                 }
             })
@@ -191,7 +269,7 @@ export class SessionsService{
                 if (resp['success']) {
                     this.sessions.push(new Session(resp['session-key'], dev));
                     this.activeSession = resp['session-key'];
-                    localStorage.setItem('sessions', JSON.stringify(this.sessions));
+                    this.storeData();
                     localStorage.setItem('activeSession', this.activeSession);
                 }
             })

@@ -1,5 +1,9 @@
 @import '../netopeer-common';
 
+$colorChanged: #fafad2;
+$colorChangedBorder: #e4e4a4;
+$colorLineHover: #e1e1e1;
+
 .subtree {
     cursor: default;
     display: block;
@@ -9,43 +13,49 @@
 .node {
     width: 100%;
     overflow: hidden;
-    
+
     &:hover {
-    	background-color: #e1e1e1
+        background-color: $colorLineHover;
     }
-    
+
     > div {
-    	display: inline-block;
+        display: inline-block;
     }
 }
 
 .node_edit {
-	display: table;
-	width: 100%;
+    display: block;
+    width: 100%;
     overflow: hidden;
-    
-    &:hover {
-    	background-color: #e1e1e1
-    }
-    
+
     img,
     input {
-		display: inline-table;
-		margin-right: 0.25em;
+        display: inline-table;
+        margin-right: 0.25em;
     }
     input {
-		height: 2em;
-    	padding-left: 0.3em;
-    	background-color: #def2de;
-    	
-    	&.invalid {
-    		background-color: #f2dede;
-    	}
+        height: 2em;
+        padding-left: 0.3em;
+        background-color: $colorSuccess;
+
+        &.invalid {
+            background-color: $colorFailure;
+        }
     }
-    
+
     &.indentation {
-		height:2.1em;
+        height:2.1em;
     }
+
+    > .msg-failure {
+        margin: 0.5em 0em;
+    }
+}
+.node_edit.dialog {
+    background-color: $colorChanged;
+    border: 2px solid $colorChangedBorder;
+    border-left-width: 0px;
+    border-right-width: 0px;
 }
 
 .status,
@@ -54,7 +64,14 @@
 }
 
 .dirty {
-	background-color: #fafad2;
+    background-color: $colorChanged;
+}
+
+.deleted {
+    height: 0.5em;
+    * {
+        visibility: hidden;
+    }
 }
 
 .icon,
@@ -68,7 +85,7 @@
 }
 
 .icon_hidden {
-	visibility: hidden;
+    visibility: hidden;
 }
 
 .module_name {
@@ -92,3 +109,21 @@
     width: 1.7em;
 }
 
+.editmenu {
+    visibility: hidden;
+    background-color: #FAFAFA;
+    border: 1px solid black;
+
+    position: fixed;
+    z-index: 1;
+}
+
+.button_action {
+    cursor: pointer;
+    padding: 0.3em 1em 0.3em 0.5em;
+
+    &:hover {
+        background-color: #3B4257;
+        color: #FAFAFA;
+    }
+}

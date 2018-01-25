@@ -67,7 +67,9 @@
     </div><br/>
     <ng-container *ngIf="activeSession.dataVisibility!='none' && activeSession.data">
     <div id="config-data">
-        <tree-view [treeData]="activeSession.data"></tree-view>
+        <ng-container *ngFor="let root of activeSession.data">
+            <tree-view [node]="root"></tree-view>
+        </ng-container>
         <!--<pre>{{activeSession.data | json}}</pre>-->
     </div>
 	<div #modificationsStatus *ngIf="activeSession.modifications" class="modifications-status">&nbsp;
