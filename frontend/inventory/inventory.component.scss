@@ -1,24 +1,24 @@
 @import '../netopeer-common';
 
 nav {
-	background-color: #3B4257;
+	background-color: $colorMain;
 	padding-left: 1em;
 	
 	a {
 		text-decoration: none;
 		display: inline-block;
 		padding: 0.2em 1em 0.1em 1em;
-		color: #FAFAFA;
+		color: $colorTextInverse;
 		
 		&:visited,
 		&:link {
-			color: #FAFAFA;
+			color: $colorTextInverse;
 		}
 		
 		&:hover,
 		&.active {
-			background-color: #FAFAFA;
-			color: #000;
+			background-color: $colorBackground;
+			color: $colorText;
 		}
 		&.active:hover {
 			cursor: default;
@@ -42,8 +42,8 @@ nav {
 	
 	&:hover,
 	&.selected {
-		background-color: #454D67;
-		color: #FAFAFA;
+		background-color: $colorMain;
+		color: $colorTextInverse;
 	}
 	&.selected:hover {
 		cursor: default;
@@ -51,8 +51,8 @@ nav {
 }
 
 .item_header {
-	background-color: #454D67;
-	color: #FAFAFA;
+	background-color: $colorMain;
+	color: $colorTextInverse;
 }
 
 .item_left {
@@ -73,7 +73,7 @@ nav {
     font-weight: bold;
     font-family: monospace;
     font-size: large;
-    color: grey;
+    color: $grey;
 }
 
 .item_action_delete {
@@ -81,7 +81,7 @@ nav {
     vertical-align: middle;
 
     &:hover {
-    	color: red;
+        color: $red;
     }
 }
 
@@ -110,7 +110,7 @@ nav {
 .input_line_alert {
     display: inline-block;
     background-color: $colorFailure;
-    color: red;
+    color: $red;
 }
 
 form {

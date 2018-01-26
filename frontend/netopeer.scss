@@ -3,48 +3,48 @@
 #netopeer-header {
     position: fixed;
     width: 100%;
-	margin: -0.5em -1em 0em -1em;
-	padding-top: 1em;
-    background-color: #313747;
-    color: #FAFAFA;
+    margin: -0.5em -1em 0em -1em;
+    padding-top: 1em;
+    background-color: $colorMain;
+    color: $colorTextInverse;
     display: block;
 }
 
 #netopeer-header h1 {
-	margin-left: 1em;
+    margin-left: 1em;
 }
 
 #netopeer-component {
-	margin: 0em -1em 0em -1em;
+    margin: 0em -1em 0em -1em;
 }
 
 #mainnav {
-	with: 100%;
-	padding-left: 1em;
+    with: 100%;
+    padding-left: 1em;
 }
 
 #mainnav a:visited,
 #mainnav a:link {
-	color: inherit;
+    color: inherit;
 }
 
 #mainnav a:hover {
-    border-top-color: #3B4257;
-	background-color: #3B4257;
+    border-top-color: $colorHighlight;
+    background-color: $colorHighlight;
 }
 
 #mainnav a.active {
-    border-top-color: #BAE4F0;
-	background-color: #3B4257;
+    border-top-color: $colorSelected2;
+    background-color: $colorSelected;
 }
 #mainnav a.active:hover {
-	cursor: default;
+    cursor: default;
 }
 
 #mainnav a {
-	text-decoration: none;
-	display: inline-block;
-	padding: 0.5em 1em 0.5em 0.5em;
-	color: #FAFAFA;
-    border-top: 0.2em solid #313747;
+    text-decoration: none;
+    display: inline-block;
+    padding: 0.5em 1em 0.5em 0.5em;
+    color: $colorTextInverse;
+    border-top: 0.2em solid $colorMain;
 }

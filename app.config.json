@@ -1,6 +1,12 @@
 {
   "logo" : "assets/netopeer/logo.png",
   "name" : "Netopeer",
+  "colorTheme" : {
+    "colorMain" : "#354b68",
+    "colorHighlight" : "#3d5676",
+    "colorSelected" : "#3d5676",
+    "colorSelected2" : "#6888b1"
+  },
   "api" : {
     "url" : "/libapi",
     "host" : null,

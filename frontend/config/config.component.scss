@@ -26,7 +26,7 @@
     filter: invert(100%);
 
     &:hover {
-    	color: green;
+        color: $green;
     }
 }
 
@@ -40,7 +40,7 @@
 #confignav {
     position: fixed;
     width: 100%;
-	background-color: #3B4257;
+	background-color: $colorMain;
 	padding-left: 1em;
 	
 	a {
@@ -48,7 +48,7 @@
 		text-decoration: none;
 		display: inline-block;
 		padding: 0.2em 0em 0.1em 1em;
-		color: #FAFAFA;
+		color: $colorTextInverse;
 		
 		&:visited,
 		&:link {
@@ -56,8 +56,8 @@
 		}
 		&:hover,
 		&.active {
-			background-color: #FAFAFA;
-			color: #000;
+			background-color: $colorBackground;
+			color: $colorText;
 		}
 		&active:hover {
 			cursor: default;
@@ -75,11 +75,11 @@
 }
 
 .item_action_collapse:hover {
-    color:red;
+    color: $red;
 }
 
 .item_action_expand:hover {
-    color:green;
+    color: $green;
 }
 
 .modifications-status {

@@ -111,8 +111,8 @@ $colorLineHover: #e1e1e1;
 
 .editmenu {
     visibility: hidden;
-    background-color: #FAFAFA;
-    border: 1px solid black;
+    background-color: $colorBackground;
+    border: 1px solid $black;
 
     position: fixed;
     z-index: 1;
@@ -123,7 +123,7 @@ $colorLineHover: #e1e1e1;
     padding: 0.3em 1em 0.3em 0.5em;
 
     &:hover {
-        background-color: #3B4257;
-        color: #FAFAFA;
+        background-color: $colorHighlight;
+        color: $colorTextInverse;
     }
 }

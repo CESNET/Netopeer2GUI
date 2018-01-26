@@ -1,3 +1,5 @@
+@import "./colors";
+
 $colorSuccess: #def2de;
 $colorSuccessBorder: green;
 $colorFailure: #f2dede;
@@ -12,8 +14,8 @@ a:not([href]) {
 .netopeer-content {
 	display: block;
 	padding: 0.7em 1em 1em 2em;
-	background-color: #FAFAFA;
-	color: #000;
+	background-color: $colorBackground;
+	color: $black;
 }
 
 .msg-rounded {
@@ -32,7 +34,7 @@ a:not([href]) {
 
 .msg-success {
     background-color: $colorSuccess;
-	color: green;
+	color: $colorSuccessBorder;
 	padding: 5px 1em 5px 0em;
 	
 	.msg-close {
@@ -42,7 +44,7 @@ a:not([href]) {
 
 .msg-failure {
     background-color: $colorFailure;
-    color: red;
+    color: colorFailureBorder;
 	padding: 5px 1em 5px 0em;
 
 	.msg-close {
