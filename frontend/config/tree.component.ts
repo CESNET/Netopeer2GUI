@@ -66,9 +66,9 @@ export class TreeIndent implements OnInit {
         }, 300);
     }
 
-    hideEditMenu(event) {
+    hideEditMenu(menu) {
         clearTimeout(this.timeout);
-        event.target.lastElementChild.style.visibility = "hidden";
+        menu.style.visibility = "hidden";
     }
 
     deleteSubtree(node) {
