@@ -197,12 +197,12 @@ export class ConfigComponent implements OnInit {
     }
 
     cancelChanges() {
-        console.log(JSON.stringify(this.activeSession.modifications))
+        //console.log(JSON.stringify(this.activeSession.modifications))
         for (let iter of this.activeSession.data) {
             this.cancelChangesNode(iter);
         }
         this.sessionsService.storeData();
-        console.log(JSON.stringify(this.activeSession.modifications))
+        //console.log(JSON.stringify(this.activeSession.modifications))
     }
 
     applyChanges() {
