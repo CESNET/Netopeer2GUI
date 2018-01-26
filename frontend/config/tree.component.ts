@@ -62,8 +62,8 @@ export class TreeIndent implements OnInit {
         this.timeout = setTimeout(() => {
             let menu = event.target.lastElementChild;
             menu.style.visibility = "visible";
-            menu.style.top = event.clientY + 'px';
-            menu.style.left = event.clientX + 'px';
+            menu.style.top = event.target.getBoundingClientRect().top + 'px';
+            menu.style.left = event.target.getBoundingClientRect().left + (event.target.getBoundingClientRect().width / 2) + 'px';
         }, 300);
     }
 
