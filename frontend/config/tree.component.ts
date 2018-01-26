@@ -13,7 +13,8 @@ export class TreeScrollTo {
     constructor(private elRef:ElementRef) {}
     ngAfterContentInit() {
         if (!('new' in this.node)) {
-            this.elRef.nativeElement.scrollIntoView(false);
+            let middle = this.elRef.nativeElement.getBoundingClientRect().top + window.pageYOffset - (window.innerHeight / 2);
+            window.scrollTo(0, middle);
         }
     }
 }
