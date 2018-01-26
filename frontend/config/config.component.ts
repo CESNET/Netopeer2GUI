@@ -36,6 +36,7 @@ export class ConfigComponent implements OnInit {
                 if (!this.sessionsService.activeSession) {
                     this.router.navigateByUrl('/netopeer/inventory/devices');
                 }
+                this.activeSession = this.sessionsService.getActiveSession();
             } else {
                 this.err_msg = result['error-msg'];
             }
