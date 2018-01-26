@@ -12,7 +12,7 @@
 <ng-template #menu >
     <span *ngIf="node['info']['config']; else empty"
         (mouseenter)="showEditMenu($event)" 
-        (mouseleave)="hideEditMenu($event.currentTarget.lastElementChild)">
+        (mouseleave)="hideEditMenu($event)">
         <img  class="icon_action" src="assets/netopeer/icons/menu.svg" 
             onmouseover="this.src='assets/netopeer/icons/menu_active.svg'"
             onmouseout="this.src='assets/netopeer/icons/menu.svg'"/>

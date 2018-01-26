@@ -2,7 +2,6 @@
 
 	<div class="node" [class.dirty]="node['dirty']" [class.deleted]="node['deleted']">
 		<tree-indent [node]="node" [indentation]="indentation"
-			(onShowEditMenu)="showEditMenu($event)" (onHideEditMenu)="hideEditMenu($event)"
 			(onDeleteSubtree)="deleteSubtree($event)" (onOpenCreatingDialog)="openCreatingDialog($event.element, $event.node, $event.parent)">
 		</tree-indent>
 		<img class="icon" src="assets/netopeer/icons/info.svg" alt="info" title="{{node['info']['dsc']}}"

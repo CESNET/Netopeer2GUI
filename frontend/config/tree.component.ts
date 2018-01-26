@@ -45,11 +45,11 @@ export class TreeIndent implements OnInit {
     @Input() indentation;
     @Input() type = "current";
     @Output() onShowEditMenu = new EventEmitter();
-    @Output() onHideEditMenu = new EventEmitter();
     @Output() onDeleteSubtree = new EventEmitter();
     @Output() onOpenCreatingDialog = new EventEmitter();
     @Output() onCloseCreatingDialog = new EventEmitter();
     activeSession: Session;
+    timeout;
 
     constructor(private sessionsService: SessionsService, private router: Router) {}
 
@@ -58,11 +58,19 @@ export class TreeIndent implements OnInit {
     }
 
     showEditMenu(event) {
-        this.onShowEditMenu.emit(event);
+        this.timeout = setTimeout(() => {
+            let menu = event.target.lastElementChild;
+            menu.style.visibility = "visible";
+            menu.style.top = event.clientY + 'px';
+            menu.style.left = event.clientX + 'px';
+        }, 300);
     }
-    hideEditMenu(element) {
-        this.onHideEditMenu.emit(element);
+
+    hideEditMenu(event) {
+        clearTimeout(this.timeout);
+        event.target.lastElementChild.style.visibility = "hidden";
     }
+
     deleteSubtree(node) {
         this.onDeleteSubtree.emit(node);
     }
@@ -107,17 +115,6 @@ export class TreeView implements OnInit {
         } else {
             return this.indentation.concat(newIndent);
         }
-    }
-
-    showEditMenu(event) {
-        let menu = event.target.lastElementChild;
-        menu.style.visibility = "visible";
-        menu.style.top = event.clientY + 'px';
-        menu.style.left = event.clientX + 'px';
-    }
-
-    hideEditMenu(editmenu) {
-        editmenu.style.visibility = "hidden";
     }
 
     startEditing(node, target) {
