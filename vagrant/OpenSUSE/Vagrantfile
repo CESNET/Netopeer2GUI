@@ -6,7 +6,7 @@ zypper refresh
 zypper update -y
 zypper install -y llvm-clang git cmake
 zypper install -y pcre-devel python3-devel swig
-zypper install -y libssh-devel libopenssl-devel
+zypper install -y openssl-1_1_0 libopenssl-devel libssh-devel
 zypper install -y libffi-devel npm8 python3-pip python3-Flask
 zypper install -y protobuf-c libev-devel
 SCRIPT
