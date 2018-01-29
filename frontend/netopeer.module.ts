@@ -30,19 +30,48 @@ import { SessionsService } from './config/sessions.service'
 const routes: Routes = [
   { path : 'netopeer', component : NetopeerComponent, canActivate : [AuthGuard],
     data : { role : 10, name : 'Netopeer', description : 'Network Management Center', icon : 'fa-user-secret' },
-    children: [
-      {  path : 'dashboard', component : DashboardComponent, canActivate : [AuthGuard] },
-      {  path : 'inventory', component : InventoryComponent, canActivate : [AuthGuard],
-         children : [
-           { path : 'devices', component : InventoryDevicesComponent, canActivate : [AuthGuard] },
-           { path : 'schemas', component : InventorySchemasComponent, canActivate : [AuthGuard] }
-         ]
-      },
-      { path : 'config', component : ConfigComponent, canActivate : [AuthGuard] },
-      { path : 'yang', component : YANGComponent, canActivate : [AuthGuard] },
-      { path : 'monitoring', component : MonitoringComponent, canActivate : [AuthGuard] },
-      { path : 'plugins', component : PluginsComponent, canActivate : [AuthGuard] }
-    ]
+    children: [{
+      path : 'dashboard',
+      component : DashboardComponent,
+      canActivate : [AuthGuard],
+      data : { role : 10, name : 'Netopeer Dashboard'}
+    }, {
+      path : 'inventory',
+      component : InventoryComponent,
+      canActivate : [AuthGuard],
+      data : { role : 10, name : 'Netopeer Items Inventories'},
+      children : [{
+        path : 'devices',
+        component : InventoryDevicesComponent,
+        canActivate : [AuthGuard],
+        data : { role : 10, name : 'NETCONF Devices Inventory'}
+      }, {
+        path : 'schemas',
+        component : InventorySchemasComponent,
+        canActivate : [AuthGuard],
+        data : { role : 10, name : 'YANG Schemas Inventory'}
+      }]
+    }, {
+      path : 'config',
+      component : ConfigComponent,
+      canActivate : [AuthGuard],
+      data : { role : 10, name : 'Netopeer Device Configuration'},
+    }, {
+      path : 'yang',
+      component : YANGComponent,
+      canActivate : [AuthGuard],
+      data : { role : 10, name : 'Netopeer YANG Explorer'},
+    }, {
+      path : 'monitoring',
+      component : MonitoringComponent,
+      canActivate : [AuthGuard],
+      data : { role : 10, name : 'Netopeer Device Monitoring'},
+    }, {
+      path : 'plugins',
+      component : PluginsComponent,
+      canActivate : [AuthGuard],
+      data : { role : 10, name : 'Netopeer Plugins'},
+    }]
   }
 ]
 
