@@ -65,6 +65,10 @@
         <span *ngIf="!activeSession.statusVisibility"><a (click)="invertStatus()">show</a> status data</span>
         <!--<span><input type="checkbox" name="statusVisibility" [checked]="activeSession.statusVisibility" (change)="invertStatus()"/> include status data</span>-->
     </div><br/>
+    <div class="loading" *ngIf="loading">
+        <span>Retrieving data ...</span>
+        <div><netopeer-loading spinner="true"></netopeer-loading></div>
+    </div>
     <ng-container *ngIf="activeSession.dataVisibility!='none' && activeSession.data">
     <div id="config-data">
         <ng-container *ngFor="let root of activeSession.data">

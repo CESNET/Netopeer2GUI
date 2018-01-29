@@ -516,12 +516,14 @@ export class TreeView implements OnInit {
     }
 
     expand(node, all: boolean) {
+        node['loading'] = true;
         this.sessionsService.rpcGetSubtree(this.activeSession.key, all, node['path']).subscribe(result => {
             if (result['success']) {
                 node['children'] = result['data']['children'];
                 for (let iter of this.activeSession.data) {
                     this.hasHiddenChild(iter, true);
                 }
+                delete node['loading'];
                 this.sessionsService.storeData();
             }
         });

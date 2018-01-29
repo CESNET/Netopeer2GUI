@@ -1,0 +1,20 @@
+{
+  "name": "Netopeer2GUI",
+  "version": "0.1.0",
+  "description": "NETCONF management center",
+  "main": "index.html",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/CESNET/Netopeer2GUI.git"
+  },
+  "author": "",
+  "license": "BSD",
+  "bugs": {
+    "url": "https://github.com/CESNET/Netopeer2GUI/issues"
+  },
+  "homepage": "https://github.com/CESNET/Netopeer2GUI",
+  "dependencies" : {
+    "@angular/material": "^5.0.0",
+    "@angular/cdk": "^5.0.0"
+  }
+}

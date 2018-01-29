@@ -1,4 +1,7 @@
 {
+    "dependencies": {
+        "npm" : "frontend/package.json"
+    },
     "module": {
         "name" : "netopeer",
         "file" : "netopeer.module.ts",

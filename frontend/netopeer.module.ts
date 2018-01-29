@@ -9,6 +9,11 @@ import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
 import { AuthGuard } from 'app/utils/auth.guard';
 
+import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
+
+import { LoadingComponent } from './common/loading/loading.component';
+
 import { NetopeerComponent } from './netopeer.component';
 import { DashboardComponent } from './dashboard.component';
 import { InventoryComponent } from './inventory/inventory.component';
@@ -21,7 +26,6 @@ import { MonitoringComponent } from './monitoring/monitoring.component';
 import { PluginsComponent } from './plugins/plugins.component';
 
 import { SessionsService } from './config/sessions.service'
-
 
 const routes: Routes = [
   { path : 'netopeer', component : NetopeerComponent, canActivate : [AuthGuard],
@@ -49,7 +53,9 @@ const routes: Routes = [
     ReactiveFormsModule,
     HttpModule,
     NgbModule.forRoot(),
-    RouterModule.forChild(routes)
+    RouterModule.forChild(routes),
+    MatProgressSpinnerModule,
+    MatProgressBarModule,
   ],
   declarations: [
     NetopeerComponent,
@@ -58,6 +64,7 @@ const routes: Routes = [
     InventorySchemasComponent,
     InventoryDevicesComponent,
     ConfigComponent,
+    LoadingComponent,
     CheckLeafValue,
     TreeScrollTo,
     TreeIndent,

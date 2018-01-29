@@ -14,6 +14,7 @@ export class ConfigComponent implements OnInit {
     title = 'Configuration';
     activeSession: Session;
     err_msg = "";
+    loading = false;
 
     constructor(private sessionsService: SessionsService, private router: Router) {}
 
@@ -136,6 +137,7 @@ export class ConfigComponent implements OnInit {
                 return;
             }
         }
+        this.loading = true;
         this.sessionsService.rpcGetSubtree(this.activeSession.key, all).subscribe(result => {
             if (result['success']) {
                 this.activeSession.data = result['data'];
@@ -153,6 +155,7 @@ export class ConfigComponent implements OnInit {
                 }
             }
             this.sessionsService.storeData();
+            this.loading = false;
         });
     }
 

@@ -94,6 +94,9 @@
 	<!-- END nodetype-specific code -->
 
 	<!-- recursion - show children -->
+    <div class="loading" *ngIf="node['loading']">
+        <netopeer-loading></netopeer-loading>
+    </div>
     <div class="children" *ngIf="(node['children'] || node['newChildren']) && !node['deleted']">
         <ng-container *ngFor="let child of node['children']">
             <tree-view [node]="child" [indentation]="inheritIndentation(node)"></tree-view>
