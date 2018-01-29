@@ -29,7 +29,7 @@ import { SessionsService } from './config/sessions.service'
 
 const routes: Routes = [
   { path : 'netopeer', component : NetopeerComponent, canActivate : [AuthGuard],
-    data : { role : 10, name : 'Netopeer', description : 'Network Management Center', icon : 'fa-user-secret' },
+    data : { role : 10, name : 'Netopeer', description : 'Network Management Center', icon : 'fa-gears' },
     children: [{
       path : 'dashboard',
       component : DashboardComponent,
