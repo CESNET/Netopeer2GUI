@@ -1,13 +1,17 @@
-<ng-container *ngIf="type == 'edit' || node['new']; else menu">
+<ng-container *ngIf="type == 'edit' || node['new'] || node['deleted']; else menu">
     <img *ngIf="type == 'edit' && node['info']['type'] != 4" class="icon_action" src="assets/netopeer/icons/close.svg" 
         onmouseover="this.src='assets/netopeer/icons/close_active.svg'"
         onmouseout="this.src='assets/netopeer/icons/close.svg'"
         (click)="closeCreatingDialog(node)"/>
     <img *ngIf="node['info']['type'] == 4 && (type == 'edit' || node['key'])" class="icon_action" src="assets/netopeer/icons/tree_empty.svg"/>
-    <img *ngIf="type != 'edit' && node['dirty'] && !node['key']" class="icon_action" src="assets/netopeer/icons/close.svg" 
+    <img *ngIf="type != 'edit' && node['dirty'] && !node['deleted'] && !node['key']" class="icon_action" src="assets/netopeer/icons/close.svg"
         onmouseover="this.src='assets/netopeer/icons/close_active.svg'"
         onmouseout="this.src='assets/netopeer/icons/close.svg'"
         (click)="deleteSubtree(node)"/>
+    <img *ngIf="node['deleted']" class="icon_action" src="assets/netopeer/icons/close.svg"
+        onmouseover="this.src='assets/netopeer/icons/close_active.svg'"
+        onmouseout="this.src='assets/netopeer/icons/close.svg'"
+        (click)="cancelDelete(node)"/>
 </ng-container>
 <ng-template #menu >
     <span *ngIf="type == 'root' || node['info']['config']; else empty"

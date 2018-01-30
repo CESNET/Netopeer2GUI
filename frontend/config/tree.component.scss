@@ -68,10 +68,8 @@ $colorLineHover: #e1e1e1;
 }
 
 .deleted {
-    height: 0.5em;
-    * {
-        visibility: hidden;
-    }
+    background-color: $colorFailure;
+    color: $colorFailureBorder;
 }
 
 .icon,

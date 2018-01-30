@@ -63,7 +63,7 @@
 		</ng-container>
 
 		<!-- container and lists -->
-		<ng-container *ngIf="node['path'] != 'locallyNew' && ((node['info']['type'] == 16 || node['info']['type'] == 1)) && expandable(node)">
+		<ng-container *ngIf="!node['new'] && !node['deleted'] && ((node['info']['type'] == 16 || node['info']['type'] == 1)) && expandable(node)">
             <img *ngIf="hasHiddenChild(node)" (click)="expand(node, true)"
                 class="icon_action" src="assets/netopeer/icons/show_all.svg"
                 onmouseover="this.src='assets/netopeer/icons/show_all_active.svg'"

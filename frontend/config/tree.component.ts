@@ -52,7 +52,7 @@ export class TreeIndent implements OnInit {
     activeSession: Session;
     timeout;
 
-    constructor(private sessionsService: SessionsService, private router: Router) {}
+    constructor(private sessionsService: SessionsService) {}
 
     ngOnInit(): void {
         this.activeSession = this.sessionsService.getActiveSession();
@@ -80,6 +80,12 @@ export class TreeIndent implements OnInit {
     }
     closeCreatingDialog(node) {
         this.onCloseCreatingDialog.emit(node);
+    }
+
+    cancelDelete(node) {
+        node['dirty'] = false;
+        node['deleted'] = false;
+        this.sessionsService.removeModificationsRecord(node['path']);
     }
 }
 
