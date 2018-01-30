@@ -15,6 +15,7 @@ export class ConfigComponent implements OnInit {
     activeSession: Session;
     err_msg = "";
     loading = false;
+    root: {};
 
     constructor(private sessionsService: SessionsService, private router: Router) {}
 
@@ -141,11 +142,13 @@ export class ConfigComponent implements OnInit {
         this.sessionsService.rpcGetSubtree(this.activeSession.key, all).subscribe(result => {
             if (result['success']) {
                 this.activeSession.data = result['data'];
+                this.root['children'] = this.activeSession.data;
                 if (all) {
                     this.activeSession.dataVisibility = 'all';
                 } else {
                     this.activeSession.dataVisibility = 'root';
                 }
+                console.log(this.root);
             } else {
                 this.activeSession.dataVisibility = 'none';
                 if ('error-msg' in result) {
@@ -201,9 +204,7 @@ export class ConfigComponent implements OnInit {
 
     cancelChanges() {
         //console.log(JSON.stringify(this.activeSession.modifications))
-        for (let iter of this.activeSession.data) {
-            this.cancelChangesNode(iter);
-        }
+        this.cancelChangesNode(this.root);
         this.sessionsService.storeData();
         //console.log(JSON.stringify(this.activeSession.modifications))
     }
@@ -216,6 +217,11 @@ export class ConfigComponent implements OnInit {
     ngOnInit(): void {
         this.sessionsService.checkSessions();
         this.activeSession = this.sessionsService.getActiveSession();
+        this.root = {};
+        this.root['path'] = '/';
+        this.root['info'] = {};
+        this.root['info']['path'] = '/';
+        this.root['children'] = this.activeSession.data;
     }
 
     changeActiveSession(key: string) {

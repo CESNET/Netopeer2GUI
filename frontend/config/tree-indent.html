@@ -10,28 +10,28 @@
         (click)="deleteSubtree(node)"/>
 </ng-container>
 <ng-template #menu >
-    <span *ngIf="node['info']['config']; else empty"
+    <span *ngIf="type == 'root' || node['info']['config']; else empty"
         (mouseenter)="showEditMenu($event)" 
         (mouseleave)="hideEditMenu($event.currentTarget.lastElementChild)">
         <img  class="icon_action" src="assets/netopeer/icons/menu.svg" 
             onmouseover="this.src='assets/netopeer/icons/menu_active.svg'"
             onmouseout="this.src='assets/netopeer/icons/menu.svg'"/>
         <div class="editmenu msg-rounded">
-            <div class="button_action" title="remove subtree {{node['path']}}"
+            <div *ngIf="type != 'root'" class="button_action" title="remove subtree {{node['path']}}"
                 onmouseover="this.firstElementChild.src='assets/netopeer/icons/close_active.svg'"
                 onmouseout="this.firstElementChild.src='assets/netopeer/icons/close.svg'"
                 (click)="deleteSubtree(node);hideEditMenu($event.currentTarget.parentElement);">
                 <img class="icon_action" src="assets/netopeer/icons/close.svg" />
                 delete
             </div>
-            <div class="button_action" title="create sibling data node(s)"
+            <div *ngIf="type != 'root'" class="button_action" title="create sibling data node(s)"
                 onmouseover="this.firstElementChild.src='assets/netopeer/icons/add_active.svg'"
                 onmouseout="this.firstElementChild.src='assets/netopeer/icons/add.svg'"
                 (click)="openCreatingDialog($event.currentTarget, node, true);hideEditMenu($event.currentTarget.parentElement);">
                 <img class="icon_action" src="assets/netopeer/icons/add.svg" />
                 create sibling
             </div>
-            <div *ngIf="node['info']['type'] != 4 && node['info']['type'] != 8"
+            <div *ngIf="type == 'root' || (node['info']['type'] != 4 && node['info']['type'] != 8)"
                 class="button_action" title="create children data node(s)"
                 onmouseover="this.firstElementChild.src='assets/netopeer/icons/add_active.svg'"
                 onmouseout="this.firstElementChild.src='assets/netopeer/icons/add.svg'"
@@ -56,5 +56,6 @@
     <ng-template #nodes>
         <img *ngIf="type == 'edit' || node['last']" class="indentation" src="assets/netopeer/icons/tree_last_branch.svg" />
         <img *ngIf="type == 'current' && !node['last']" class="indentation" src="assets/netopeer/icons/tree_branch.svg" />
+        <img *ngIf="type == 'root'" class="indentation" src="assets/netopeer/icons/tree_root.svg" />
     </ng-template>
 </ng-container>

@@ -91,16 +91,13 @@ export class TreeIndent implements OnInit {
 
 export class TreeView implements OnInit {
     @Input() node;
+    @Input() root;
     @Input() indentation;
     activeSession: Session;
-    root: {};
     constructor(private sessionsService: SessionsService, private changeDetector: ChangeDetectorRef) {}
 
     ngOnInit(): void {
         this.activeSession = this.sessionsService.getActiveSession();
-        this.root = {};
-        this.root['path'] = '/';
-        this.root['children'] = this.activeSession.data;
     }
 
     inheritIndentation(node) {
@@ -255,7 +252,6 @@ export class TreeView implements OnInit {
     nodeParent(node) {
         let match = false;
         let parent = null;
-
         let children = this.activeSession.data;
         let newChildren;
         while (children || newChildren) {
@@ -280,6 +276,9 @@ export class TreeView implements OnInit {
                         break;
                     }
                 }
+                if (!match) {
+                    children = null;
+                }
             }
             if (match) {
                 continue;
@@ -287,10 +286,12 @@ export class TreeView implements OnInit {
             if (newChildren) {
                 for (let iter of newChildren) {
                     if (node['path'] == iter['path']) {
+                        match = true;
                         children = null;
                         newChildren = null;
                         break;
                     } else if (node['path'].startsWith(iter['path'] + '/')) {
+                        match = true;
                         parent = iter;
                         children = iter['children'];
                         if (('new' in node) && ('newChildren' in iter)) {
@@ -301,11 +302,13 @@ export class TreeView implements OnInit {
                         break;
                     }
                 }
+                if (!match) {
+                    children = null;
+                }
             }
         }
         if (!parent) {
             parent = this.root;
-            parent['children'] = this.activeSession.data;
         }
 
         return parent;
@@ -331,7 +334,11 @@ export class TreeView implements OnInit {
         let newNode = {};
         newNode['new'] = true;
         newNode['info'] = node['schemaChildren'][index];
-        newNode['path'] = node['path'] + '/' + this.schemaInfoName(node, newNode['info']);
+        if (node['path'] == '/') {
+            newNode['path'] = '/' + this.schemaInfoName(node, newNode['info']);
+        } else {
+            newNode['path'] = node['path'] + '/' + this.schemaInfoName(node, newNode['info']);
+        }
         newNode['dirty'] = true;
 
         if ('new' in node) {

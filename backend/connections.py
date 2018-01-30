@@ -182,8 +182,7 @@ def schema_info():
 		return(json.dumps({'success': False, 'error-msg': 'Invalid session key.'}))
 
 	if req['path'] == '/':
-		# TODO top level
-		return(json.dumps({'success': False, 'error-msg': 'Not implemented yet.'}))
+		node = None
 	else:
 		search = sessions[user.username][key]['session'].context.find_path(req['path'])
 		if search.number() != 1:
@@ -193,18 +192,28 @@ def schema_info():
 	result = [];
 	if 'relative' in req:
 		if req['relative'] == 'children':
-			for child in node.child_instantiables(0):
-				if child.flags() & ly.LYS_CONFIG_R:
-					# ignore status nodes
-					continue
-				result.append(schemaInfoNode(child))
+			if node:
+				instantiables = node.child_instantiables(0)
+			else:
+				# top level
+				instantiables = sessions[user.username][key]['session'].context.data_instantiables(0)
 		elif req['relative'] == 'siblings':
 			if node.parent():
-				for child in node.parent().child_instantiables(0):
-					result.append(schemaInfoNode(child))
-			# TODO top level - !node.parent()
+				instantiables = node.parent().child_instantiables(0)
+			else:
+				# top level
+				instantiables = sessions[user.username][key]['session'].context.data_instantiables(0)
 		else:
 			return(json.dumps({'success': False, 'error-msg': 'Invalid relative parameter.'}))
+
+		for child in instantiables:
+			if child.flags() & ly.LYS_CONFIG_R:
+				# ignore status nodes
+				continue
+			if child.nodetype() & (ly.LYS_RPC | ly.LYS_NOTIF | ly.LYS_ACTION):
+				# ignore RPCs, Notifications and Actions
+				continue
+			result.append(schemaInfoNode(child))
 	else:
 		result.append(schemaInfoNode(node))
 

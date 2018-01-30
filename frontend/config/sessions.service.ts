@@ -215,8 +215,8 @@ export class SessionsService{
         let options = new RequestOptions({ search: params });
         return this.http.get('/netopeer/session/rpcGet', options)
             .map((resp: Response) => {
+                //console.log(resp);
                 let result = resp.json();
-                //console.log(result);
                 if (result['success']) {
                     if (path.length) {
                         for (let iter of result['data']['children']) {
