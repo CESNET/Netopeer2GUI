@@ -71,8 +71,8 @@
     </div>
     <ng-container *ngIf="activeSession.dataVisibility!='none' && activeSession.data">
     <div id="config-data">
-        <tree-view [node]="root" [root]="root"></tree-view>
-        <!--  <pre *ngIf="root['schemaChildren']">{{root['schemaChildren'] | json}}</pre> -->
+        <tree-view [node]="activeSession.data"></tree-view>
+        <!--  <pre *ngIf="activeSession.data['schemaChildren']">{{activeSession.data['schemaChildren'] | json}}</pre> -->
     </div>
 	<div #modificationsStatus *ngIf="activeSession.modifications" class="modifications-status">&nbsp;
 		<div *ngIf="activeSession.modifications" class="msg-rounded" [style.width.px]="modificationsStatus.offsetWidth">

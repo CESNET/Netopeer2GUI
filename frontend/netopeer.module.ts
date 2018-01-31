@@ -20,12 +20,13 @@ import { InventoryComponent } from './inventory/inventory.component';
 import { InventorySchemasComponent } from './inventory/schemas.component';
 import { InventoryDevicesComponent } from './inventory/devices.component';
 import { ConfigComponent } from './config/config.component';
-import { TreeView, TreeIndent, TreeScrollTo, CheckLeafValue } from './config/tree.component';
+import { TreeView, TreeIndent, TreeCreate, TreeScrollTo, CheckLeafValue } from './config/tree.component';
 import { YANGComponent } from './yang/yang.component';
 import { MonitoringComponent } from './monitoring/monitoring.component';
 import { PluginsComponent } from './plugins/plugins.component';
 
 import { SessionsService } from './config/sessions.service'
+import { ModificationsService } from './config/modifications.service'
 
 const routes: Routes = [
   { path : 'netopeer', component : NetopeerComponent, canActivate : [AuthGuard],
@@ -97,13 +98,15 @@ const routes: Routes = [
     CheckLeafValue,
     TreeScrollTo,
     TreeIndent,
+    TreeCreate,
     TreeView,
     YANGComponent,
     MonitoringComponent,
     PluginsComponent
   ],
   providers: [
-    SessionsService
+    SessionsService,
+    ModificationsService
   ],
   entryComponents : [
     NetopeerComponent

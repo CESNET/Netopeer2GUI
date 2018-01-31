@@ -1,6 +1,7 @@
 import {Component, OnInit} from '@angular/core';
 import {Router} from '@angular/router';
 
+import {ModificationsService} from './modifications.service';
 import {SessionsService} from './sessions.service';
 import {Session} from './session';
 
@@ -15,9 +16,10 @@ export class ConfigComponent implements OnInit {
     activeSession: Session;
     err_msg = "";
     loading = false;
-    root: {};
 
-    constructor(private sessionsService: SessionsService, private router: Router) {}
+    constructor(private sessionsService: SessionsService,
+                private modsService: ModificationsService,
+                private router: Router) {}
 
     addSession() {
         this.router.navigateByUrl('/netopeer/inventory/devices');
@@ -141,14 +143,20 @@ export class ConfigComponent implements OnInit {
         this.loading = true;
         this.sessionsService.rpcGetSubtree(this.activeSession.key, all).subscribe(result => {
             if (result['success']) {
-                this.activeSession.data = result['data'];
-                this.root['children'] = this.activeSession.data;
+                for (let iter of result['data']) {
+                    this.modsService.setDirty(this.activeSession, iter);
+                }
+                this.activeSession.data = {};
+                this.activeSession.data['path'] = '/';
+                this.activeSession.data['info'] = {};
+                this.activeSession.data['info']['path'] = '/';
+                this.activeSession.data['children'] = result['data'];
                 if (all) {
                     this.activeSession.dataVisibility = 'all';
                 } else {
                     this.activeSession.dataVisibility = 'root';
                 }
-                console.log(this.root);
+                console.log(this.activeSession.data);
             } else {
                 this.activeSession.dataVisibility = 'none';
                 if ('error-msg' in result) {
@@ -162,49 +170,9 @@ export class ConfigComponent implements OnInit {
         });
     }
 
-    cancelChangesNode(node, recursion = true) {
-        if ('creatingChild' in node) {
-            delete node['creatingChild'];
-        }
-        if ('deleted' in node) {
-            node['dirty'] = false;
-            node['deleted'] = false;
-        }
-
-        if (this.activeSession.modifications) {
-            let record = this.sessionsService.getModificationsRecord(node['path']);
-            if (record) {
-                node['dirty'] = false;
-                if (record['type'] == 'change') {
-                    node['value'] = record['original'];
-                }
-                this.sessionsService.removeModificationsRecord(node['path']);
-                if (!this.activeSession.modifications) {
-                    return;
-                }
-            }
-        }
-
-        /* recursion */
-        if (recursion && 'children' in node) {
-            for (let child of node['children']) {
-                this.cancelChangesNode(child);
-            }
-            if ('newChildren' in node) {
-                for (let child of node['newChildren']) {
-                    this.sessionsService.removeModificationsRecord(child['path']);
-                }
-                delete node['newChildren'];
-                if (('children' in node) && node['children'].length) {
-                    node['children'][node['children'].length - 1]['last'] = true;
-                }
-            }
-        }
-    }
-
     cancelChanges() {
         //console.log(JSON.stringify(this.activeSession.modifications))
-        this.cancelChangesNode(this.root);
+        this.modsService.cancelModification(this.activeSession);
         this.sessionsService.storeData();
         //console.log(JSON.stringify(this.activeSession.modifications))
     }
@@ -217,11 +185,6 @@ export class ConfigComponent implements OnInit {
     ngOnInit(): void {
         this.sessionsService.checkSessions();
         this.activeSession = this.sessionsService.getActiveSession();
-        this.root = {};
-        this.root['path'] = '/';
-        this.root['info'] = {};
-        this.root['info']['path'] = '/';
-        this.root['children'] = this.activeSession.data;
     }
 
     changeActiveSession(key: string) {

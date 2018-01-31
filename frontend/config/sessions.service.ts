@@ -81,45 +81,6 @@ export class SessionsService{
         }
     }
 
-    createModificationsRecord(path) {
-        let activeSession = this.getActiveSession();
-        if (!activeSession.modifications) {
-            activeSession.modifications = {};
-        }
-
-        if (!(path in activeSession.modifications)) {
-            activeSession.modifications[path] = {};
-        }
-        return activeSession.modifications[path];
-    }
-
-    getModificationsRecord(path) {
-        let activeSession = this.getActiveSession();
-        if (!activeSession.modifications) {
-            return null;
-        }
-
-        if (!(path in activeSession.modifications)) {
-            return null;
-        }
-        return activeSession.modifications[path];
-    }
-
-    removeModificationsRecord(path = null) {
-        let activeSession = this.getActiveSession();
-        if (!activeSession.modifications) {
-            return;
-        }
-
-        if (path && (path in activeSession.modifications)) {
-            delete activeSession.modifications[path];
-        }
-
-        if (!Object.keys(activeSession.modifications).length) {
-            delete activeSession.modifications;
-        }
-    }
-
     checkValue(key: string, path: string, value: string): Observable<string[]> {
         let params = new URLSearchParams();
         params.set('key', key);
@@ -216,19 +177,7 @@ export class SessionsService{
         return this.http.get('/netopeer/session/rpcGet', options)
             .map((resp: Response) => {
                 //console.log(resp);
-                let result = resp.json();
-                if (result['success']) {
-                    if (path.length) {
-                        for (let iter of result['data']['children']) {
-                            this.setDirty(iter);
-                        }
-                    } else {
-                        for (let iter of result['data']) {
-                            this.setDirty(iter);
-                        }
-                    }
-                }
-                return result;
+                return resp.json();
             })
             .catch((err: Response | any) => Observable.throw(err));
     }
