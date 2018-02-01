@@ -26,7 +26,6 @@ import { MonitoringComponent } from './monitoring/monitoring.component';
 import { PluginsComponent } from './plugins/plugins.component';
 
 import { SessionsService } from './config/sessions.service'
-import { ModificationsService } from './config/modifications.service'
 
 const routes: Routes = [
   { path : 'netopeer', component : NetopeerComponent, canActivate : [AuthGuard],
@@ -105,8 +104,7 @@ const routes: Routes = [
     PluginsComponent
   ],
   providers: [
-    SessionsService,
-    ModificationsService
+    SessionsService
   ],
   entryComponents : [
     NetopeerComponent

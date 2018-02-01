@@ -48,29 +48,16 @@
             <th class="item_right" >Data</th>
         </tr>
     </table>
-    <div>
-        <img *ngIf="activeSession.dataVisibility!='root'" class="icon_action" (click)="rpcGet(false)"
-            src="assets/netopeer/icons/show_children.svg" alt="v" title="expand roots"
-            onmouseover="this.src='assets/netopeer/icons/show_children_active.svg'"
-            onmouseout="this.src='assets/netopeer/icons/show_children.svg'"/>
-        <img *ngIf="activeSession.dataVisibility!='all'" class="icon_action" (click)="rpcGet(true)"
-            src="assets/netopeer/icons/show_all.svg" alt="w" title="expand all"
-            onmouseover="this.src='assets/netopeer/icons/show_all_active.svg'"
-            onmouseout="this.src='assets/netopeer/icons/show_all.svg'"/>
-        <img *ngIf="activeSession.dataVisibility!='none'" class="icon_action" (click)="setDataVisibility('none')"
-            src="assets/netopeer/icons/collapse.svg" alt="x" title="collapse"
-            onmouseover="this.src='assets/netopeer/icons/collapse_active.svg'"
-            onmouseout="this.src='assets/netopeer/icons/collapse.svg'"/>
-        <span *ngIf="activeSession.statusVisibility"><a (click)="invertStatus()">hide</a> status data</span>
-        <span *ngIf="!activeSession.statusVisibility"><a (click)="invertStatus()">show</a> status data</span>
-        <!--<span><input type="checkbox" name="statusVisibility" [checked]="activeSession.statusVisibility" (change)="invertStatus()"/> include status data</span>-->
-    </div><br/>
-    <div class="loading" *ngIf="loading">
+    <div class="loading" *ngIf="treeService.loading">
         <span>Retrieving data ...</span>
         <div><netopeer-loading spinner="true"></netopeer-loading></div>
     </div>
     <ng-container *ngIf="activeSession.dataVisibility!='none' && activeSession.data">
     <div id="config-data">
+        <div>
+            <span *ngIf="activeSession.statusVisibility"><a (click)="invertStatus()">hide</a> status data</span>
+            <span *ngIf="!activeSession.statusVisibility"><a (click)="invertStatus()">show</a> status data</span>
+        </div>
         <tree-view [node]="activeSession.data"></tree-view>
         <!--  <pre *ngIf="activeSession.data['schemaChildren']">{{activeSession.data['schemaChildren'] | json}}</pre> -->
     </div>

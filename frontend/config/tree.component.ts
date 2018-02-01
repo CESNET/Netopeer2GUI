@@ -4,6 +4,7 @@ import {Router} from '@angular/router';
 import {Session} from './session';
 import {ModificationsService} from './modifications.service';
 import {SessionsService} from './sessions.service';
+import {TreeService} from './config.component';
 
 @Directive({
     selector: '[treeScrollTo]'
@@ -61,7 +62,7 @@ export class TreeCreate implements OnInit {
     creatingDialogSelect(node, index, source) {
         this.modsService.create(this.activeSession, node, index);
         this.sessionsService.storeData();
-        if (node['schemaChildren'].length) {
+        if (('schemaChildren' in node) && node['schemaChildren'].length) {
             source.selectedIndex = 0;
         }
     }
@@ -138,8 +139,10 @@ export class TreeView implements OnInit {
     @Input() node;
     @Input() indentation;
     activeSession: Session;
+
     constructor(private modsService: ModificationsService,
                 private sessionsService: SessionsService,
+                private treeService: TreeService,
                 private changeDetector: ChangeDetectorRef) {}
 
     ngOnInit(): void {
@@ -218,63 +221,6 @@ export class TreeView implements OnInit {
 
         this.modsService.change(this.activeSession, node, input.value);
         this.sessionsService.storeData();
-    }
-
-    expandable(node): boolean {
-        if (node['info']['type'] == 1 || /* container */
-            node['info']['type'] == 16) { /* list */
-                return true;
-        }
-        return false;
-    }
-
-    hasHiddenChild(node, clean=false): boolean {
-        if (!clean && 'hasHiddenChild' in node) {
-            return node['hasHiddenChild'];
-        }
-        node['hasHiddenChild'] = false;
-        if (!this.expandable(node)) {
-            /* terminal node (leaf or leaf-list) */
-            return node['hasHiddenChild'];
-        } else if (!('children' in node)) {
-            /* internal node without children */
-            node['hasHiddenChild'] = true;
-        } else {
-            /* go recursively */
-            for (let child of node['children']) {
-                if (this.hasHiddenChild(child, clean)) {
-                    node['hasHiddenChild'] = true;
-                    break;
-                }
-            }
-        }
-        return node['hasHiddenChild'];
-    }
-
-    collapse(node) {
-        delete node['children'];
-        this.activeSession.dataVisibility = 'mixed';
-        for (let iter of this.activeSession.data) {
-            this.hasHiddenChild(iter, true);
-        }
-        this.sessionsService.storeData();
-    }
-
-    expand(node, all: boolean) {
-        node['loading'] = true;
-        this.sessionsService.rpcGetSubtree(this.activeSession.key, all, node['path']).subscribe(result => {
-            if (result['success']) {
-                for (let iter of result['data']['children']) {
-                    this.modsService.setDirty(this.activeSession, iter);
-                }
-                node['children'] = result['data']['children'];
-                for (let iter of this.activeSession.data) {
-                    this.hasHiddenChild(iter, true);
-                }
-                delete node['loading'];
-                this.sessionsService.storeData();
-            }
-        });
     }
 
     newChildrenToShow(node) {

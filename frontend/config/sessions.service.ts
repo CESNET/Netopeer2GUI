@@ -92,6 +92,21 @@ export class SessionsService{
             .catch((err: Response | any) => Observable.throw(err));
     }
 
+    private filterSchemas(node, schemas) {
+        if (node['deleted'] || (node['info']['type'] & 0x18)) {
+            /* ignore deleted nodes and nodes that can be instantiated multiple times */
+            return;
+        }
+        for (let index in schemas) {
+            if (!schemas[index]['config'] ||
+                    (schemas[index]['name'] == node['info']['name'] && schemas[index]['module'] == node['info']['module'])) {
+                /* 1. read-only node */
+                /* 2. the node is already instantiated */
+                schemas.splice(index, 1);
+            }
+        }
+    }
+
     childrenSchemas(key: string, path: string, node = null) {
         let params = new URLSearchParams();
         params.set('key', key);
@@ -103,19 +118,14 @@ export class SessionsService{
                 let result = resp.json();
                 console.log(result)
                 if (result['success'] && node) {
-                    for (let iter of node['children']) {
-                        if (iter['deleted'] || (iter['info']['type'] & 0x18)) {
-                            /* ignore deleted nodes and nodes that can be instantiated multiple times */
-                            continue;
+                    if ('children' in node) {
+                        for (let iter of node['children']) {
+                            this.filterSchemas(iter, result['data']);
                         }
-                        for (let index in result['data']) {
-                            if (!result['data'][index]['config'] ||
-                                    (result['data'][index]['name'] == iter['info']['name'] && result['data'][index]['module'] == iter['info']['module'])) {
-                                /* 1. read-only node */
-                                /* 2. the node is already instantiated */
-                                result['data'].splice(index, 1);
-                                break;
-                            }
+                    }
+                    if ('newChildren' in node) {
+                        for (let iter of node['newChildren']) {
+                            this.filterSchemas(iter, result['data']);
                         }
                     }
                 }

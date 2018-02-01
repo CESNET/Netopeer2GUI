@@ -4,7 +4,7 @@ import { Session} from './session';
 import { SessionsService } from './sessions.service';
 
 @Injectable()
-export class ModificationsService{
+export class ModificationsService {
 
     constructor(private sessionsService: SessionsService) {}
 
