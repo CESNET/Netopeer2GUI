@@ -130,10 +130,7 @@ def _checkvalue(session, req, schema):
 		return(json.dumps({'success': False, 'error-msg': 'Invalid session key.'}))
 
 	if schema:
-		# TODO - go via context to cover case there is no data
-		print(req['path'])
 		search = sessions[user.username][key]['session'].context.find_path(req['path'])
-		print(search.number())
 	else:
 		search = sessions[user.username][key]['data'].find_path(req['path'])
 
@@ -218,6 +215,85 @@ def schema_info():
 		result.append(schemaInfoNode(node))
 
 	return(json.dumps({'success': True, 'data': result}))
+
+
+def _create_child(ctx, parent, child_def):
+	module = ctx.get_module(child_def['info']['module'])
+	# print('child: ' + json.dumps(child_def))
+	if child_def['info']['type'] == 4:
+		# print('parent: ' + parent.schema().name())
+		# print('module: ' + module.name())
+		# print('name: ' + child_def['info']['name'])
+		# print('value: ' + child_def['value'])
+		ly.Data_Node(parent, module, child_def['info']['name'], child_def['value'])
+	else:
+		# print('parent: ' + parent.schema().name())
+		# print('module: ' + module.name())
+		# print('name: ' + child_def['info']['name'])
+		child = ly.Data_Node(parent, module, child_def['info']['name'])
+		if 'children' in child_def:
+			for grandchild in child_def['children']:
+				_create_child(ctx, child, grandchild)
+
+
+@auth.required()
+def session_commit():
+	session = auth.lookup(request.headers.get('Authorization', None))
+	user = session['user']
+
+	req = request.get_json()
+	if not 'key' in req:
+		return(json.dumps({'success': False, 'error-msg': 'Missing session key.'}))
+	if not 'modifications' in req:
+		return(json.dumps({'success': False, 'error-msg': 'Missing modifications.'}))
+
+	mods = req['modifications']
+	ctx = sessions[user.username][req['key']]['session'].context
+	root = None
+	for key in mods:
+		recursion = False
+		# get correct path and value if needed
+		path = key
+		value = None
+		if mods[key]['type'] == 'change':
+			value = mods[key]['value']
+		elif mods[key]['type'] == 'create' or mods[key]['type'] == 'replace':
+			if mods[key]['data']['info']['type'] == 4:
+				# creating/replacing leaf
+				value = mods[key]['data']['value']
+			elif mods[key]['data']['info']['type'] == 16:
+				recursion = True
+				path = mods[key]['data']['path']
+			elif mods[key]['data']['info']['type'] == 1:
+				recursion = True
+
+		# create node
+		if root:
+			root.new_path(ctx, path, value, 0, 0)
+		else:
+			root = ly.Data_Node(ctx, path, value, 0, 0)
+		node = root.find_path(path).data()[0];
+
+		# set operation attribute and add additional data if any
+		if mods[key]['type'] == 'change':
+			node.insert_attr(None, 'ietf-netconf:operation', 'merge')
+		elif mods[key]['type'] == 'delete':
+			node.insert_attr(None, 'ietf-netconf:operation', 'delete')
+		elif mods[key]['type'] == 'create':
+			node.insert_attr(None, 'ietf-netconf:operation', 'create')
+		elif mods[key]['type'] == 'replace':
+			node.insert_attr(None, 'ietf-netconf:operation', 'replace')
+		else:
+			return(json.dumps({'success': False, 'error-msg': 'Invalid modification ' + key}))
+
+		if recursion and 'children' in mods[key]['data']:
+			for child in mods[key]['data']['children']:
+				if 'key' in child['info']:
+					continue
+				_create_child(ctx, node, child)
+
+	print(root.print_mem(ly.LYD_XML, ly.LYP_FORMAT))
+	return(json.dumps({'success': True}))
 
 
 @auth.required()
