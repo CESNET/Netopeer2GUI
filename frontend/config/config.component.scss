@@ -86,14 +86,17 @@
 	margin-bottom: 2em;
 	margin-right: 2em;
 	padding: 0.5em 1em;
-	
-	div {
+
+	>div {
 		position: fixed;
 		bottom: 2em;
 		right: 2em;
 		background-color: $colorChanged;
 		border: 2px solid $colorChangedBorder;
-		padding: 0.5em 1em;
+        padding: 0 1em;
+        div {
+            padding: 0.5em 0em;
+        }
 	}
 }
 

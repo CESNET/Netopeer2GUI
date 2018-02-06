@@ -300,7 +300,9 @@ export class ModificationsService {
         case 4: { /* leaf */
             node['schemaChildren'].splice(index, 1);
 
-            newNode['value'] = newNode['info']['default'];
+            if ('default' in newNode['info']) {
+                newNode['value'] = newNode['info']['default'];
+            }
             this.setEdit(newNode, true)
             break;
         }
@@ -359,8 +361,7 @@ export class ModificationsService {
             /* store the record about the newly created data */
             let record = this.createModificationsRecord(activeSession, newNode['path']);
             if (('type' in record) && record['type'] == 'delete') {
-                record['type'] = 'change';
-                record['value'] = newNode;
+                record['type'] = 'replace';
                 delete record['original']['deleted'];
                 for (let i in node['children']) {
                     if (node['children'][i] == record['original']) {
@@ -370,8 +371,8 @@ export class ModificationsService {
                 }
             } else {
                 record['type'] = 'create';
-                record['data'] = newNode;
             }
+            record['data'] = newNode;
         }
         console.log(node)
     }
@@ -467,5 +468,80 @@ export class ModificationsService {
             }
             last['last'] = true;
         }
+    }
+
+    private sortKeys(list) {
+        let key_index = 0;
+        for (let key of list['info']['keys']) {
+            for (let i in list['children']) {
+                if (list['children'][i]['info']['name'] == key && list['children'][i]['info']['module'] == list['info']['module']) {
+                    let moved = list['children'].splice(i, 1);
+                    list['children'].splice(key_index++, 0, moved[0]);
+                }
+            }
+        }
+        return key_index;
+    }
+
+    private resolveKeys(node, top = true): string {
+        if (node['info']['type'] == 16) {
+            if (!('children' in node) || !node['children'].length) {
+                return 'no key in ' + node['path'];
+            }
+            let count = this.sortKeys(node);
+            if (count != node['info']['keys'].length) {
+                return 'invalid number (' + count + ') of keys in ' + node['path'];
+            }
+        }
+        if (node['info']['type'] == 16 || node['info']['type'] == 1) {
+            for (let i in node['children']) {;
+                console.log(node['children'][i]);
+                if (node['children'][i]['info']['type'] == 4) {
+                    /* leaf */
+                    if (!('value' in node['children'][i])) {
+                        if (node['children'][i]['info']['key']) {
+                            return 'not confirmed value of the ' + node['children'][i]['path'] + ' key.';
+                        }
+                        console.log('not confirmed node ' + node['children'][i]['path'] + ', removing it');
+                        node['children'].splice(i, 1);
+                    }
+                } else {
+                    /* recursion */
+                    let msg = this.resolveKeys(node['children'][i], false);
+                    if (msg) {
+                        return msg;
+                    }
+                }
+            }
+        }
+
+        /* update predicate in path */
+        if (node['info']['type'] == 16 && top) {
+            node['path'] = node['path'].slice(0, node['path'].lastIndexOf('['))
+            for (let i in node['info']['keys']) {
+                node['path'] = node['path'] + '[' + node['info']['keys'][i] + '=\'' + node['children'][i]['value'] + '\']'
+            }
+        }
+        return null;
+    }
+
+    applyModification(activeSession: Session) {
+        for (let mod in activeSession.modifications) {
+            //console.log(JSON.stringify(mod));
+            if (!('data' in activeSession.modifications[mod])) {
+                continue;
+            }
+            let err = this.resolveKeys(activeSession.modifications[mod]['data']);
+            if (err) {
+                console.log(err);
+                return new Promise((resolve, reject) => {resolve({'success':false,'error-msg': err})});
+            }
+        }
+        return this.sessionsService.commit(activeSession.key).then(result => {
+            if (result['success']) {
+                delete activeSession.modifications;
+            }
+            return result;
+        })
     }
 }

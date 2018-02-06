@@ -192,6 +192,13 @@ export class SessionsService{
             .catch((err: Response | any) => Observable.throw(err));
     }
 
+    commit(key: string) {
+        let activeSession = this.getActiveSession(key);
+        let options = new RequestOptions({body: JSON.stringify({'key': key, 'modifications': activeSession.modifications})});
+        return this.http.post('/netopeer/session/commit', null, options)
+            .map((resp: Response) => resp.json()).toPromise();
+    }
+
     close(key: string) {
         let params = new URLSearchParams();
         params.set('key', key);

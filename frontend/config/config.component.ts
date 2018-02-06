@@ -133,6 +133,7 @@ export class ConfigComponent implements OnInit {
     title = 'Configuration';
     activeSession: Session;
     err_msg = "";
+    commit_error = "";
 
     constructor(private sessionsService: SessionsService,
                 private modsService: ModificationsService,
@@ -249,13 +250,20 @@ export class ConfigComponent implements OnInit {
     cancelChanges() {
         //console.log(JSON.stringify(this.activeSession.modifications))
         this.modsService.cancelModification(this.activeSession);
+        this.commit_error = "";
         this.sessionsService.storeData();
         //console.log(JSON.stringify(this.activeSession.modifications))
     }
 
     applyChanges() {
-        /* TODO */
-        this.cancelChanges();
+        this.modsService.applyModification(this.activeSession).then(result => {
+            if (result['success']) {
+                this.reloadData();
+                this.commit_error = "";
+            } else {
+                this.commit_error = result['error-msg'];
+            }
+        })
     }
 
     ngOnInit(): void {

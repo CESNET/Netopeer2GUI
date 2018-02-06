@@ -63,10 +63,12 @@
     </div>
 	<div #modificationsStatus *ngIf="activeSession.modifications" class="modifications-status">&nbsp;
 		<div *ngIf="activeSession.modifications" class="msg-rounded" [style.width.px]="modificationsStatus.offsetWidth">
-		Configuration data were changed. Do you wish to
-		<button (click)="applyChanges()">apply</button> /
-		<button (click)="cancelChanges()">cancel</button>
-		all changes?
+            <div>Configuration data were changed. Do you wish to
+                <button (click)="applyChanges()">apply</button> /
+                <button (click)="cancelChanges()">cancel</button>
+                all changes?
+            </div>
+            <div *ngIf="commit_error" class="msg-rounded msg-failure"><span class="msg-close" (click)="commit_error=''">x</span>{{commit_error}}</div>
 		</div>
 	</div>
     </ng-container>
