@@ -87,7 +87,7 @@ SCRIPT
 
 $frontend = <<SCRIPT
 cd liberouter-gui/frontend
-/usr/local/bin/ng serve --host 0.0.0.0 --proxy proxy.json > ../frontend.log 2>&1 &
+/usr/local/bin/ng serve --preserve-symlinks --host 0.0.0.0 --proxy proxy.json > ../frontend.log 2>&1 &
 cd ../..
 SCRIPT
 
