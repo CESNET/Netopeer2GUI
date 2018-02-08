@@ -288,11 +288,19 @@ def session_commit():
 
 		if recursion and 'children' in mods[key]['data']:
 			for child in mods[key]['data']['children']:
-				if 'key' in child['info']:
+				if 'key' in child['info'] and child['info']['key']:
 					continue
 				_create_child(ctx, node, child)
 
-	print(root.print_mem(ly.LYD_XML, ly.LYP_FORMAT))
+	# print(root.print_mem(ly.LYD_XML, ly.LYP_FORMAT))
+	try:
+		sessions[user.username][req['key']]['session'].rpcEditConfig(nc.DATASTORE_RUNNING, root)
+	except nc.ReplyError as e:
+		reply = {'success': False, 'error': []}
+		for err in e.args[0]:
+			reply['error'].append(json.loads(str(err)))
+		return(json.dumps(reply))
+
 	return(json.dumps({'success': True}))
 
 
