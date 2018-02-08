@@ -133,7 +133,7 @@ export class ConfigComponent implements OnInit {
     title = 'Configuration';
     activeSession: Session;
     err_msg = "";
-    commit_error = "";
+    commit_error = [];
 
     constructor(private sessionsService: SessionsService,
                 private modsService: ModificationsService,
@@ -250,7 +250,7 @@ export class ConfigComponent implements OnInit {
     cancelChanges() {
         //console.log(JSON.stringify(this.activeSession.modifications))
         this.modsService.cancelModification(this.activeSession);
-        this.commit_error = "";
+        this.commit_error = [];
         this.sessionsService.storeData();
         //console.log(JSON.stringify(this.activeSession.modifications))
     }
@@ -259,9 +259,9 @@ export class ConfigComponent implements OnInit {
         this.modsService.applyModification(this.activeSession).then(result => {
             if (result['success']) {
                 this.reloadData();
-                this.commit_error = "";
+                this.commit_error = [];
             } else {
-                this.commit_error = result['error-msg'];
+                this.commit_error = result['error'];
             }
         })
     }

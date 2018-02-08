@@ -534,12 +534,14 @@ export class ModificationsService {
             let err = this.resolveKeys(activeSession.modifications[mod]['data']);
             if (err) {
                 console.log(err);
-                return new Promise((resolve, reject) => {resolve({'success':false,'error-msg': err})});
+                return new Promise((resolve, reject) => {resolve({'success':false,'error': [{'message':err}]})});
             }
         }
         return this.sessionsService.commit(activeSession.key).then(result => {
             if (result['success']) {
                 delete activeSession.modifications;
+            } else {
+                console.log(result);
             }
             return result;
         })

@@ -68,7 +68,9 @@
                 <button (click)="cancelChanges()">cancel</button>
                 all changes?
             </div>
-            <div *ngIf="commit_error" class="msg-rounded msg-failure"><span class="msg-close" (click)="commit_error=''">x</span>{{commit_error}}</div>
+            <ng-container *ngFor="let err of commit_error; let i = index">
+                <div class="msg-rounded msg-failure"><span class="msg-close" (click)="commit_error.splice(i,1)">x</span>{{err['message']}}</div>
+            </ng-container>
 		</div>
 	</div>
     </ng-container>
