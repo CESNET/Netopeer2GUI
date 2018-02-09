@@ -33,3 +33,4 @@ module_bp.add_url_rule('/session/commit', view_func = session_commit, methods = 
 module_bp.add_url_rule('/session/element/checkvalue', view_func = data_checkvalue, methods = ['GET'])
 module_bp.add_url_rule('/session/schema', view_func = schema_info, methods = ['GET'])
 module_bp.add_url_rule('/session/schema/checkvalue', view_func = schema_checkvalue, methods = ['GET'])
+module_bp.add_url_rule('/session/schema/values', view_func = schema_values, methods = ['GET'])

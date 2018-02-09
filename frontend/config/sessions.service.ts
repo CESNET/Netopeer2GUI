@@ -137,6 +137,15 @@ export class SessionsService{
             }).toPromise();
     }
 
+    schemaValues(key: string, path: string) {
+        let params = new URLSearchParams();
+        params.set('key', key);
+        params.set('path', path);
+        let options = new RequestOptions({ search: params });
+        return this.http.get('/netopeer/session/schema/values', options)
+            .map((resp: Response) => resp.json()).toPromise();
+    }
+
     alive(key: string): Observable<string[]> {
         let params = new URLSearchParams();
         params.set('key', key);

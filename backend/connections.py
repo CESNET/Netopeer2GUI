@@ -164,6 +164,33 @@ def schema_checkvalue():
 
 
 @auth.required()
+def schema_values():
+	session = auth.lookup(request.headers.get('Authorization', None))
+	user = session['user']
+	req = request.args.to_dict()
+
+	if not 'key' in req:
+		return(json.dumps({'success': False, 'error-msg': 'Missing session key.'}))
+	if not 'path' in req:
+		return(json.dumps({'success': False, 'error-msg': 'Missing path to validate value.'}))
+
+	key = req['key']
+	if not key in sessions[user.username]:
+		return(json.dumps({'success': False, 'error-msg': 'Invalid session key.'}))
+
+	search = sessions[user.username][key]['session'].context.find_path(req['path'])
+	if search.number() != 1:
+		return(json.dumps({'success': False, 'error-msg': 'Invalid data path.'}))
+	schema = search.schema()[0]
+
+	if schema.nodetype() != ly.LYS_LEAF and schema.nodetype != ly.LYS_LEAFLIST:
+		result = None
+	else:
+		result = typeValues(schema.subtype().type(), [])
+	return(json.dumps({'success': True, 'data': result}))
+
+
+@auth.required()
 def schema_info():
 	session = auth.lookup(request.headers.get('Authorization', None))
 	user = session['user']

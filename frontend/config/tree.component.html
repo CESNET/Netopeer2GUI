@@ -99,10 +99,19 @@
 				(click)="changeValue(node, $event.target)" (keyup.enter)="changeValue(node, $event.target)"
 				onmouseover="this.src='assets/netopeer/icons/confirm_active.svg'"
 				onmouseout="this.src='assets/netopeer/icons/confirm.svg'"/>
-			<input id="{{node['path']}}_input" type="text" class="value" value="{{node['value']}}" tabindex=0
-				(keyup)="checkValue(node, $event.target)" (change)="checkValue(node, $event.target)"
-				(keyup.enter)="changeValue(node, $event.target)" (keyup.escape)="changeValueCancel(node)"
-				checkLeafValue [node]="node" (onCheckValue)="checkValue($event.node, $event.element)"/>
+            <select *ngIf="node['info']['values']"
+                id="{{node['path']}}_input" type="text" class="value"
+                (change)="checkValue(node, $event.target, true)"
+                checkLeafValue [node]="node" [trusted]="true" (onCheckValue)="checkValue($event.node, $event.element, $event.trusted)">
+                <ng-container *ngFor="let value of node['info']['values']; let i='index'">
+                    <option value="{{value}}">{{value}}</option>
+                </ng-container>
+            </select>
+            <input *ngIf="!node['info']['values']"
+                id="{{node['path']}}_input" type="text" class="value" value="{{node['value']}}" tabindex=0
+                (keyup)="checkValue(node, $event.target)" (change)="checkValue(node, $event.target)"
+                (keyup.enter)="changeValue(node, $event.target)" (keyup.escape)="changeValueCancel(node)"
+                checkLeafValue [node]="node" (onCheckValue)="checkValue($event.node, $event.element)"/>
 		</div>
 	</ng-container>
 

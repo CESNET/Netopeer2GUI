@@ -26,6 +26,7 @@ export class TreeScrollTo {
 })
 export class CheckLeafValue {
     @Input() node;
+    @Input() trusted = false;
     @Output() onCheckValue = new EventEmitter();
 
     constructor(private elRef:ElementRef) {}
@@ -33,9 +34,10 @@ export class CheckLeafValue {
     ngAfterContentInit() {
         console.log(this.node)
         let node = this.node;
+        let trusted = this.trusted;
         let element = this.elRef.nativeElement;
         element.value = node['value'];
-        this.onCheckValue.emit({node, element});
+        this.onCheckValue.emit({node, element, trusted});
   }
 }
 
@@ -170,15 +172,26 @@ export class TreeView implements OnInit {
         }
         let parent = target.parentElement;
 
-        this.modsService.setEdit(node, true)
+        this.modsService.setEdit(this.activeSession, node, true)
         this.changeDetector.detectChanges();
 
         parent.nextElementSibling.lastElementChild.focus();
     }
 
-    checkValue(node, target) {
+    checkValue(node, target, trusted = false) {
         let confirm = target.previousElementSibling;
         let cancel = confirm.previousElementSibling;
+
+        if (trusted) {
+            /* value is selected from valid options */
+            target.classList.remove("invalid");
+            confirm.style.visibility = "visible";
+            if ('value' in node) {
+                cancel.style.visibility = "visible";
+            }
+            return;
+        }
+
         let path: string;
         if ('creatingChild' in node) {
             path = node['creatingChild']['path'];
@@ -204,7 +217,7 @@ export class TreeView implements OnInit {
 
     changeValueCancel(node) {
         if ('value' in node) {
-            this.modsService.setEdit(node, false);
+            this.modsService.setEdit(this.activeSession, node, false);
         }
     }
 

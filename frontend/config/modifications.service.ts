@@ -64,12 +64,32 @@ export class ModificationsService {
         }
     }
 
-    setEdit(node, set = true) {
+    setEdit(activeSession, node, set = true) {
+        let waiting = false;
         if (set && node['info']['datatypebase'] == 'empty') {
             node['value'] = '';
             return;
         }
-        node['edit'] = set;
+        if (set && !('values' in node['info'])) {
+            switch (node['info']['datatypebase']) {
+            case 'bits':
+            case 'enumeration':
+                waiting = true;
+                this.sessionsService.schemaValues(activeSession.key, node['info']['path']).then(result => {
+                    if (result['success']) {
+                        node['info']['values'] = result['data'];
+                    }
+                    node['edit'] = set;
+                });
+                break;
+            case 'boolean':
+                node['info']['values'] = ['true', 'false'];
+                break;
+            }
+        }
+        if (!waiting) {
+            node['edit'] = set;
+        }
     }
 
     setLast(list) {
@@ -89,7 +109,7 @@ export class ModificationsService {
         let match = false;
         let parent = null;
         let children = activeSession.data['children'];
-        let newChildren;
+        let newChildren = activeSession.data['newChildren'];
 
         while (children || newChildren) {
             match = false;
@@ -210,7 +230,7 @@ export class ModificationsService {
                 /* new record */
                 if (node['value'] == leafValue) {
                     /* no change to the original value */
-                    this.setEdit(node, false);
+                    this.setEdit(activeSession, node, false);
                     this.removeModificationsRecord(activeSession);
                     return;
                 }
@@ -232,7 +252,7 @@ export class ModificationsService {
         }
 
         node['value'] = leafValue;
-        this.setEdit(node, false);
+        this.setEdit(activeSession, node, false);
     }
 
     createOpen(schemas, node) {
@@ -287,7 +307,7 @@ export class ModificationsService {
         }
 
         switch(newNode['info']['type']) {
-        case 1: { /* container */
+        case 1: /* container */
             node['schemaChildren'].splice(index, 1);
 
             newNode['children'] = [];
@@ -296,17 +316,15 @@ export class ModificationsService {
                 this.createOpen(result, newNode);
             });
             break;
-        }
-        case 4: { /* leaf */
+        case 4: /* leaf */
             node['schemaChildren'].splice(index, 1);
 
             if ('default' in newNode['info']) {
                 newNode['value'] = newNode['info']['default'];
             }
-            this.setEdit(newNode, true)
+            this.setEdit(activeSession, newNode, true)
             break;
-        }
-        case 16: { /* list */
+        case 16: /* list */
             let search;
             if ('new' in node) {
                 search = node['children'];
@@ -341,7 +359,7 @@ export class ModificationsService {
                         newKey['info'] = newNode['schemaChildren'][i];
                         newKey['path'] = newNode['path'] + '/' + this.schemaName(newNode['info'], newKey['info']);
                         newKey['dirty'] = true;
-                        this.setEdit(newKey, true)
+                        this.setEdit(activeSession, newKey, true)
                         newNode['children'].push(newKey)
                         newNode['schemaChildren'].splice(i, 1);
                     }
@@ -349,7 +367,6 @@ export class ModificationsService {
             });
 
             break;
-        }
         }
 
         if (!node['schemaChildren'].length) {
