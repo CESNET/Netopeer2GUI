@@ -11,23 +11,24 @@ import time
 
 from liberouterapi import auth
 from flask import request
-import libyang as ly
+import yang
 
 from .inventory import INVENTORY, inventory_check
 from .error import NetopeerException
 
 __SCHEMAS_EMPTY = '{"schemas":{"timestamp":0,"schema":[]}}'
 
-def __schema_parse(path, format=ly.LYS_IN_UNKNOWN):
+
+def __schema_parse(path, format = yang.LYS_IN_UNKNOWN):
 	try:
-		ctx = ly.Context(os.path.dirname(path))
+		ctx = yang.Context(os.path.dirname(path))
 	except Exception as e:
 		raise NetopeerException(str(e))
 	
 	try:
-		module = ctx.parse_path(path, ly.LYS_IN_YANG if format == ly.LYS_IN_UNKNOWN else format)
+		module = ctx.parse_path(path, yang.LYS_IN_YANG if format == yang.LYS_IN_UNKNOWN else format)
 	except Exception as e:
-		if format != ly.LYS_IN_UNKOWN:
+		if format != yang.LYS_IN_UNKOWN:
 			raise NetopeerException(str(e))
 		try:
 			module = ctx.parse_path(path, ly_LYS_IN_YIN)
@@ -40,7 +41,7 @@ def __schema_parse(path, format=ly.LYS_IN_UNKNOWN):
 def __schemas_init():
 	schemas = json.loads(__SCHEMAS_EMPTY)
 	try:
-		ctx = ly.Context()
+		ctx = yang.Context()
 	except Exception as e:
 		raise NetopeerException(str(e))
 	
@@ -91,9 +92,9 @@ def __schemas_update(path):
 	# check the current content of the storage
 	for file in os.listdir(path):
 		if file[-5:] == '.yang':
-			format =  ly.LYS_IN_YANG
+			format = yang.LYS_IN_YANG
 		elif file[-4:] == '.yin':
-			format = ly.LYS_IN_YIN
+			format = yang.LYS_IN_YIN
 		else:
 			continue
 		
@@ -142,11 +143,11 @@ def schemas_add():
 	# parse file
 	try:
 		if file.filename[-5:] == '.yang':
-			format = ly.LYS_IN_YANG
+			format = yang.LYS_IN_YANG
 		elif file.filename[-4:] == '.yin':
-			format = ly.LYS_IN_YIN
+			format = yang.LYS_IN_YIN
 		else:
-			format = ly.LYS_IN_UNKNOWN
+			format = yang.LYS_IN_UNKNOWN
 		module = __schema_parse(path, format)
 		# TODO: normalize file name to allow removing without remembering schema path
 	except Exception:

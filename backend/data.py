@@ -7,7 +7,7 @@ Author: Radek Krejci <rkrejci@cesnet.cz>
 import json
 import os
 
-import libyang as ly
+import yang
 import netconf2 as nc
 
 def infoBuiltInType(base):
@@ -66,12 +66,12 @@ def schemaInfoNode(schema):
 	info["module"] = schema.module().name()
 	info["name"] = schema.name()
 	info["dsc"] = schema.dsc()
-	info["config"] = True if schema.flags() & ly.LYS_CONFIG_W else False
+	info["config"] = True if schema.flags() & yang.LYS_CONFIG_W else False
 	if info["type"] == 1:
 		info["presence"] = schema.subtype().presence()
 	info["path"] = schema.path()
 
-	if info["type"] == ly.LYS_LEAF:
+	if info["type"] == yang.LYS_LEAF:
 		schemaInfoType(schema.subtype(), info)
 		info["key"] = False if schema.subtype().is_key() == -1 else True
 		dflt = schema.subtype().dflt()
@@ -83,9 +83,9 @@ def schemaInfoNode(schema):
 				tpdf = tpdf.type().der()
 			if tpdf:
 				info["default"] = tpdf.dflt()
-	elif info["type"] == ly.LYS_LEAFLIST:
+	elif info["type"] == yang.LYS_LEAFLIST:
 		schemaInfoType(schema.subtype(), info)
-	elif info["type"] == ly.LYS_LIST:
+	elif info["type"] == yang.LYS_LIST:
 		info["keys"] = []
 		for key in schema.subtype().keys():
 			info["keys"].append(key.name())
@@ -100,7 +100,7 @@ def dataInfoNode(node, parent=None, recursion=False):
 	if node.dflt():
 		return None
 
-	if parent and schema.nodetype() == ly.LYS_LEAFLIST:
+	if parent and schema.nodetype() == yang.LYS_LEAFLIST:
 		# find previous instance and just add value
 		for child in parent["children"]:
 			if child["info"]["name"] == schema.name():
@@ -112,9 +112,9 @@ def dataInfoNode(node, parent=None, recursion=False):
 	info = schemaInfoNode(schema);
 
 	result = {}
-	if info["type"] == ly.LYS_LEAF:
+	if info["type"] == yang.LYS_LEAF:
 		result["value"] = casted.value_str()
-	elif info["type"] == ly.LYS_LEAFLIST:
+	elif info["type"] == yang.LYS_LEAFLIST:
 		result["value"] = [casted.value_str()]
 	elif recursion:
 		result["children"] = []
@@ -127,7 +127,7 @@ def dataInfoNode(node, parent=None, recursion=False):
 					childNode["last"] = True
 				result["children"].append(childNode)
 
-		if info["type"] == ly.LYS_LIST:
+		if info["type"] == yang.LYS_LIST:
 			result["keys"] = []
 			index = 0
 			for key in schema.subtype().keys():
