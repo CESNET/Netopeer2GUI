@@ -47,12 +47,12 @@
     	cursor: pointer;
 		text-decoration: none;
 		display: inline-block;
-		padding: 0.2em 0em 0.1em 1em;
+		padding: 0.2em 0 0.1em 1em;
 		color: $colorTextInverse;
 		
 		&:visited,
 		&:link {
-			color: inherited;
+			color: inherit;
 		}
 		&:hover,
 		&.active {
@@ -95,7 +95,7 @@
 		border: 2px solid $colorChangedBorder;
         padding: 0 1em;
         div {
-            padding: 0.5em 0em;
+            padding: 0.5em 0;
         }
 	}
 }

@@ -6,8 +6,13 @@ $colorLineHover: #e1e1e1;
 
 .subtree {
     cursor: default;
-    display: block;
+    display: flex;
+    flex-direction: column;
     width: 100%;
+
+    .indentation{
+        height: 100%;
+    }
 }
 
 .node {
@@ -24,7 +29,7 @@ $colorLineHover: #e1e1e1;
 }
 
 .node_edit {
-    display: block;
+    display: flex;
     width: 100%;
     overflow: hidden;
 
@@ -48,8 +53,9 @@ $colorLineHover: #e1e1e1;
     }
 
     > .msg-failure {
-        margin: 0.5em 0em;
+        margin: 0.5em 0;
     }
+
 }
 .node_edit.dialog {
     background-color: $colorChanged;;
@@ -86,12 +92,12 @@ $colorLineHover: #e1e1e1;
 .module_name {
     float: right;
     text-align: right;
-    max-width: 10em;
+    max-width: 25em;
     word-wrap: break-word;
 }
 
 .children {
-    padding-left: 0em;
+    padding-left: 0;
 }
 
 .value {
@@ -102,6 +108,7 @@ $colorLineHover: #e1e1e1;
 
 .indentation {
     width: 1.7em;
+    height: 100%;
 }
 
 .editmenu {
