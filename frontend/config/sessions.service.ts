@@ -216,9 +216,12 @@ export class SessionsService{
             .map((resp: Response) => resp.json())
             .do(resp => {
                 if (resp['success']) {
-                    this.sessions.splice(this.sessions.findIndex((s: Session) => s.key == key), 1);
+                    let index = this.sessions.findIndex((s: Session) => s.key == key);
+                    this.sessions.splice(index, 1);
                     if (key == this.activeSession) {
-                        if (this.sessions.length) {
+                        if (index > 0) {
+                            this.activeSession = this.sessions[index - 1].key;
+                        } else if (this.sessions.length) {
                             this.activeSession = this.sessions[0].key;
                         } else {
                             this.activeSession = ""
