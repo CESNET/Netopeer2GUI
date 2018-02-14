@@ -64,6 +64,7 @@ ln -s /home/vagrant/Netopeer2GUI liberouter-gui/modules/netopeer
 cd liberouter-gui
 cp -f modules/netopeer/app.config.json modules/
 python3 ./bootstrap.py
+pip3 install --upgrade pip
 pip3 install -r backend/requirements.txt
 cd frontend
 npm install --unsafe-perm -g @angular/cli
