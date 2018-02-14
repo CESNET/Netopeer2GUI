@@ -52,10 +52,7 @@ $colorLineHover: #e1e1e1;
     }
 }
 .node_edit.dialog {
-    background-color: $colorChanged;
-    border: 2px solid $colorChangedBorder;
-    border-left-width: 0px;
-    border-right-width: 0px;
+    background-color: $colorChanged;;
 }
 
 .status,
@@ -68,10 +65,8 @@ $colorLineHover: #e1e1e1;
 }
 
 .deleted {
-    height: 0.5em;
-    * {
-        visibility: hidden;
-    }
+    background-color: $colorFailure;
+    color: $colorFailureBorder;
 }
 
 .icon,

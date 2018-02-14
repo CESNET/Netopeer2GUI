@@ -1,23 +1,144 @@
-import {Component, OnInit} from '@angular/core';
+import {Component, Injectable, OnInit} from '@angular/core';
 import {Router} from '@angular/router';
 
+import {ModificationsService} from './modifications.service';
 import {SessionsService} from './sessions.service';
 import {Session} from './session';
+
+@Injectable()
+export class TreeService {
+    loading = false;
+
+    constructor(private sessionsService: SessionsService, private modsService: ModificationsService) {}
+
+    rpcGet(activeSession, all: boolean) {
+        if (activeSession.data) {
+            if ((all && activeSession.dataVisibility == 'all') ||
+                (!all && activeSession.dataVisibility == 'root')) {
+                return;
+            }
+        }
+        this.loading = true;
+        delete activeSession.data;
+        this.sessionsService.rpcGetSubtree(activeSession.key, all).subscribe(result => {
+            if (result['success']) {
+                for (let iter of result['data']) {
+                    this.modsService.setDirty(activeSession, iter);
+                }
+                activeSession.data = {};
+                activeSession.data['path'] = '/';
+                activeSession.data['info'] = {};
+                activeSession.data['info']['path'] = '/';
+                activeSession.data['children'] = result['data'];
+                if (all) {
+                    activeSession.dataVisibility = 'all';
+                } else {
+                    activeSession.dataVisibility = 'root';
+                }
+                console.log(activeSession.data);
+            }
+            this.sessionsService.storeData();
+            this.loading = false;
+        });
+    }
+
+    expandable(node): boolean {
+        if (node['info']['type'] == 1 || /* container */
+            node['info']['type'] == 16) { /* list */
+                return true;
+        }
+        return false;
+    }
+
+    hasHiddenChild(node, clean=false): boolean {
+        if (!clean && 'hasHiddenChild' in node) {
+            return node['hasHiddenChild'];
+        }
+        node['hasHiddenChild'] = false;
+        if (!this.expandable(node)) {
+            /* terminal node (leaf or leaf-list) */
+            return node['hasHiddenChild'];
+        } else if (!('children' in node)) {
+            /* internal node without children */
+            node['hasHiddenChild'] = true;
+        } else {
+            /* go recursively */
+            for (let child of node['children']) {
+                if (this.hasHiddenChild(child, clean)) {
+                    node['hasHiddenChild'] = true;
+                    break;
+                }
+            }
+        }
+        return node['hasHiddenChild'];
+    }
+
+    updateHiddenFlags(activeSession) {
+        let mixed = false;
+        let rootsonly = true;
+        for (let root of activeSession.data['children']) {
+            if (this.hasHiddenChild(root, true)) {
+                mixed = true;
+            } else {
+                rootsonly = false;
+            }
+        }
+        if (mixed) {
+            if (rootsonly) {
+                activeSession.dataVisibility = 'root';
+            } else {
+                activeSession.dataVisibility = 'mixed';
+            }
+        }
+    }
+
+    collapse(activeSession, node = null) {
+        if (node) {
+            delete node['children'];
+            activeSession.dataVisibility = 'mixed';
+        } else {
+            for (let root of activeSession.data['children']) {
+                delete root['children'];
+            }
+            activeSession.dataVisibility = 'root';
+        }
+        this.updateHiddenFlags(activeSession);
+        this.sessionsService.storeData();
+    }
+
+    expand(activeSession, node, all: boolean) {
+        node['loading'] = true;
+        this.sessionsService.rpcGetSubtree(activeSession.key, all, node['path']).subscribe(result => {
+            if (result['success']) {
+                for (let iter of result['data']['children']) {
+                    this.modsService.setDirty(activeSession, iter);
+                }
+                node['children'] = result['data']['children'];
+                this.updateHiddenFlags(activeSession);
+                delete node['loading'];
+                this.sessionsService.storeData();
+            }
+        });
+    }
+}
 
 @Component({
     selector: 'netopeer-config',
     templateUrl: './config.component.html',
-    styleUrls: ['./config.component.scss']
+    styleUrls: ['./config.component.scss'],
+    providers: [ModificationsService, TreeService]
 })
 
 export class ConfigComponent implements OnInit {
     title = 'Configuration';
     activeSession: Session;
     err_msg = "";
-    loading = false;
-    root: {};
+    commit_error = [];
 
-    constructor(private sessionsService: SessionsService, private router: Router) {}
+    constructor(private sessionsService: SessionsService,
+                private modsService: ModificationsService,
+                private treeService: TreeService,
+                private router: Router) {}
 
     addSession() {
         this.router.navigateByUrl('/netopeer/inventory/devices');
@@ -25,10 +146,10 @@ export class ConfigComponent implements OnInit {
 
     reloadData() {
         this.activeSession.data = null;
-        if (this.activeSession.dataVisibility == 'all') {
-            this.rpcGet(true);
-        } else if(this.activeSession.dataVisibility == 'root') {
-            this.rpcGet(false);
+        if (this.activeSession.dataVisibility == 'root') {
+            this.treeService.rpcGet(this.activeSession, false);
+        } else {
+            this.treeService.rpcGet(this.activeSession, true);
         }
     }
 
@@ -47,11 +168,6 @@ export class ConfigComponent implements OnInit {
 
     setCpbltsVisibility(value: boolean) {
         this.activeSession.cpbltsVisibility = value;
-        this.sessionsService.storeData();
-    }
-
-    setDataVisibility(value: string) {
-        this.activeSession.dataVisibility = value;
         this.sessionsService.storeData();
     }
 
@@ -131,97 +247,31 @@ export class ConfigComponent implements OnInit {
         return version;
     }
 
-    rpcGet(all: boolean) {
-        if (this.activeSession.data) {
-            if ((all && this.activeSession.dataVisibility == 'all') ||
-                (!all && this.activeSession.dataVisibility == 'root')) {
-                return;
-            }
-        }
-        this.loading = true;
-        this.sessionsService.rpcGetSubtree(this.activeSession.key, all).subscribe(result => {
-            if (result['success']) {
-                this.activeSession.data = result['data'];
-                this.root['children'] = this.activeSession.data;
-                if (all) {
-                    this.activeSession.dataVisibility = 'all';
-                } else {
-                    this.activeSession.dataVisibility = 'root';
-                }
-                console.log(this.root);
-            } else {
-                this.activeSession.dataVisibility = 'none';
-                if ('error-msg' in result) {
-                    this.err_msg = result['error-msg'];
-                } else {
-                    this.err_msg = result['error'][0]['message'];
-                }
-            }
-            this.sessionsService.storeData();
-            this.loading = false;
-        });
-    }
-
-    cancelChangesNode(node, recursion = true) {
-        if ('creatingChild' in node) {
-            delete node['creatingChild'];
-        }
-        if ('deleted' in node) {
-            node['dirty'] = false;
-            node['deleted'] = false;
-        }
-
-        if (this.activeSession.modifications) {
-            let record = this.sessionsService.getModificationsRecord(node['path']);
-            if (record) {
-                node['dirty'] = false;
-                if (record['type'] == 'change') {
-                    node['value'] = record['original'];
-                }
-                this.sessionsService.removeModificationsRecord(node['path']);
-                if (!this.activeSession.modifications) {
-                    return;
-                }
-            }
-        }
-
-        /* recursion */
-        if (recursion && 'children' in node) {
-            for (let child of node['children']) {
-                this.cancelChangesNode(child);
-            }
-            if ('newChildren' in node) {
-                for (let child of node['newChildren']) {
-                    this.sessionsService.removeModificationsRecord(child['path']);
-                }
-                delete node['newChildren'];
-                if (('children' in node) && node['children'].length) {
-                    node['children'][node['children'].length - 1]['last'] = true;
-                }
-            }
-        }
-    }
-
     cancelChanges() {
         //console.log(JSON.stringify(this.activeSession.modifications))
-        this.cancelChangesNode(this.root);
+        this.modsService.cancelModification(this.activeSession);
+        this.commit_error = [];
         this.sessionsService.storeData();
         //console.log(JSON.stringify(this.activeSession.modifications))
     }
 
     applyChanges() {
-        /* TODO */
-        this.cancelChanges();
+        this.modsService.applyModification(this.activeSession).then(result => {
+            if (result['success']) {
+                this.reloadData();
+                this.commit_error = [];
+            } else {
+                this.commit_error = result['error'];
+            }
+        })
     }
 
     ngOnInit(): void {
         this.sessionsService.checkSessions();
         this.activeSession = this.sessionsService.getActiveSession();
-        this.root = {};
-        this.root['path'] = '/';
-        this.root['info'] = {};
-        this.root['info']['path'] = '/';
-        this.root['children'] = this.activeSession.data;
+        if (!this.activeSession.data) {
+            this.treeService.rpcGet(this.activeSession, false);
+        }
     }
 
     changeActiveSession(key: string) {

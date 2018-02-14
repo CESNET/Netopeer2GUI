@@ -79,7 +79,7 @@ SCRIPT
 
 $frontend = <<SCRIPT
 cd liberouter-gui/frontend
-/usr/local/bin/ng serve --host 0.0.0.0 --proxy proxy.json > ../frontend.log 2>&1 &
+/usr/local/bin/ng serve --preserve-symlinks --host 0.0.0.0 --proxy proxy.json > ../frontend.log 2>&1 &
 cd ../..
 SCRIPT
 
@@ -91,8 +91,8 @@ SCRIPT
 
 Vagrant.configure("2") do |config|
   config.vm.provider :virtualbox do |vb|
-    vb.customize ["modifyvm", :id, "--memory", "1024"]
-    vb.customize ["modifyvm", :id, "--cpus", "1"]
+    vb.customize ["modifyvm", :id, "--memory", "2048"]
+    vb.customize ["modifyvm", :id, "--cpus", "2"]
     vb.customize ["modifyvm", :id, "--hwvirtex", "on"]
     vb.customize ["modifyvm", :id, "--audio", "none"]
     vb.customize ["modifyvm", :id, "--nictype1", "virtio"]

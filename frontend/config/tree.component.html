@@ -1,47 +1,33 @@
 <div *ngIf="node['path'] == '/'">
     <!-- recursion - show children -->
     <div class="node">
-        <tree-indent [node]="node" [indentation]="indentation" [type]="'root'"
-            (onOpenCreatingDialog)="openCreatingDialog($event.element, $event.node, $event.parent)">
-        </tree-indent>
+        <tree-indent [node]="node" [indentation]="indentation" [type]="'root'"></tree-indent>
+        <img *ngIf="activeSession.dataVisibility!='all'" class="icon_action" (click)="treeService.rpcGet(activeSession, true)"
+            src="assets/netopeer/icons/show_all.svg" alt="w" title="expand all"
+            onmouseover="this.src='assets/netopeer/icons/show_all_active.svg'"
+            onmouseout="this.src='assets/netopeer/icons/show_all.svg'"/>
+        <img *ngIf="activeSession.dataVisibility!='root'" class="icon_action" (click)="treeService.collapse(activeSession)"
+            src="assets/netopeer/icons/collapse.svg" alt="x" title="collapse"
+            onmouseover="this.src='assets/netopeer/icons/collapse_active.svg'"
+            onmouseout="this.src='assets/netopeer/icons/collapse.svg'"/>
     </div>
     <div class="children" *ngIf="node['children'] || node['newChildren']">
         <ng-container *ngFor="let child of node['children']">
-            <tree-view [node]="child" [root]="root"></tree-view>
+            <tree-view [node]="child"></tree-view>
         </ng-container>
         <ng-container *ngFor="let child of newChildrenToShow(node)">
-            <tree-view [node]="child" [root]="root"></tree-view>
+            <tree-view [node]="child"></tree-view>
         </ng-container>
     </div>
 
     <!-- create new child dialog -->
-    <div id="{{node['path']}}_createChildDialog" class="node_edit" *ngIf="node['creatingChild']" [class.dialog]="node['schemaChildren']"
-        treeScrollTo [node]="node">
-        <ng-container *ngIf="node['schemaChildren'].length; else nothingToCreate">
-            <tree-indent [node]="node" [indentation]="indentation" [type]="'edit'"
-                (onCloseCreatingDialog)="closeCreatingDialog($event)"></tree-indent>
-            <select #nodeSelect (change)="creatingDialogSelect(node, $event.target.value, $event.currentTarget)">
-                <option disabled selected value="-1" style="display:none">&nbsp;</option>
-                <ng-container *ngFor="let schema of node['schemaChildren']; let i='index'">
-                    <option value="{{i}}">{{schemaInfoName(node, schema)}}</option>
-                </ng-container>
-            </select>
-            <!--  <pre>{{node['schemaChildren'] | json}}</pre> -->
-        </ng-container>
-        <ng-template #nothingToCreate>
-            <div class="msg-failure msg-rounded">
-                <span class="msg-close" (click)="closeCreatingDialog(node);">x</span>There is no element to create at {{node['path']}}.
-            </div>
-        </ng-template>
-    </div>
+    <tree-create [node]="node" [indentation]="indentation"></tree-create>
 </div>
 <div class="subtree" *ngIf="node['path'] != '/' && (node['info']['config'] || activeSession.statusVisibility)"
     [class.status]="!node['info']['config']">
 
 	<div class="node" [class.dirty]="node['dirty']" [class.deleted]="node['deleted']">
-		<tree-indent [node]="node" [indentation]="indentation"
-			(onDeleteSubtree)="deleteSubtree($event)" (onOpenCreatingDialog)="openCreatingDialog($event.element, $event.node, $event.parent)">
-		</tree-indent>
+		<tree-indent [node]="node" [indentation]="indentation"></tree-indent>
 		<img class="icon" src="assets/netopeer/icons/info.svg" alt="info" title="{{node['info']['dsc']}}"
 			onmouseover="this.src='assets/netopeer/icons/info_active.svg'"
 			onmouseout="this.src='assets/netopeer/icons/info.svg'"/>
@@ -52,7 +38,7 @@
 			<ng-container *ngIf="node['info']['key']">
 				<img class="icon" src="assets/netopeer/icons/key.svg" alt="key" title="list key"/>
 			</ng-container>
-			<ng-container *ngIf="node['info']['config'] && !node['info']['key'] && node['info']['datatypebase'] != 'empty'">
+			<ng-container *ngIf="node['info']['config'] && !node['deleted'] && (!node['info']['key'] || node['new']) && node['info']['datatypebase'] != 'empty'">
 				<img *ngIf="!node['edit']" class="icon_action" src="assets/netopeer/icons/edit.svg"
 					alt="edit" title="edit value" tabindex=0
 					(click)="startEditing(node, $event.target);" (keyup.enter)="startEditing(node, $event.target);"
@@ -63,16 +49,16 @@
 		</ng-container>
 
 		<!-- container and lists -->
-		<ng-container *ngIf="node['path'] != 'locallyNew' && ((node['info']['type'] == 16 || node['info']['type'] == 1)) && expandable(node)">
-            <img *ngIf="hasHiddenChild(node)" (click)="expand(node, true)"
+		<ng-container *ngIf="!node['new'] && !node['deleted'] && ((node['info']['type'] == 16 || node['info']['type'] == 1)) && treeService.expandable(node)">
+            <img *ngIf="treeService.hasHiddenChild(node)" (click)="treeService.expand(activeSession, node, true)"
                 class="icon_action" src="assets/netopeer/icons/show_all.svg"
                 onmouseover="this.src='assets/netopeer/icons/show_all_active.svg'"
                 onmouseout="this.src='assets/netopeer/icons/show_all.svg'" alt="show-all" title="expand subtree"/>
-            <img *ngIf="!node['children']" (click)="expand(node, false)"
+            <img *ngIf="!node['children']" (click)="treeService.expand(activeSession, node, false)"
                 class="icon_action" src="assets/netopeer/icons/show_children.svg"
                 onmouseover="this.src='assets/netopeer/icons/show_children_active.svg'"
                 onmouseout="this.src='assets/netopeer/icons/show_children.svg'" alt="show-children" title="expand children"/>
-            <img *ngIf="node['children']" (click)="collapse(node)"
+            <img *ngIf="node['children']" (click)="treeService.collapse(activeSession, node)"
                 class="icon_action" src="assets/netopeer/icons/collapse.svg"  alt="collapse" title="collapse"
                 onmouseover="this.src='assets/netopeer/icons/collapse_active.svg'"
                 onmouseout="this.src='assets/netopeer/icons/collapse.svg'"/>
@@ -102,9 +88,7 @@
 	<!-- leaf's edit value -->
 	<ng-container *ngIf="node['info']['type'] == 4">
 		<div class="node_edit" [class.dirty]="node['dirty']" *ngIf="node['edit']">
-            <tree-indent [node]="node" [indentation]="inheritIndentation(node)" [type]="'edit'"
-                (onCloseCreatingDialog)="closeCreatingDialog($event)"
-                (onDeleteSubtree)="deleteSubtree($event)"></tree-indent>
+            <tree-indent [node]="node" [indentation]="inheritIndentation(node)" [type]="'edit'"></tree-indent>
 			<img *ngIf="node['edit'] " class="icon_action" src="assets/netopeer/icons/close.svg"
 				alt="cancel" title="cancel editing" tabindex=0
 				(click)="node['edit']=false" (keyup.enter)="node['edit']=false"
@@ -115,10 +99,19 @@
 				(click)="changeValue(node, $event.target)" (keyup.enter)="changeValue(node, $event.target)"
 				onmouseover="this.src='assets/netopeer/icons/confirm_active.svg'"
 				onmouseout="this.src='assets/netopeer/icons/confirm.svg'"/>
-			<input id="{{node['path']}}_input" type="text" class="value" value="{{node['value']}}" tabindex=0
-				(keyup)="checkValue(node, $event.target)" (change)="checkValue(node, $event.target)"
-				(keyup.enter)="changeValue(node, $event.target)" (keyup.escape)="changeValueCancel(node)"
-				checkLeafValue [node]="node" (onCheckValue)="checkValue($event.node, $event.element)"/>
+            <select *ngIf="node['info']['values']"
+                id="{{node['path']}}_input" type="text" class="value"
+                (change)="checkValue(node, $event.target, true)"
+                checkLeafValue [node]="node" [trusted]="true" (onCheckValue)="checkValue($event.node, $event.element, $event.trusted)">
+                <ng-container *ngFor="let value of node['info']['values']; let i='index'">
+                    <option value="{{value}}">{{value}}</option>
+                </ng-container>
+            </select>
+            <input *ngIf="!node['info']['values']"
+                id="{{node['path']}}_input" type="text" class="value" value="{{node['value']}}" tabindex=0
+                (keyup)="checkValue(node, $event.target)" (change)="checkValue(node, $event.target)"
+                (keyup.enter)="changeValue(node, $event.target)" (keyup.escape)="changeValueCancel(node)"
+                checkLeafValue [node]="node" (onCheckValue)="checkValue($event.node, $event.element)"/>
 		</div>
 	</ng-container>
 
@@ -137,32 +130,13 @@
     </div>
     <div class="children" *ngIf="(node['children'] || node['newChildren']) && !node['deleted']">
         <ng-container *ngFor="let child of node['children']">
-            <tree-view [node]="child" [root]="root" [indentation]="inheritIndentation(node)"></tree-view>
+            <tree-view [node]="child" [indentation]="inheritIndentation(node)"></tree-view>
         </ng-container>
         <ng-container *ngFor="let child of newChildrenToShow(node)">
-            <tree-view [node]="child" [root]="root" [indentation]="inheritIndentation(node)"></tree-view>
+            <tree-view [node]="child" [indentation]="inheritIndentation(node)"></tree-view>
         </ng-container>
     </div>
 
     <!-- create new child dialog -->
-	<div id="{{node['path']}}_createChildDialog" class="node_edit" *ngIf="node['creatingChild']" [class.dialog]="node['schemaChildren']"
-        treeScrollTo [node]="node">
-		<ng-container *ngIf="node['schemaChildren'].length; else nothingToCreate">
-            <tree-indent [node]="node" [indentation]="inheritIndentation(node)" [type]="'edit'"
-                (onCloseCreatingDialog)="closeCreatingDialog($event)"></tree-indent>
-			<select #nodeSelect (change)="creatingDialogSelect(node, $event.target.value, $event.currentTarget)">
-				<option disabled selected value="-1" style="display:none">&nbsp;</option>
-				<ng-container *ngFor="let schema of node['schemaChildren']; let i='index'">
-					<option value="{{i}}">{{schemaInfoName(node, schema)}}</option>
-				</ng-container>
-			</select>
-            <!--  <pre>{{node['schemaChildren'] | json}}</pre> -->
-		</ng-container>
-		<ng-template #nothingToCreate>
-			<div class="msg-failure msg-rounded">
-				<span class="msg-close" (click)="closeCreatingDialog(node);">x</span>There is no element to create at {{node['path']}}.
-			</div>
-		</ng-template>
-	</div>
-
+    <tree-create [node]="node" [indentation]="inheritIndentation(node)"></tree-create>
 </div>

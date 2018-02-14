@@ -41,6 +41,24 @@ def schemaInfoType(schema, info):
 	info["datatypebase"] = infoBuiltInType(schema.type().base())
 
 
+def typeValues(type, result):
+	while type.der():
+		if type.base() == 2:
+			# bits
+			if type.info().bits().count():
+				for bit in type.info().bits().bit():
+					result.append(bit.name())
+		elif type.base() == 6:
+			# enumeration
+			if type.info().enums().count():
+				for enm in type.info().enums().enm():
+					result.append(enm.name())
+		else:
+			return result
+		type = type.der().type()
+
+	return result
+
 def schemaInfoNode(schema):
 	info = {}
 
