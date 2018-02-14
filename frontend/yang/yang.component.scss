@@ -1,1 +1,12 @@
 @import '../netopeer-common';
+@import '../inventory/inventory.component';
+
+.loading {
+    text-align: center;
+    margin: auto;
+    width: 10em;
+    div {
+        margin: auto;
+        width: 50px;
+    }
+}

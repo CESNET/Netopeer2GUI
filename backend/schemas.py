@@ -48,7 +48,7 @@ def __schemas_init():
 	# initialize the list with libyang's internal modules
 	modules = ctx.get_module_iter()
 	for module in modules:
-		schemas['schemas']['schema'].append({'name':module.name(),'revision':module.rev().date()})
+		schemas['schemas']['schema'].append({'key':module.name() + '@' + module.rev().date(), 'name':module.name(), 'revision':module.rev().date()})
 	return schemas
 
 
@@ -104,9 +104,14 @@ def __schemas_update(path):
 			try:
 				module = __schema_parse(schemapath, format)
 				if module.rev_size():
-					schemas['schemas']['schema'].append({'name':module.name(), 'revision':module.rev().date()})
+					schemas['schemas']['schema'].append({'key':module.name() + '@' + module.rev().date(),
+														 'name':module.name(),
+														 'revision':module.rev().date(),
+														 'file':os.path.basename(schemapath)})
 				else:
-					schemas['schemas']['schema'].append({'name':module.name()})
+					schemas['schemas']['schema'].append({'key':module.name() + '@',
+														 'name':module.name(),
+														 'file':os.path.basename(schemapath)})
 			except Exception as e:
 				continue
 
@@ -126,6 +131,34 @@ def schemas_list():
 	schemas = __schemas_update(path)
 	
 	return(json.dumps(schemas))
+
+
+@auth.required()
+def schema_get():
+	session = auth.lookup(request.headers.get('Authorization', None))
+	user = session['user']
+	req = request.args.to_dict()
+	path = os.path.join(INVENTORY, user.username)
+
+	if not 'key' in req:
+		return(json.dumps({'success': False, 'error-msg': 'Missing schema key.'}))
+	key = req['key']
+
+	schemas = __schemas_inv_load(path)
+	for i in range(len(schemas['schemas']['schema'])):
+		schema = schemas['schemas']['schema'][i]
+		if schema['key'] == key:
+			data = ""
+			if 'file' in schema:
+				with open(os.path.join(path, schema['file']), 'r') as schema_file:
+					data = schema_file.read()
+			else:
+				ctx = yang.Context()
+				data = ctx.get_module(schema['name']).print_mem(yang.LYS_OUT_YANG, 0)
+			return(json.dumps({'success': True, 'data': data}))
+
+	return(json.dumps({'success': False, 'error-msg':'Schema ' + key + ' not found.'}))
+
 
 @auth.required()
 def schemas_add():
@@ -162,23 +195,18 @@ def schemas_rm():
 	user = session['user']
 	path = os.path.join(INVENTORY, user.username)
 
-	schema_rm = request.get_json()
-	if not schema_rm:
+	key = request.get_json()
+	if not key:
 		raise NetopeerException('Invalid schema remove request.')
 
 	schemas = __schemas_inv_load(path)
 	for i in range(len(schemas['schemas']['schema'])):
 		schema = schemas['schemas']['schema'][i]
-		if 'revision' in schema_rm:
-			if schema['name'] != schema_rm['name'] or not 'revision' in schema or schema['revision'] != schema_rm['revision']:
-				schema = None
-				continue
+		if schema['key'] == key:
+			schemas['schemas']['schema'].pop(i)
+			break;
 		else:
-			if schema['name'] != schema_rm['name'] or 'revision' in schema:
-				schema = None
-				continue
-		schemas['schemas']['schema'].pop(i)
-		break;
+			schema = None;
 
 	if not schema:
 		# schema not in inventory

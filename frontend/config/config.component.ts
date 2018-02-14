@@ -269,7 +269,7 @@ export class ConfigComponent implements OnInit {
     ngOnInit(): void {
         this.sessionsService.checkSessions();
         this.activeSession = this.sessionsService.getActiveSession();
-        if (!this.activeSession.data) {
+        if (this.activeSession && !this.activeSession.data) {
             this.treeService.rpcGet(this.activeSession, false);
         }
     }

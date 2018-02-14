@@ -18,9 +18,10 @@ from .schemas import *
 from .devices import *
 from .connections import *
 
-module_bp.add_url_rule('/inventory/schemas/list', view_func = schemas_list, methods=['GET'])
+module_bp.add_url_rule('/inventory/schemas', view_func = schemas_list, methods = ['GET'])
 module_bp.add_url_rule('/inventory/schemas', view_func = schemas_add, methods=['POST'])
 module_bp.add_url_rule('/inventory/schemas', view_func = schemas_rm, methods = ['DELETE'])
+module_bp.add_url_rule('/inventory/schema', view_func = schema_get, methods = ['GET'])
 module_bp.add_url_rule('/inventory/devices/list', view_func = devices_list, methods=['GET'])
 module_bp.add_url_rule('/inventory/devices', view_func = devices_add, methods=['POST'])
 module_bp.add_url_rule('/inventory/devices', view_func = devices_rm, methods = ['DELETE'])
