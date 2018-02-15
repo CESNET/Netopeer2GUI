@@ -15,6 +15,7 @@
 </nav>
 
 <div class="netopeer-content" [style.padding-top]="'calc(' + subnav.offsetHeight + 'px - -0.7em)'">
+<img *ngIf="!activeSession" src="assets/netopeer/starthere.svg" alt="Start here with that + sign."/>
 <div *ngIf="activeSession">
     <p class="msg-failure msg-rounded" *ngIf="err_msg"><img class="msg-close" (click)="err_msg=''" src="assets/netopeer/icons/close_active.svg" alt="x" title="close"/>{{err_msg}}</p>
     <table class="items">
