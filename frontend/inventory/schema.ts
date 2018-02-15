@@ -1,4 +1,5 @@
 export class Schema {
-  name: string;
-  revision: string;
+    key: string;
+    name: string;
+    revision: string;
 }

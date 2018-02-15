@@ -11,23 +11,24 @@ import time
 
 from liberouterapi import auth
 from flask import request
-import libyang as ly
+import yang
 
 from .inventory import INVENTORY, inventory_check
 from .error import NetopeerException
 
 __SCHEMAS_EMPTY = '{"schemas":{"timestamp":0,"schema":[]}}'
 
-def __schema_parse(path, format=ly.LYS_IN_UNKNOWN):
+
+def __schema_parse(path, format = yang.LYS_IN_UNKNOWN):
 	try:
-		ctx = ly.Context(os.path.dirname(path))
+		ctx = yang.Context(os.path.dirname(path))
 	except Exception as e:
 		raise NetopeerException(str(e))
 	
 	try:
-		module = ctx.parse_path(path, ly.LYS_IN_YANG if format == ly.LYS_IN_UNKNOWN else format)
+		module = ctx.parse_path(path, yang.LYS_IN_YANG if format == yang.LYS_IN_UNKNOWN else format)
 	except Exception as e:
-		if format != ly.LYS_IN_UNKOWN:
+		if format != yang.LYS_IN_UNKOWN:
 			raise NetopeerException(str(e))
 		try:
 			module = ctx.parse_path(path, ly_LYS_IN_YIN)
@@ -40,14 +41,14 @@ def __schema_parse(path, format=ly.LYS_IN_UNKNOWN):
 def __schemas_init():
 	schemas = json.loads(__SCHEMAS_EMPTY)
 	try:
-		ctx = ly.Context()
+		ctx = yang.Context()
 	except Exception as e:
 		raise NetopeerException(str(e))
 	
 	# initialize the list with libyang's internal modules
 	modules = ctx.get_module_iter()
 	for module in modules:
-		schemas['schemas']['schema'].append({'name':module.name(),'revision':module.rev().date()})
+		schemas['schemas']['schema'].append({'key':module.name() + '@' + module.rev().date(), 'name':module.name(), 'revision':module.rev().date()})
 	return schemas
 
 
@@ -91,9 +92,9 @@ def __schemas_update(path):
 	# check the current content of the storage
 	for file in os.listdir(path):
 		if file[-5:] == '.yang':
-			format =  ly.LYS_IN_YANG
+			format = yang.LYS_IN_YANG
 		elif file[-4:] == '.yin':
-			format = ly.LYS_IN_YIN
+			format = yang.LYS_IN_YIN
 		else:
 			continue
 		
@@ -103,9 +104,14 @@ def __schemas_update(path):
 			try:
 				module = __schema_parse(schemapath, format)
 				if module.rev_size():
-					schemas['schemas']['schema'].append({'name':module.name(), 'revision':module.rev().date()})
+					schemas['schemas']['schema'].append({'key':module.name() + '@' + module.rev().date(),
+														 'name':module.name(),
+														 'revision':module.rev().date(),
+														 'file':os.path.basename(schemapath)})
 				else:
-					schemas['schemas']['schema'].append({'name':module.name()})
+					schemas['schemas']['schema'].append({'key':module.name() + '@',
+														 'name':module.name(),
+														 'file':os.path.basename(schemapath)})
 			except Exception as e:
 				continue
 
@@ -126,6 +132,34 @@ def schemas_list():
 	
 	return(json.dumps(schemas))
 
+
+@auth.required()
+def schema_get():
+	session = auth.lookup(request.headers.get('Authorization', None))
+	user = session['user']
+	req = request.args.to_dict()
+	path = os.path.join(INVENTORY, user.username)
+
+	if not 'key' in req:
+		return(json.dumps({'success': False, 'error-msg': 'Missing schema key.'}))
+	key = req['key']
+
+	schemas = __schemas_inv_load(path)
+	for i in range(len(schemas['schemas']['schema'])):
+		schema = schemas['schemas']['schema'][i]
+		if schema['key'] == key:
+			data = ""
+			if 'file' in schema:
+				with open(os.path.join(path, schema['file']), 'r') as schema_file:
+					data = schema_file.read()
+			else:
+				ctx = yang.Context()
+				data = ctx.get_module(schema['name']).print_mem(yang.LYS_OUT_YANG, 0)
+			return(json.dumps({'success': True, 'data': data}))
+
+	return(json.dumps({'success': False, 'error-msg':'Schema ' + key + ' not found.'}))
+
+
 @auth.required()
 def schemas_add():
 	if 'schema' not in request.files:
@@ -142,11 +176,11 @@ def schemas_add():
 	# parse file
 	try:
 		if file.filename[-5:] == '.yang':
-			format = ly.LYS_IN_YANG
+			format = yang.LYS_IN_YANG
 		elif file.filename[-4:] == '.yin':
-			format = ly.LYS_IN_YIN
+			format = yang.LYS_IN_YIN
 		else:
-			format = ly.LYS_IN_UNKNOWN
+			format = yang.LYS_IN_UNKNOWN
 		module = __schema_parse(path, format)
 		# TODO: normalize file name to allow removing without remembering schema path
 	except Exception:
@@ -161,23 +195,18 @@ def schemas_rm():
 	user = session['user']
 	path = os.path.join(INVENTORY, user.username)
 
-	schema_rm = request.get_json()
-	if not schema_rm:
+	key = request.get_json()
+	if not key:
 		raise NetopeerException('Invalid schema remove request.')
 
 	schemas = __schemas_inv_load(path)
 	for i in range(len(schemas['schemas']['schema'])):
 		schema = schemas['schemas']['schema'][i]
-		if 'revision' in schema_rm:
-			if schema['name'] != schema_rm['name'] or not 'revision' in schema or schema['revision'] != schema_rm['revision']:
-				schema = None
-				continue
+		if schema['key'] == key:
+			schemas['schemas']['schema'].pop(i)
+			break;
 		else:
-			if schema['name'] != schema_rm['name'] or 'revision' in schema:
-				schema = None
-				continue
-		schemas['schemas']['schema'].pop(i)
-		break;
+			schema = None;
 
 	if not schema:
 		# schema not in inventory

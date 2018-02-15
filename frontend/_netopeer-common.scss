@@ -51,3 +51,66 @@ a:not([href]) {
     	color: $colorFailureBorder;
 	}
 }
+
+.tab-add,
+.tab-reload,
+.tab-close {
+    cursor: pointer;
+    font-weight: bold;
+    font-family: monospace;
+    font-size: large;
+}
+.tab-action-first {
+    padding-left: 0.3em;
+}
+.tab-action-last {
+    padding-right: 0.5em;
+}
+
+.tab-icon {
+    vertical-align: middle;
+    height: 1em;
+}
+
+.tab-add {
+    filter: invert(100%);
+
+    &:hover {
+        color: $green;
+    }
+}
+
+.tab-close:hover {
+    color: $colorFailureBorder;
+}
+.tab-reload:hover {
+    color: blue;
+}
+
+#subnav {
+    position: fixed;
+    width: 100%;
+    background-color: $colorMain;
+    padding-left: 1em;
+
+    a {
+        cursor: pointer;
+        text-decoration: none;
+        display: inline-block;
+        padding: 0.2em 0 0.1em 1em;
+        color: $colorTextInverse;
+
+        &:visited,
+        &:link {
+            color: inherit;
+        }
+        &:hover,
+        &.active {
+            background-color: $colorBackground;
+            color: $colorText;
+        }
+        &active:hover {
+            cursor: default;
+        }
+    }
+}

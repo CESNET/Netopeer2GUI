@@ -26,6 +26,7 @@ import { MonitoringComponent } from './monitoring/monitoring.component';
 import { PluginsComponent } from './plugins/plugins.component';
 
 import { SessionsService } from './config/sessions.service'
+import { SchemasService } from './yang/schemas.service'
 
 const routes: Routes = [
   { path : 'netopeer', component : NetopeerComponent, canActivate : [AuthGuard],
@@ -41,6 +42,10 @@ const routes: Routes = [
       canActivate : [AuthGuard],
       data : { role : 10, name : 'Netopeer Items Inventories'},
       children : [{
+        path : '',
+        redirectTo: 'devices',
+        pathMatch: 'full',
+      }, {
         path : 'devices',
         component : InventoryDevicesComponent,
         canActivate : [AuthGuard],
@@ -104,7 +109,8 @@ const routes: Routes = [
     PluginsComponent
   ],
   providers: [
-    SessionsService
+    SessionsService,
+    SchemasService
   ],
   entryComponents : [
     NetopeerComponent

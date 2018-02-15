@@ -1,7 +1,6 @@
-<nav #confignav id="confignav">
+<nav #subnav id="subnav">
     <a *ngFor="let session of sessionsService.sessions" [class.active]="session.key==activeSession.key"
         (click)="changeActiveSession(session.key)">{{session.device.hostname}}:{{session.device.port}}
-        <!--<span *ngIf="session.key==activeSession.key" class="tab-reload tab-action-first" (click)="reloadData(session.key)">o</span>-->
         <img *ngIf="session.key==activeSession.key" class="tab-icon tab-reload tab-action-first" src="assets/netopeer/icons/reload.svg"  alt="o" title="reload"
             onmouseover="this.src='assets/netopeer/icons/reload_active.svg'"
             onmouseout="this.src='assets/netopeer/icons/reload.svg'" (click)="reloadData()"/>
@@ -15,8 +14,9 @@
     </a>
 </nav>
 
-<div class="netopeer-content" [style.padding-top]="'calc(' + confignav.offsetHeight + 'px - -0.7em)'">
-<div *ngIf="sessionsService.activeSession">
+<div class="netopeer-content" [style.padding-top]="'calc(' + subnav.offsetHeight + 'px - -0.7em)'">
+<img *ngIf="!activeSession" src="assets/netopeer/starthere.svg" alt="Start here with that + sign."/>
+<div *ngIf="activeSession">
     <p class="msg-failure msg-rounded" *ngIf="err_msg"><img class="msg-close" (click)="err_msg=''" src="assets/netopeer/icons/close_active.svg" alt="x" title="close"/>{{err_msg}}</p>
     <table class="items">
         <tr class="item_header">

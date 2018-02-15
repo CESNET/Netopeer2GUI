@@ -1,5 +1,4 @@
-import { Component, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component } from '@angular/core';
 
 @Component({
   selector : 'netopeer-inventory',
@@ -7,17 +6,12 @@ import { Router } from '@angular/router';
   styleUrls : ['./inventory.component.scss']
 })
 
-export class InventoryComponent implements OnInit {
+export class InventoryComponent {
   title = 'Inventory';
   inventoryComponents = [
     'devices',
     'schemas'
   ];
 
-  constructor(private router: Router) { }
-
-  ngOnInit(): void {
-      /* redirect to default inventory */
-      this.router.navigateByUrl('/netopeer/inventory/devices')
-  }
+  constructor() { }
 }

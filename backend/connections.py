@@ -9,6 +9,7 @@ import os
 
 from liberouterapi import auth
 from flask import request
+import yang
 import netconf2 as nc
 
 from .inventory import INVENTORY
@@ -143,7 +144,7 @@ def _checkvalue(session, req, schema):
 		node = search.data()[0]
 
 	if node.validate_value(req['value']):
-		return(json.dumps({'success': False, 'error-msg': ly.Error().errmsg()}))
+		return(json.dumps({'success': False, 'error-msg': yang.Error().errmsg()}))
 
 	return(json.dumps({'success': True}))
 
@@ -183,7 +184,7 @@ def schema_values():
 		return(json.dumps({'success': False, 'error-msg': 'Invalid data path.'}))
 	schema = search.schema()[0]
 
-	if schema.nodetype() != ly.LYS_LEAF and schema.nodetype != ly.LYS_LEAFLIST:
+	if schema.nodetype() != yang.LYS_LEAF and schema.nodetype != yang.LYS_LEAFLIST:
 		result = None
 	else:
 		result = typeValues(schema.subtype().type(), [])
@@ -231,10 +232,10 @@ def schema_info():
 			return(json.dumps({'success': False, 'error-msg': 'Invalid relative parameter.'}))
 
 		for child in instantiables:
-			if child.flags() & ly.LYS_CONFIG_R:
+			if child.flags() & yang.LYS_CONFIG_R:
 				# ignore status nodes
 				continue
-			if child.nodetype() & (ly.LYS_RPC | ly.LYS_NOTIF | ly.LYS_ACTION):
+			if child.nodetype() & (yang.LYS_RPC | yang.LYS_NOTIF | yang.LYS_ACTION):
 				# ignore RPCs, Notifications and Actions
 				continue
 			result.append(schemaInfoNode(child))
@@ -252,12 +253,12 @@ def _create_child(ctx, parent, child_def):
 		# print('module: ' + module.name())
 		# print('name: ' + child_def['info']['name'])
 		# print('value: ' + child_def['value'])
-		ly.Data_Node(parent, module, child_def['info']['name'], child_def['value'])
+		yang.Data_Node(parent, module, child_def['info']['name'], child_def['value'])
 	else:
 		# print('parent: ' + parent.schema().name())
 		# print('module: ' + module.name())
 		# print('name: ' + child_def['info']['name'])
-		child = ly.Data_Node(parent, module, child_def['info']['name'])
+		child = yang.Data_Node(parent, module, child_def['info']['name'])
 		if 'children' in child_def:
 			for grandchild in child_def['children']:
 				_create_child(ctx, child, grandchild)
@@ -298,7 +299,7 @@ def session_commit():
 		if root:
 			root.new_path(ctx, path, value, 0, 0)
 		else:
-			root = ly.Data_Node(ctx, path, value, 0, 0)
+			root = yang.Data_Node(ctx, path, value, 0, 0)
 		node = root.find_path(path).data()[0];
 
 		# set operation attribute and add additional data if any
@@ -319,7 +320,7 @@ def session_commit():
 					continue
 				_create_child(ctx, node, child)
 
-	# print(root.print_mem(ly.LYD_XML, ly.LYP_FORMAT))
+	# print(root.print_mem(yang.LYD_XML, yang.LYP_FORMAT))
 	try:
 		sessions[user.username][req['key']]['session'].rpcEditConfig(nc.DATASTORE_RUNNING, root)
 	except nc.ReplyError as e:
