@@ -96,7 +96,7 @@ export class SchemasService {
     }
 
     rmSchema( schema: Schema ) {
-        let options = new RequestOptions( { body: schema.key } );
+        let options = new RequestOptions( { body: JSON.stringify(schema.key) } );
         return this.http.delete( '/netopeer/inventory/schemas', options )
             .map(( resp: Response ) => resp.json() )
             .catch(( err: Response | any ) => Observable.throw( err ) );
