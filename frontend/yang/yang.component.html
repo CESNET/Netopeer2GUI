@@ -12,7 +12,7 @@
 </nav>
 
 <div class="netopeer-content" [style.padding-top]="'calc(' + subnav.offsetHeight + 'px - -0.7em)'">
-<img *ngIf="!activeSession" src="assets/netopeer/starthere.svg" alt="Start here with that + sign."/>
+<img *ngIf="!activeSchema" src="assets/netopeer/starthere.svg" alt="Start here with that + sign."/>
 
 <pre *ngIf="activeSchema">{{activeSchema.data}}</pre>
 
