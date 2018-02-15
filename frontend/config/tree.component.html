@@ -26,7 +26,11 @@
 <div class="subtree" *ngIf="node['path'] != '/' && (node['info']['config'] || activeSession.statusVisibility)"
     [class.status]="!node['info']['config']">
 
-	<div class="node" [class.dirty]="node['dirty']" [class.deleted]="node['deleted']">
+    <div class="node" [class.dirty]="node['dirty']" [class.deleted]="node['deleted']"
+            [class.yang-container]="node['info']['type'] == 1"
+            [class.yang-leaf]="node['info']['type'] == 4"
+            [class.yang-leaflist]="node['info']['type'] == 8"
+            [class.yang-list]="node['info']['type'] == 16">
 		<tree-indent [node]="node" [indentation]="indentation"></tree-indent>
 		<img class="icon" src="assets/netopeer/icons/info.svg" alt="info" title="{{node['info']['dsc']}}"
 			onmouseover="this.src='assets/netopeer/icons/info_active.svg'"
@@ -117,7 +121,7 @@
 
 	<!-- leaflist's values -->
 	<ng-container *ngIf="node['info']['type'] == 8">
-		<div class="node" *ngFor="let value of node['value']">
+		<div class="node yang-leaflist" *ngFor="let value of node['value']">
             <tree-indent [node]="node" [indentation]="inheritIndentation(node)" [type]="'value'" ></tree-indent>
 			<div class="value_standalone">{{value}}</div>
 		</div>
