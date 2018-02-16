@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnInit } from '@angular/core';
 import { Http, Response, RequestOptions, URLSearchParams } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/catch';
@@ -9,7 +9,7 @@ import { Device } from '../inventory/device';
 import { Session } from './session';
 
 @Injectable()
-export class SessionsService{
+export class SessionsService implements OnInit {
     public sessions: Session[];
     public activeSession;
 
@@ -18,6 +18,9 @@ export class SessionsService{
         if (!this.activeSession) {
             this.activeSession = "";
         }
+    }
+
+    ngOnInit(): void {
         this.checkSessions();
     }
 

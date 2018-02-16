@@ -22,20 +22,16 @@
     <th>name</th>
     <th class="item_right">revision</th>
   </tr>
-  <tr class="item" [class.selected]="schema === selectedSchema" *ngFor="let schema of schemas">
+  <tr class="item" *ngFor="let key of schemasKeys()">
     <td class="item_left item_actions">
-        <img class="item_action_delete" (click)="remove(schema)"
+        <img class="item_action_delete" (click)="remove(key)"
             src="assets/netopeer/icons/close.svg" alt="x" title="delete"
             onmouseover="this.src='assets/netopeer/icons/close_active.svg'"
             onmouseout="this.src='assets/netopeer/icons/close.svg'"/>
     </td>
-    <td class="schema schema-name" (click)="onSelect(schema)">{{schema.name}}</td>
-    <td class="item_right schema schema-revision" (click)="onSelect(schema)">{{schema.revision}}</td>
+    <td class="schema schema-name" (click)="onSelect(key)">{{schemas[key].name}}</td>
+    <td class="item_right schema schema-revision" (click)="onSelect(key)">{{schemas[key].revision}}</td>
   </tr>
 </table>
-
-<div *ngIf="selectedSchema">
-  <h3>{{selectedSchema.name}}<span *ngIf="selectedSchema.revision">@{{selectedSchema.revision}}</span></h3>
-</div>
 
 </div>
