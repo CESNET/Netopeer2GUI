@@ -347,7 +347,9 @@ export class ModificationsService {
             newNode['children'] = [];
             /* open creation dialog for nodes inside the created list */
             this.sessionsService.childrenSchemas(activeSession.key, newNode['info']['path'], newNode).then(result => {
-                this.createOpen(result, newNode);
+                if (result && result.length) {
+                    this.createOpen(result, newNode);
+                }
 
                 if (newNode['schemaChildren'].length) {
                     for (let i in newNode['schemaChildren']) {
@@ -362,6 +364,10 @@ export class ModificationsService {
                         this.setEdit(activeSession, newKey, true)
                         newNode['children'].push(newKey)
                         newNode['schemaChildren'].splice(i, 1);
+                        if (!newNode['schemaChildren'].length) {
+                            newKey['last'] = true;
+                            this.createClose(newNode, 'success');
+                        }
                     }
                 }
             });
