@@ -33,12 +33,11 @@ export class SessionsService implements OnInit {
     }
 
     getActiveSession(key: string = this.activeSession): Session {
-        if (!key) {
-            return null;
-        }
-        for (let i = this.sessions.length; i > 0; i--) {
-            if (this.sessions[i - 1].key == key) {
-                return this.sessions[i - 1];
+        if (key) {
+            for (let i = this.sessions.length; i > 0; i--) {
+                if (this.sessions[i - 1].key == key) {
+                    return this.sessions[i - 1];
+                }
             }
         }
         return null;
@@ -63,7 +62,7 @@ export class SessionsService implements OnInit {
         } else {
             /* verify that the sessions are still active */
             for (let i = this.sessions.length; i > 0; i--) {
-                this.alive(this.sessions[i - 1].key).subscribe(resp => {
+                this.alive(this.sessions[i - 1].key).then(resp => {
                     if (!resp['success']) {
                         if (this.activeSession && this.sessions[i - 1].key == this.activeSession) {
                             /* active session is not alive - select new active session
@@ -76,8 +75,10 @@ export class SessionsService implements OnInit {
                             } else {
                                 this.activeSession = "";
                             }
+                            localStorage.setItem('activeSession', this.activeSession);
                         }
                         this.sessions.splice(i - 1, 1);
+                        this.storeData();
                     }
                 });
             }
@@ -149,13 +150,12 @@ export class SessionsService implements OnInit {
             .map((resp: Response) => resp.json()).toPromise();
     }
 
-    alive(key: string): Observable<string[]> {
+    alive(key: string): Promise<string[]> {
         let params = new URLSearchParams();
         params.set('key', key);
         let options = new RequestOptions({ search: params });
         return this.http.get('/netopeer/session/alive', options)
-            .map((resp: Response) => resp.json())
-            .catch((err: Response | any) => Observable.throw(err));
+            .map((resp: Response) => resp.json()).toPromise();
     }
 
     getCpblts(key: string): Observable<string[]> {
