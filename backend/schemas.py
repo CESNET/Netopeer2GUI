@@ -245,7 +245,7 @@ def schemas_rm():
 
 	schemas = __schemas_inv_load(path)
 	try:
-		schemas.pop(key)
+		schemas['schemas'].pop(key)
 	except KeyError:
 		# schema not in inventory
 		return (json.dumps({'success': False}))
