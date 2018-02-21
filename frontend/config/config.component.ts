@@ -35,7 +35,6 @@ export class TreeService {
                 } else {
                     activeSession.dataVisibility = 'root';
                 }
-                console.log(activeSession.data);
             }
             this.sessionsService.storeData();
             this.loading = false;
