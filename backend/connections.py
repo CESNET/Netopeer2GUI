@@ -253,16 +253,16 @@ def schema_info():
 def _create_child(ctx, parent, child_def):
 	module = ctx.get_module(child_def['info']['module'])
 	# print('child: ' + json.dumps(child_def))
-	if child_def['info']['type'] == 4:
-		# print('parent: ' + parent.schema().name())
-		# print('module: ' + module.name())
-		# print('name: ' + child_def['info']['name'])
-		# print('value: ' + child_def['value'])
+	# print('parent: ' + parent.schema().name())
+	# print('module: ' + module.name())
+	# print('name: ' + child_def['info']['name'])
+	if child_def['info']['type'] == 4 :
+		# print('value: ' + str(child_def['value']))
 		yang.Data_Node(parent, module, child_def['info']['name'], child_def['value'])
+	elif child_def['info']['type'] == 8:
+		# print('value: ' + child_def['value'][0])
+		yang.Data_Node(parent, module, child_def['info']['name'], child_def['value'][0])
 	else:
-		# print('parent: ' + parent.schema().name())
-		# print('module: ' + module.name())
-		# print('name: ' + child_def['info']['name'])
 		child = yang.Data_Node(parent, module, child_def['info']['name'])
 		if 'children' in child_def:
 			for grandchild in child_def['children']:
@@ -291,16 +291,23 @@ def session_commit():
 		if mods[key]['type'] == 'change':
 			value = mods[key]['value']
 		elif mods[key]['type'] == 'create' or mods[key]['type'] == 'replace':
-			if mods[key]['data']['info']['type'] == 4:
+			if mods[key]['data']['info']['type'] == 1:
+				# creating/replacing container
+				recursion = True
+			elif mods[key]['data']['info']['type'] == 4:
 				# creating/replacing leaf
 				value = mods[key]['data']['value']
+			elif mods[key]['data']['info']['type'] == 8:
+				# creating/replacing leaf-list
+				value = mods[key]['data']['value'][0]
+				path = mods[key]['data']['path']
 			elif mods[key]['data']['info']['type'] == 16:
 				recursion = True
 				path = mods[key]['data']['path']
-			elif mods[key]['data']['info']['type'] == 1:
-				recursion = True
 
 		# create node
+		# print("creating " + path)
+		# print("value " + str(value))
 		if root:
 			root.new_path(ctx, path, value, 0, 0)
 		else:

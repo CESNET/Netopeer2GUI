@@ -77,15 +77,30 @@ export class TreeCreate implements OnInit {
 })
 export class TreeIndent implements OnInit {
     @Input() node;
+    @Input() value;
     @Input() indentation;
-    @Input() type = "current";
+    @Input() type;
     activeSession: Session;
-    timeout;
+    private timeout;
 
     constructor(private modsService: ModificationsService, private sessionsService: SessionsService) {}
 
     ngOnInit(): void {
         this.activeSession = this.sessionsService.getActiveSession();
+    }
+
+    getType():string {
+        if (this.type) {
+            return this.type;
+        } else {
+            if (this.node && ('new' in this.node)) {
+                return "new";
+            } else if (this.node && ('deleted' in this.node)) {
+                return "deleted";
+            } else {
+                return "current";
+            }
+        }
     }
 
     showEditMenu(event) {
@@ -102,9 +117,27 @@ export class TreeIndent implements OnInit {
         menu.style.visibility = "hidden";
     }
 
-    deleteSubtree(node) {
-        this.modsService.delete(this.activeSession, node);
+    deleteSubtree(node, value = null) {
+        this.modsService.delete(this.activeSession, node, value);
         this.sessionsService.storeData();
+    }
+
+    /* 0 - not deleted, 1 - deleted value, 2 - deleted all values */
+    isDeleted(): number {
+        if ('deleted' in this.node) {
+            if (typeof this.node['deleted'] === 'boolean') {
+                if (this.node['deleted']) {
+                    return 2;
+                } else {
+                    return 0;
+                }
+            } else if (this.value) {
+                if (this.node['deleted'].indexOf(this.value) != -1) {
+                    return 1;
+                }
+            }
+        }
+        return 0;
     }
 
     openCreatingDialog(element, node, parent = false) {
@@ -125,8 +158,13 @@ export class TreeIndent implements OnInit {
         this.modsService.createClose(node, reason);
     }
 
-    cancelModification(node) {
-        this.modsService.cancelModification(this.activeSession, node, false);
+    cancelModification(node, value = null) {
+        if (value && node['deleted'].length > 1) {
+            let i = node['deleted'].indexOf(value);
+            node['deleted'].splice(i, 1);
+        } else {
+            this.modsService.cancelModification(this.activeSession, node, false);
+        }
         this.sessionsService.storeData();
     }
 }
@@ -218,7 +256,10 @@ export class TreeView implements OnInit {
     changeValueCancel(node) {
         if ('value' in node) {
             this.modsService.setEdit(this.activeSession, node, false);
+        } else {
+            this.modsService.cancelModification(this.activeSession, node, false);
         }
+        this.sessionsService.storeData();
     }
 
     changeValue(node, target) {
@@ -232,8 +273,23 @@ export class TreeView implements OnInit {
             input = target.nextElementSibling;
         }
 
-        this.modsService.change(this.activeSession, node, input.value);
+        if (node['info']['type'] == 8) {
+            this.modsService.change(this.activeSession, node, [input.value]);
+        } else {
+            this.modsService.change(this.activeSession, node, input.value);
+        }
         this.sessionsService.storeData();
+    }
+
+    nodeValue(node, index:number = 0): string {
+        if ('value' in node) {
+            if (node['info']['type'] == 4) {
+                return node['value'];
+            } else if (node['info']['type'] == 8 && node['value'].length > index) {
+                return node['value'][index];
+            }
+        }
+        return null;
     }
 
     newChildrenToShow(node) {

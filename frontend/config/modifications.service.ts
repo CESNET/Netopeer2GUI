@@ -179,7 +179,20 @@ export class ModificationsService {
         }
     }
 
-    delete(activeSession, node) {
+    isDeleted(node, value = null): boolean {
+        if ('deleted' in node) {
+            if (typeof node['deleted'] === 'boolean') {
+                return node['deleted'];
+            } else if (value) {
+                if (node['deleted'].indexOf(value) != -1) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    delete(activeSession, node, value = null) {
         if ('new' in node) {
             /* removing newly created subtree */
             let parent = this.nodeParent(activeSession, node);
@@ -210,13 +223,21 @@ export class ModificationsService {
                 /* new record */
                 record['type'] = 'delete';
                 record['original'] = node;
-                node['deleted'] = true;
                 node['dirty'] = true;
             } else if (record['type'] == 'change') {
                 record['type'] = 'delete';
                 node['value'] = record['original'];
                 delete record['original'];
                 delete record['value'];
+            }
+            if (value) {
+                if (!('deleted' in node) || typeof node['deleted'] === 'boolean') {
+                    node['deleted'] = [];
+                }
+                node['deleted'].push(value);
+            } else if (node['info']['type'] == 8) {
+                node['deleted'] = node['value'].slice(0);
+            } else {
                 node['deleted'] = true;
             }
         }
@@ -282,6 +303,27 @@ export class ModificationsService {
         delete node['schemaChildren'];
     }
 
+    private list_nextpos(node, path: string): number {
+        let search;
+        if ('new' in node) {
+            search = node['children'];
+        } else {
+            search = node['newChildren'];
+        }
+        let pos = 1;
+        if (search.length) {
+            for (let sibling of search) {
+                if (sibling['path'].substr(0, path.length + 1) == path + '[') {
+                    let n = parseInt(sibling['path'].substring(path.length + 1));
+                    if (n >= pos) {
+                        pos = n + 1;
+                    }
+                }
+            }
+        }
+        return pos;
+    }
+
     create(activeSession, node, index) {
         //console.trace();
         let newNode = {};
@@ -324,26 +366,13 @@ export class ModificationsService {
             }
             this.setEdit(activeSession, newNode, true)
             break;
+        case 8: /* leaf-list */
+            newNode['path'] = newNode['path'] + '[' + this.list_nextpos(node, newNode['path']) + ']';
+            this.setEdit(activeSession, newNode, true)
+            console.log(newNode);
+            break;
         case 16: /* list */
-            let search;
-            if ('new' in node) {
-                search = node['children'];
-            } else {
-                search = node['newChildren'];
-            }
-            let pos = 1;
-            if (search.length) {
-                for (let sibling of search) {
-                    if (sibling['path'].substr(0, newNode['path'].length + 1) == newNode['path'] + '[') {
-                        let n = parseInt(sibling['path'].substring(newNode['path'].length + 1));
-                        if (n >= pos) {
-                            pos = n + 1;
-                        }
-                    }
-                }
-            }
-            newNode['path'] = newNode['path'] + '[' + pos + ']';
-
+            newNode['path'] = newNode['path'] + '[' + this.list_nextpos(node, newNode['path']) + ']';
             newNode['children'] = [];
             /* open creation dialog for nodes inside the created list */
             this.sessionsService.childrenSchemas(activeSession.key, newNode['info']['path'], newNode).then(result => {
@@ -405,8 +434,8 @@ export class ModificationsService {
             delete node['creatingChild'];
         }
         if ('deleted' in node) {
-            node['dirty'] = false;
-            node['deleted'] = false;
+            delete node['dirty'];
+            delete node['deleted'];
         }
 
         if ('new' in node) {
@@ -516,15 +545,22 @@ export class ModificationsService {
                 return 'invalid number (' + count + ') of keys in ' + node['path'];
             }
         }
+
+        /* recursion */
         if (node['info']['type'] == 16 || node['info']['type'] == 1) {
             for (let i in node['children']) {;
-                console.log(node['children'][i]);
                 if (node['children'][i]['info']['type'] == 4) {
                     /* leaf */
                     if (!('value' in node['children'][i])) {
                         if (node['children'][i]['info']['key']) {
                             return 'not confirmed value of the ' + node['children'][i]['path'] + ' key.';
                         }
+                        console.log('not confirmed node ' + node['children'][i]['path'] + ', removing it');
+                        node['children'].splice(i, 1);
+                    }
+                } else if (node['children'][i]['info']['type'] == 8) {
+                    /* leaf-list */
+                    if (!('value' in node['children'][i])) {
                         console.log('not confirmed node ' + node['children'][i]['path'] + ', removing it');
                         node['children'].splice(i, 1);
                     }
@@ -544,6 +580,8 @@ export class ModificationsService {
             for (let i in node['info']['keys']) {
                 node['path'] = node['path'] + '[' + node['info']['keys'][i] + '=\'' + node['children'][i]['value'] + '\']'
             }
+        } else if (node['info']['type'] == 8 && top) {
+            node['path'] = node['path'].slice(0, node['path'].lastIndexOf('[') + 1) + '.=\'' + node['value'][0] + '\']'
         }
         return null;
     }
@@ -553,6 +591,12 @@ export class ModificationsService {
             //console.log(JSON.stringify(mod));
             if (!('data' in activeSession.modifications[mod])) {
                 continue;
+            } else if (activeSession.modifications[mod]['data']['info']['type'] == 4 || activeSession.modifications[mod]['data']['info']['type'] == 8) {
+                /* remove not confirmed leaf/leaf-lists */
+                if (!('value' in activeSession.modifications[mod]['data'])) {
+                    console.log('not confirmed node ' + activeSession.modifications[mod]['data']['path'] + ', removing it');
+                    this.removeModificationsRecord(activeSession, mod);
+                }
             }
             let err = this.resolveKeys(activeSession.modifications[mod]['data']);
             if (err) {
