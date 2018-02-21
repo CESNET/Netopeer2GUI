@@ -112,6 +112,7 @@ $colorLineHover: #e1e1e1;
     height: 100%;
 }
 
+
 .editmenu {
     visibility: hidden;
     background-color: $colorBackground;
@@ -133,4 +134,37 @@ $colorLineHover: #e1e1e1;
 
 .loading {
 	margin-top: 0.5em;
+}
+
+
+.yang-leaflist{
+    display: flex;
+    flex-direction: row;
+    align-items: stretch;
+
+    img{
+        display: inline-block;
+    }
+}
+
+.yang-leaf{
+    display: flex;
+    align-items: stretch;
+}
+
+
+.value_standalone{
+    flex-grow:1;
+    word-break: break-all;
+}
+
+tree-indent{
+
+    display: inline-flex;
+    align-items: stretch;
+    flex-direction: row;
+
+    img{
+        display: inline-block;
+    }
 }
