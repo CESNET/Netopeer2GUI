@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
 import {Router} from '@angular/router';
 
 import {SchemasService} from './schemas.service';
@@ -10,9 +10,8 @@ import {Schema} from '../inventory/schema';
   styleUrls : ['./yang.component.scss']
 })
 
-export class YANGComponent implements OnInit {
+export class YANGComponent {
   title = 'YANG Explorer';
-  activeSchema: Schema;
 
   constructor(private schemasService: SchemasService,
               private router: Router) {}
@@ -22,29 +21,18 @@ export class YANGComponent implements OnInit {
       this.router.navigateByUrl('/netopeer/inventory/schemas');
   }
 
-  changeActiveSchema(key: string) {
-      this.activeSchema = this.schemasService.changeActiveSchema(key);
-  }
-
   close(key: string) {
-      for (let i in this.schemasService.schemas) {
-          if (this.schemasService.schemas[i].key == key) {
-              this.schemasService.schemas.splice(Number(i), 1);
-              if (this.schemasService.activeSchema == key) {
-                  if (Number(i) > 0) {
-                      this.changeActiveSchema(this.schemasService.schemas[Number(i) - 1].key)
-                  } else if (this.schemasService.schemas.length) {
-                      this.changeActiveSchema(this.schemasService.schemas[0].key)
-                  }
-              }
-              this.schemasService.storeData();
-              break;
+      let index = Object.keys(this.schemasService.schemas).indexOf(key);
+      if (this.schemasService.activeSchema == key) {
+          if (index > 0) {
+              this.schemasService.changeActiveSchemaKey(Object.keys(this.schemasService.schemas)[index - 1])
+          } else if (Object.keys(this.schemasService.schemas).length > 1) {
+              this.schemasService.changeActiveSchemaKey(Object.keys(this.schemasService.schemas)[1])
+          } else {
+              this.schemasService.activeSchema = null;
           }
       }
-      this.activeSchema = this.schemasService.getActiveSchema();
-  }
-
-  ngOnInit(): void {
-      this.activeSchema = this.schemasService.getActiveSchema();
+      delete this.schemasService.schemas[key];
+      this.schemasService.storeData();
   }
 }

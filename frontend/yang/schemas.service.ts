@@ -8,7 +8,7 @@ import { Schema } from '../inventory/schema';
 
 @Injectable()
 export class SchemasService {
-    public schemas: Schema[];
+    public schemas;
     public activeSchema: string;
 
     constructor( private http: Http ) {
@@ -28,25 +28,36 @@ export class SchemasService {
         this.schemas = JSON.parse(localStorage.getItem('schemas'));
     }
 
-    getActiveSchema(key: string = this.activeSchema): Schema {
-        if (!key) {
-            return null;
+    schemasKeys() {
+        if (this.schemas) {
+            return Object.keys(this.schemas);
         }
-        for (let i = this.schemas.length; i > 0; i--) {
-            if (this.schemas[i - 1].key == key) {
-                return this.schemas[i - 1];
-            }
-        }
-        return null;
     }
 
-    changeActiveSchema(key: string): Schema {
-        let result = this.getActiveSchema(key);
-        if (result) {
+    getSchemaKey(schema: Schema) {
+        if (!schema) {
+            return null
+        } else if ('revision' in schema) {
+            return schema.name + '@' + schema.revision + '.yang';
+        } else {
+            return schema.name + '.yang';
+        }
+    }
+
+    getActiveSchema(key: string = this.activeSchema): Schema {
+        if (key in this.schemas) {
+            return this.schemas[key];
+        } else {
+            return null;
+        }
+    }
+
+    changeActiveSchemaKey(key: string): Schema {
+        if (key && (key in this.schemas)) {
             this.activeSchema = key;
             localStorage.setItem('activeSession', this.activeSchema);
         }
-        return result;
+        return this.schemas[key];
     }
 
     getSchemas() {
@@ -54,19 +65,17 @@ export class SchemasService {
             .map(( resp: Response ) => resp.json()).toPromise();
     }
 
-    show(schema: Schema) {
+    show(key: string, schema: Schema) {
         let newSchema = true;
-        for (let i in this.schemas) {
-            if (this.schemas[i].key == schema.key) {
-                schema = this.schemas[i];
-                newSchema = false;
-                break;
-            }
+
+        if (key in this.schemas) {
+            newSchema = false;
+            schema = this.schemas[key];
         }
 
         if (!('data' in schema)) {
             let params = new URLSearchParams();
-            params.set('key', schema.key);
+            params.set('key', key);
             let options = new RequestOptions({ search: params });
             this.http.get('/netopeer/inventory/schema', options)
                 .map((resp: Response) => resp.json()).toPromise().then(result => {
@@ -74,13 +83,12 @@ export class SchemasService {
                     if (result['success']) {
                         schema['data'] = result['data'];
                         this.storeData();
-                        console.log(this.schemas)
                     }
                 });
         }
 
         if (newSchema) {
-            this.schemas.push(schema);
+            this.schemas[key] = schema;
             this.storeData();
         }
     }
@@ -95,8 +103,8 @@ export class SchemasService {
             .catch(( err: Response | any ) => Observable.throw( err ) );
     }
 
-    rmSchema( schema: Schema ) {
-        let options = new RequestOptions( { body: JSON.stringify(schema.key) } );
+    rmSchema(key: string) {
+        let options = new RequestOptions( { body: JSON.stringify(key) } );
         return this.http.delete( '/netopeer/inventory/schemas', options )
             .map(( resp: Response ) => resp.json() )
             .catch(( err: Response | any ) => Observable.throw( err ) );

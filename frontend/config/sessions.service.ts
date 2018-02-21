@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnInit } from '@angular/core';
 import { Http, Response, RequestOptions, URLSearchParams } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/catch';
@@ -9,7 +9,7 @@ import { Device } from '../inventory/device';
 import { Session } from './session';
 
 @Injectable()
-export class SessionsService{
+export class SessionsService implements OnInit {
     public sessions: Session[];
     public activeSession;
 
@@ -18,6 +18,9 @@ export class SessionsService{
         if (!this.activeSession) {
             this.activeSession = "";
         }
+    }
+
+    ngOnInit(): void {
         this.checkSessions();
     }
 
@@ -30,12 +33,11 @@ export class SessionsService{
     }
 
     getActiveSession(key: string = this.activeSession): Session {
-        if (!key) {
-            return null;
-        }
-        for (let i = this.sessions.length; i > 0; i--) {
-            if (this.sessions[i - 1].key == key) {
-                return this.sessions[i - 1];
+        if (key) {
+            for (let i = this.sessions.length; i > 0; i--) {
+                if (this.sessions[i - 1].key == key) {
+                    return this.sessions[i - 1];
+                }
             }
         }
         return null;
@@ -60,7 +62,7 @@ export class SessionsService{
         } else {
             /* verify that the sessions are still active */
             for (let i = this.sessions.length; i > 0; i--) {
-                this.alive(this.sessions[i - 1].key).subscribe(resp => {
+                this.alive(this.sessions[i - 1].key).then(resp => {
                     if (!resp['success']) {
                         if (this.activeSession && this.sessions[i - 1].key == this.activeSession) {
                             /* active session is not alive - select new active session
@@ -73,8 +75,10 @@ export class SessionsService{
                             } else {
                                 this.activeSession = "";
                             }
+                            localStorage.setItem('activeSession', this.activeSession);
                         }
                         this.sessions.splice(i - 1, 1);
+                        this.storeData();
                     }
                 });
             }
@@ -146,13 +150,12 @@ export class SessionsService{
             .map((resp: Response) => resp.json()).toPromise();
     }
 
-    alive(key: string): Observable<string[]> {
+    alive(key: string): Promise<string[]> {
         let params = new URLSearchParams();
         params.set('key', key);
         let options = new RequestOptions({ search: params });
         return this.http.get('/netopeer/session/alive', options)
-            .map((resp: Response) => resp.json())
-            .catch((err: Response | any) => Observable.throw(err));
+            .map((resp: Response) => resp.json()).toPromise();
     }
 
     getCpblts(key: string): Observable<string[]> {

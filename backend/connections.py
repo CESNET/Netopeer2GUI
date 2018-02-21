@@ -130,8 +130,9 @@ def _checkvalue(session, req, schema):
 	if not key in sessions[user.username]:
 		return(json.dumps({'success': False, 'error-msg': 'Invalid session key.'}))
 
+	ctx = sessions[user.username][key]['session'].context;
 	if schema:
-		search = sessions[user.username][key]['session'].context.find_path(req['path'])
+		search = ctx.find_path(req['path'])
 	else:
 		search = sessions[user.username][key]['data'].find_path(req['path'])
 
@@ -144,7 +145,11 @@ def _checkvalue(session, req, schema):
 		node = search.data()[0]
 
 	if node.validate_value(req['value']):
-		return(json.dumps({'success': False, 'error-msg': yang.Error().errmsg()}))
+		errors = yang.get_ly_errors(ctx)
+		if errors.size():
+			return(json.dumps({'success': False, 'error-msg': errors[errors.size() - 1].errmsg()}))
+		else:
+			return(json.dumps({'success': False, 'error-msg': 'unknown error'}))
 
 	return(json.dumps({'success': True}))
 

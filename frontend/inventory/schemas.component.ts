@@ -14,14 +14,13 @@ import { SchemasService } from '../yang/schemas.service'
 
 export class InventorySchemasComponent implements OnInit {
     schemas: Schema[];
-    @Input() selectedSchema: Schema;
     addingSchema = false;
     addingResult = -1;
     constructor( private schemasService: SchemasService,
         private router: Router ) { }
 
     getSchemas(): void {
-        this.schemasService.getSchemas().then( result => this.schemas = result );
+        this.schemasService.getSchemas().then( result => {this.schemas = result;});
     }
 
     showAddSchema() {
@@ -40,8 +39,8 @@ export class InventorySchemasComponent implements OnInit {
             result => { this.addingResult = result['success'] ? 1 : 0; this.getSchemas() } );
     }
 
-    remove( schema: Schema ) {
-        this.schemasService.rmSchema( schema ).subscribe(
+    remove(key: string) {
+        this.schemasService.rmSchema(key).subscribe(
             result => { if ( result['success'] ) { this.getSchemas() } } );
     }
 
@@ -49,9 +48,15 @@ export class InventorySchemasComponent implements OnInit {
         this.getSchemas();
     }
 
-    onSelect( schema: Schema ): void {
-        this.schemasService.show(schema);
-        this.schemasService.changeActiveSchema(schema.key);
+    schemasKeys() {
+        if (this.schemas) {
+            return Object.keys(this.schemas);
+        }
+    }
+
+    onSelect(key: string): void {
+        this.schemasService.show(key, this.schemas[key]);
+        this.schemasService.changeActiveSchemaKey(key);
         this.router.navigateByUrl( '/netopeer/yang' );
     }
 }
