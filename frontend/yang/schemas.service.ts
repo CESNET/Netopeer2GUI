@@ -14,9 +14,11 @@ export class SchemasService {
     constructor( private http: Http ) {
         this.loadData();
         this.activeSchema = localStorage.getItem('activeSchema');
+        if (!this.schemas) {
+            this.schemas = {};
+        }
         if (!this.activeSchema) {
             this.activeSchema = "";
-            this.schemas = [];
         }
     }
 
@@ -55,7 +57,7 @@ export class SchemasService {
     changeActiveSchemaKey(key: string): Schema {
         if (key && (key in this.schemas)) {
             this.activeSchema = key;
-            localStorage.setItem('activeSession', this.activeSchema);
+            localStorage.setItem('activeSchema', this.activeSchema);
         }
         return this.schemas[key];
     }
@@ -65,7 +67,7 @@ export class SchemasService {
             .map(( resp: Response ) => resp.json()).toPromise();
     }
 
-    show(key: string, schema: Schema) {
+    show( key: string, schema: Schema) {
         let newSchema = true;
 
         if (key in this.schemas) {
@@ -91,6 +93,22 @@ export class SchemasService {
             this.schemas[key] = schema;
             this.storeData();
         }
+    }
+
+    close( key: string ) {
+        let index = Object.keys( this.schemas ).indexOf( key );
+        if ( this.activeSchema == key ) {
+            if ( index > 0 ) {
+                this.changeActiveSchemaKey( Object.keys( this.schemas )[index - 1] )
+            } else if ( Object.keys( this.schemas ).length > 1 ) {
+                this.changeActiveSchemaKey( Object.keys( this.schemas )[1] )
+            } else {
+                this.activeSchema = null;
+                localStorage.removeItem('activeSchema');
+            }
+        }
+        delete this.schemas[key];
+        this.storeData();
     }
 
     addSchema( schema: File ) {

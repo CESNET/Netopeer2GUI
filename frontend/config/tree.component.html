@@ -90,7 +90,7 @@
         </ng-container>
 		<!-- END nodetype-specific code -->
 
-		<div class="module_name">{{node['info']['module']}}</div>
+		<div class="module_name" (click)="showSchema(node)" title="open schema {{node['info']['module']}} in YANG Explorer">{{moduleName(node)}}</div>
 	</div>
 
 	<!-- BEGIN nodetype-specific code -->

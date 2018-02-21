@@ -251,7 +251,11 @@ def schema_info():
 
 
 def _create_child(ctx, parent, child_def):
-	module = ctx.get_module(child_def['info']['module'])
+	at = child_def['info']['module'].find('@')
+	if at == -1:
+		module = ctx.get_module(child_def['info']['module'])
+	else:
+		module = ctx.get_module(child_def['info']['module'][:at], child_def['info']['module'][at + 1:])
 	# print('child: ' + json.dumps(child_def))
 	# print('parent: ' + parent.schema().name())
 	# print('module: ' + module.name())

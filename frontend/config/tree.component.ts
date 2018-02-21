@@ -2,9 +2,11 @@ import {Component, Directive, ElementRef, EventEmitter, Input, Output, OnInit, C
 import {Router} from '@angular/router';
 
 import {Session} from './session';
+import {Schema} from '../inventory/schema';
 import {ModificationsService} from './modifications.service';
 import {SessionsService} from './sessions.service';
 import {TreeService} from './config.component';
+import {SchemasService} from '../yang/schemas.service';
 
 @Directive({
     selector: '[treeScrollTo]'
@@ -183,7 +185,9 @@ export class TreeView implements OnInit {
     constructor(private modsService: ModificationsService,
                 private sessionsService: SessionsService,
                 private treeService: TreeService,
-                private changeDetector: ChangeDetectorRef) {}
+                private schemasService: SchemasService,
+                private changeDetector: ChangeDetectorRef,
+                private router: Router) {}
 
     ngOnInit(): void {
         this.activeSession = this.sessionsService.getActiveSession();
@@ -290,6 +294,32 @@ export class TreeView implements OnInit {
             }
         }
         return null;
+    }
+
+    moduleName(node): string {
+        let at = node['info']['module'].indexOf('@');
+        if (at == -1) {
+            return node['info']['module'];
+        } else {
+            return node['info']['module'].substring(0, at);
+        }
+    }
+
+    showSchema(node) {
+        let schema = new Schema;
+        let at = node['info']['module'].indexOf('@');
+        if (at == -1) {
+            schema.name = node['info']['module'];
+        } else {
+            schema.name = node['info']['module'].substring(0, at);
+            schema.revision = node['info']['module'].substring(at + 1);
+        }
+        let key = node['info']['module'] + '.yang';
+
+        schema.name = this.moduleName(node);
+        this.schemasService.show(key, schema);
+        this.schemasService.changeActiveSchemaKey(key);
+        this.router.navigateByUrl( '/netopeer/yang' );
     }
 
     newChildrenToShow(node) {

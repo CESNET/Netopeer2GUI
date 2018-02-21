@@ -63,7 +63,10 @@ def schemaInfoNode(schema):
 	info = {}
 
 	info["type"] = schema.nodetype()
-	info["module"] = schema.module().name()
+	if schema.module().rev_size():
+		info["module"] = schema.module().name() + '@' + schema.module().rev().date()
+	else:
+		info["module"] = schema.module().name()
 	info["name"] = schema.name()
 	info["dsc"] = schema.dsc()
 	info["config"] = True if schema.flags() & yang.LYS_CONFIG_W else False

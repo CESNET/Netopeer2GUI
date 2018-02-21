@@ -3,7 +3,7 @@
         (click)="schemasService.changeActiveSchemaKey(key)">{{schemasService.schemas[key].name}}@{{schemasService.schemas[key].revision}}
         <img class="tab-icon tab-close tab-action-last" src="assets/netopeer/icons/close.svg"  alt="x" title="close"
             onmouseover="this.src='assets/netopeer/icons/close_active.svg'"
-            onmouseout="this.src='assets/netopeer/icons/close.svg'" (click)="close(key)"/>
+            onmouseout="this.src='assets/netopeer/icons/close.svg'" (click)="schemasService.close(key)"/>
     </a><a (click)="addSchema()" onmouseout="getElementById('tabadd').style.filter='invert(100%)'" onmouseover="getElementById('tabadd').style.filter='invert(0%)'">
         <img id="tabadd" class="tab-icon tab-add tab-action-last" src="assets/netopeer/icons/add.svg" alt="+" title="open schema"
             onmouseover="this.src='assets/netopeer/icons/add_active.svg'"
@@ -12,6 +12,5 @@
 </nav>
 <div class="netopeer-content" [style.padding-top]="'calc(' + subnav.offsetHeight + 'px - -0.7em)'">
 <img *ngIf="!schemasService.activeSchema" (click)="addSchema()" src="assets/netopeer/starthere.svg" alt="Start here with that + sign."/>
-
 <pre *ngIf="schemasService.activeSchema">{{schemasService.schemas[schemasService.activeSchema].data}}</pre>
 </div>
