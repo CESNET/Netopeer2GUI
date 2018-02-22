@@ -105,6 +105,7 @@ $colorLineHover: #e1e1e1;
     display: inline-block;
     margin-left: 1.5em;
     word-wrap: break-word;
+    flex-grow: 1;
 }
 
 .indentation {
@@ -140,16 +141,21 @@ $colorLineHover: #e1e1e1;
 .yang-leaflist{
     display: flex;
     flex-direction: row;
-    align-items: stretch;
+    align-items: center;
 
     img{
         display: inline-block;
     }
 }
 
+.yang-list{
+    display:flex;
+    align-items: center;
+}
+
 .yang-leaf{
     display: flex;
-    align-items: stretch;
+    align-items: center;
 }
 
 
