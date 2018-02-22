@@ -105,12 +105,14 @@ $colorLineHover: #e1e1e1;
     display: inline-block;
     margin-left: 1.5em;
     word-wrap: break-word;
+    flex-grow: 1;
 }
 
 .indentation {
     width: 1.7em;
     height: 100%;
 }
+
 
 .editmenu {
     visibility: hidden;
@@ -133,4 +135,42 @@ $colorLineHover: #e1e1e1;
 
 .loading {
 	margin-top: 0.5em;
+}
+
+
+.yang-leaflist{
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+
+    img{
+        display: inline-block;
+    }
+}
+
+.yang-list{
+    display:flex;
+    align-items: center;
+}
+
+.yang-leaf{
+    display: flex;
+    align-items: center;
+}
+
+
+.value_standalone{
+    flex-grow:1;
+    word-break: break-all;
+}
+
+tree-indent{
+
+    display: inline-flex;
+    align-items: stretch;
+    flex-direction: row;
+
+    img{
+        display: inline-block;
+    }
 }
