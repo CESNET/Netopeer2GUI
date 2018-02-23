@@ -212,12 +212,13 @@ export class TreeView implements OnInit {
         if ((node['info']['key'] && !node['new']) || node['deleted']) {
             return;
         }
-        let parent = target.parentElement;
+
+        let container = target.parentElement.parentElement;
 
         this.modsService.setEdit(this.activeSession, node, true)
         this.changeDetector.detectChanges();
 
-        parent.nextElementSibling.lastElementChild.focus();
+        container.nextElementSibling.lastElementChild.focus();
     }
 
     checkValue(node, target, trusted = false) {

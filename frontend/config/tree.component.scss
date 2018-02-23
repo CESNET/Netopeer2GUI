@@ -62,7 +62,7 @@ $colorLineHover: #e1e1e1;
 }
 
 .status,
-.node_info {
+.keys {
     color: grey;
 }
 
@@ -101,11 +101,15 @@ $colorLineHover: #e1e1e1;
     padding-left: 0;
 }
 
-.value {
+.node_info{
     display: inline-block;
-    margin-left: 1.5em;
     word-wrap: break-word;
+    margin-left: 3px;
     flex-grow: 1;
+}
+
+.value {
+    margin-left: 1.5em;
 }
 
 .indentation {
@@ -134,7 +138,7 @@ $colorLineHover: #e1e1e1;
 }
 
 .loading {
-	margin-top: 0.5em;
+    margin-top: 0.5em;
 }
 
 
