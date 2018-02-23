@@ -127,7 +127,7 @@
     <!-- leaflist's values -->
     <ng-container *ngIf="node['info']['type'] == 8 && !node['edit'] && !modsService.isDeleted(node)">
         <div *ngFor="let value of node['value']"
-            class="node yang-leaflist" [class.dirty]="node['dirty']" [class.deleted]="modsService.isDeleted(node, value)">
+            class="node yang-leaflist-value" [class.dirty]="node['dirty']" [class.deleted]="modsService.isDeleted(node, value)">
             <tree-indent [node]="node" [indentation]="inheritIndentation(node)" [type]="'value'" [value]="value"></tree-indent>
             <div class="value_standalone">{{value}}</div>
         </div>

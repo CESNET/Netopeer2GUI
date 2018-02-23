@@ -141,34 +141,34 @@ $colorLineHover: #e1e1e1;
     margin-top: 0.5em;
 }
 
-
-.yang-leaflist{
+.yang-leaflist {
     display: flex;
-    flex-direction: row;
     align-items: center;
-
-    img{
-        display: inline-block;
-    }
+    flex-direction: row;
 }
 
-.yang-list{
+.yang-leaflist-value {
+    display: flex;
+}
+
+.yang-container,
+.yang-list {
     display:flex;
     align-items: center;
 }
 
-.yang-leaf{
+.yang-leaf {
     display: flex;
     align-items: center;
 }
 
 
-.value_standalone{
+.value_standalone {
     flex-grow:1;
     word-break: break-all;
 }
 
-tree-indent{
+tree-indent {
 
     display: inline-flex;
     align-items: stretch;
