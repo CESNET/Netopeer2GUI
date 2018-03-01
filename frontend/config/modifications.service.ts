@@ -2,11 +2,12 @@ import { Injectable } from '@angular/core';
 
 import { Session} from './session';
 import { SessionsService } from './sessions.service';
+import { TreeService } from './tree.service';
 
 @Injectable()
 export class ModificationsService {
 
-    constructor(private sessionsService: SessionsService) {}
+    constructor(private sessionsService: SessionsService, private treeService: TreeService) {}
 
     createModificationsRecord(activeSession, path) {
         if (!activeSession.modifications) {
@@ -44,23 +45,11 @@ export class ModificationsService {
         }
     }
 
-    setDirty(activeSession, node) {
-        if (!activeSession.modifications) {
-            return;
-        }
-
-        if (node['path'] in activeSession.modifications) {
-            node['dirty'] = true;
-            if (activeSession.modifications[node['path']]['type'] == 'change') {
-                activeSession.modifications[node['path']]['original'] = node['value'];
-            }
-            node['value'] = activeSession.modifications[node['path']]['value']; 
-        }
-        /* recursion */
-        if ('children' in node) {
-            for (let child of node['children']) {
-                this.setDirty(activeSession, child);
-            }
+    renameModificationsRecord(activeSession, oldPath, newPath) {
+        let record = this.getModificationsRecord(activeSession, oldPath);
+        if (record) {
+            activeSession.modifications[newPath] = record;
+            delete activeSession.modifications[oldPath];
         }
     }
 
@@ -101,76 +90,6 @@ export class ModificationsService {
         last['last'] = true;
     }
 
-    nodeParent(activeSession, node) {
-        if (node['path'] =='/') {
-            return null;
-        }
-
-        let match = false;
-        let parent = null;
-        let children = activeSession.data['children'];
-        let newChildren = activeSession.data['newChildren'];
-
-        while (children || newChildren) {
-            match = false;
-
-            if (children) {
-                for (let iter of children) {
-                    if (node['path'] == iter['path']) {
-                        match = true;
-                        children = null;
-                        newChildren = null;
-                        break;
-                    } else if (node['path'].startsWith(iter['path'] + '/')) {
-                        match = true;
-                        parent = iter;
-                        children = iter['children'];
-                        if (('new' in node) && ('newChildren' in iter)) {
-                            newChildren = iter['newChildren'];
-                        } else {
-                            newChildren = null;
-                        }
-                        break;
-                    }
-                }
-                if (!match) {
-                    children = null;
-                }
-            }
-            if (match) {
-                continue;
-            }
-            if (newChildren) {
-                for (let iter of newChildren) {
-                    if (node['path'] == iter['path']) {
-                        match = true;
-                        children = null;
-                        newChildren = null;
-                        break;
-                    } else if (node['path'].startsWith(iter['path'] + '/')) {
-                        match = true;
-                        parent = iter;
-                        children = iter['children'];
-                        if (('new' in node) && ('newChildren' in iter)) {
-                            newChildren = iter['newChildren'];
-                        } else {
-                            newChildren = null;
-                        }
-                        break;
-                    }
-                }
-                if (!match) {
-                    children = null;
-                }
-            }
-        }
-
-        if (!parent) {
-            parent = activeSession.data;
-        }
-        return parent;
-    }
-
     schemaName(parent, child):string {
         if (parent['module'] != child['module']) {
             return child['module'] + ':' + child['name'];
@@ -179,46 +98,39 @@ export class ModificationsService {
         }
     }
 
-    isDeleted(node, value = null): boolean {
+    isDeleted(node): boolean {
         if ('deleted' in node) {
-            if (typeof node['deleted'] === 'boolean') {
-                return node['deleted'];
-            } else if (value) {
-                if (node['deleted'].indexOf(value) != -1) {
-                    return true;
-                }
-            }
+            return node['deleted'];
         }
         return false;
     }
 
-    delete(activeSession, node, value = null) {
+    private deleteChild(activeSession, parent, childArray, node) {
+        for (let i in parent[childArray]) {
+            if (parent[childArray][i]['path'] == node['path']) {
+                parent[childArray].splice(i, 1);
+                break;
+            }
+        }
+        if (childArray != 'children' && !parent[childArray].length) {
+            delete parent[childArray];
+        }
+    }
+
+    delete(activeSession, node) {
         if ('new' in node) {
             /* removing newly created subtree */
-            let parent = this.nodeParent(activeSession, node);
+            let parent = this.treeService.nodeParent(activeSession, node);
             if ('new' in parent) {
                 /* removing just a subtree of the created tree */
-                for (let i in parent['children']) {
-                    if (parent['children'][i] == node) {
-                        parent['children'].splice(i, 1);
-                        break;
-                    }
-                }
+                this.deleteChild(activeSession, parent, 'children', node);
             } else {
                 this.removeModificationsRecord(activeSession, node['path']);
-                for (let i in parent['newChildren']) {
-                    if (parent['newChildren'][i]['path'] == node['path']) {
-                        parent['newChildren'].splice(i, 1);
-                        break;
-                    }
-                }
-                if (!parent['newChildren'].length) {
-                    delete parent['newChildren'];
-                }
+                this.deleteChild(activeSession, parent, 'newChildren', node);
             }
         } else {
             let record = this.createModificationsRecord(activeSession, node['path']);
-
+            node['deleted'] = true;
             if (!('type' in record)) {
                 /* new record */
                 record['type'] = 'delete';
@@ -230,24 +142,14 @@ export class ModificationsService {
                 delete record['original'];
                 delete record['value'];
             }
-            if (value) {
-                if (!('deleted' in node) || typeof node['deleted'] === 'boolean') {
-                    node['deleted'] = [];
-                }
-                node['deleted'].push(value);
-            } else if (node['info']['type'] == 8) {
-                node['deleted'] = node['value'].slice(0);
-            } else {
-                node['deleted'] = true;
-            }
         }
     }
 
     change(activeSession, node, leafValue) {
+        let record = null;
         if (!('new' in node)) {
-            let record = this.createModificationsRecord(activeSession, node['path']);
+            record = this.createModificationsRecord(activeSession, node['path']);
             if (!('type' in record)) {
-                console.log(record);
                 /* new record */
                 if (node['value'] == leafValue) {
                     /* no change to the original value */
@@ -260,43 +162,71 @@ export class ModificationsService {
                 record['value'] = leafValue;
                 node['dirty'] = true;
             } else if (record['type'] == 'change' && record['original'] == leafValue) {
-                console.log(record);
                 /* change back to the original value, remove the change record */
                 this.removeModificationsRecord(activeSession, node['path']);
                 node['dirty'] = false;
             } else {
-                console.log(record);
                 /* another change of existing change record */
                 record['value'] = leafValue;
                 node['dirty'] = true;
             }
+        } else if (node['info']['type'] == 8) {
+            record = this.getModificationsRecord(activeSession, node['path']);
+            let newPath = node['path'].slice(0, node['path'].lastIndexOf('[')) + '[.=\'' + leafValue + '\']';
+            this.renameModificationsRecord(activeSession, node['path'], newPath);
+            node['path'] = newPath
         }
 
         node['value'] = leafValue;
         this.setEdit(activeSession, node, false);
     }
 
-    createOpen(schemas, node) {
+    createOpen(activeSession, schemas, node) {
         //console.trace();
         node['schemaChildren'] = schemas;
         node['creatingChild'] = {};
 
         if (schemas.length) {
-            if (('newChildren' in node) && node['newChildren'].length) {
-                delete node['newChildren'][node['newChildren'].length - 1]['last']
-            } else if (('children' in node) && node['children'].length) {
-                delete node['children'][node['children'].length - 1]['last'];
+            let children = this.treeService.childrenToShow(node);
+            console.log(children)
+            if (children.length) {
+                let last = children[children.length - 1];
+                if (last['info']['type'] == 16) {
+                    let instances = this.treeService.getInstances(activeSession, last)
+                    last = instances[instances.length - 1];
+                }
+                delete last['last'];
+                if (last['info']['type'] == 8) {
+                    for (let sibling of this.treeService.getInstances(activeSession, last)) {
+                        if ('last' in sibling) {
+                            continue;
+                        }
+                        delete sibling["lastLeafList"];
+                    }
+                }
             }
         }
     }
 
-    createClose(node, reason='abort') {
+    createClose(activeSession, node, reason='abort') {
         //console.trace();
         if (reason == 'abort' && node['schemaChildren'].length) {
-            if (('newChildren' in node) && node['newChildren'].length) {
-                node['newChildren'][node['newChildren'].length - 1]['last'] = true;
-            } else if (('children' in node) && node['children'].length) {
-                node['children'][node['children'].length - 1]['last'] = true;
+            let children = this.treeService.childrenToShow(node);
+            if (children.length) {
+                let last = children[children.length - 1];
+                if (last['info']['type'] == 16) {
+                    let instances = this.treeService.getInstances(activeSession, last)
+                    last = instances[instances.length - 1];
+                }
+                last['last'] = true;
+                if (last['info']['type'] == 8) {
+                    for (let sibling of this.treeService.getInstances(activeSession, last)) {
+                        if ('last' in sibling) {
+                            continue;
+                        }
+                        sibling["lastLeafList"] = true;
+                    }
+                }
             }
         }
         delete node['creatingChild'];
@@ -338,7 +268,7 @@ export class ModificationsService {
 
         if ('new' in node) {
             if (!('children' in node)) {
-                node['children'] = []
+                node['children'] = [];
             }
             node['children'].push(newNode)
         } else {
@@ -355,7 +285,7 @@ export class ModificationsService {
             newNode['children'] = [];
             /* open creation dialog for nodes inside the created container */
             this.sessionsService.childrenSchemas(activeSession.key, newNode['info']['path'], newNode).then(result => {
-                this.createOpen(result, newNode);
+                this.createOpen(activeSession, result, newNode);
             });
             break;
         case 4: /* leaf */
@@ -367,6 +297,16 @@ export class ModificationsService {
             this.setEdit(activeSession, newNode, true)
             break;
         case 8: /* leaf-list */
+            /* find the first instance, if not, mark this as the first leaf-list instance */
+            for (let sibling of this.treeService.childrenToShow(node)) {
+                if (sibling == newNode) {
+                    newNode['first'] = true;
+                    break;
+                }
+                if (sibling['info']['name'] == newNode['info']['name'] && sibling['info']['module'] == newNode['info']['module']) {
+                    break;
+                }
+            }
             newNode['path'] = newNode['path'] + '[' + this.list_nextpos(node, newNode['path']) + ']';
             this.setEdit(activeSession, newNode, true)
             console.log(newNode);
@@ -377,7 +317,7 @@ export class ModificationsService {
             /* open creation dialog for nodes inside the created list */
             this.sessionsService.childrenSchemas(activeSession.key, newNode['info']['path'], newNode).then(result => {
                 if (result && result.length) {
-                    this.createOpen(result, newNode);
+                    this.createOpen(activeSession, result, newNode);
                 }
 
                 if (newNode['schemaChildren'].length) {
@@ -395,7 +335,8 @@ export class ModificationsService {
                         newNode['schemaChildren'].splice(i, 1);
                         if (!newNode['schemaChildren'].length) {
                             newKey['last'] = true;
-                            this.createClose(newNode, 'success');
+                            this.createClose(activeSession, newNode, 'success');
+                            console.log(JSON.stringify(newNode));
                         }
                     }
                 }
@@ -406,7 +347,7 @@ export class ModificationsService {
 
         if (!node['schemaChildren'].length) {
             newNode['last'] = true;
-            this.createClose(node, 'success');
+            this.createClose(activeSession, node, 'success');
         }
 
         if (!('new' in node)) {
@@ -440,7 +381,7 @@ export class ModificationsService {
 
         if ('new' in node) {
             /* removing newly created subtree */
-            let parent = this.nodeParent(activeSession, node);
+            let parent = this.treeService.nodeParent(activeSession, node);
             if ('new' in parent) {
                 /* removing just a subtree of the created tree */
                 for (let i in parent['children']) {
@@ -477,7 +418,7 @@ export class ModificationsService {
                     schemas = parent['schemaChildren'];
                 }
                 schemas.push(node['info']);
-                this.createOpen(schemas, parent)
+                this.createOpen(activeSession, schemas, parent)
             }
         } else if (activeSession.modifications) {
             let record = this.getModificationsRecord(activeSession, node['path']);

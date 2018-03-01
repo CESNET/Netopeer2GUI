@@ -108,8 +108,13 @@ $colorLineHover: #e1e1e1;
     flex-grow: 1;
 }
 
-.value {
+.value_inline {
     margin-left: 1.5em;
+}
+
+.indentation.value {
+    width: 0.8em;
+    height: 100%;
 }
 
 .indentation {

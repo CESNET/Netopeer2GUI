@@ -2,20 +2,17 @@
     <!-- recursion - show children -->
     <div class="node">
         <tree-indent [node]="node" [indentation]="indentation" [type]="'root'"></tree-indent>
-        <img *ngIf="activeSession.dataVisibility!='all'" class="icon_action" (click)="treeService.rpcGet(activeSession, true)"
+        <img *ngIf="activeSession.dataVisibility!='all'" class="icon_action" (click)="sessionsService.rpcGet(activeSession, true)"
             src="assets/netopeer/icons/show_all.svg" alt="w" title="expand all"
             onmouseover="this.src='assets/netopeer/icons/show_all_active.svg'"
             onmouseout="this.src='assets/netopeer/icons/show_all.svg'"/>
-        <img *ngIf="activeSession.dataVisibility!='root'" class="icon_action" (click)="treeService.collapse(activeSession)"
+        <img *ngIf="activeSession.dataVisibility!='root'" class="icon_action" (click)="sessionsService.collapse(activeSession)"
             src="assets/netopeer/icons/collapse.svg" alt="x" title="collapse"
             onmouseover="this.src='assets/netopeer/icons/collapse_active.svg'"
             onmouseout="this.src='assets/netopeer/icons/collapse.svg'"/>
     </div>
     <div class="children" *ngIf="node['children'] || node['newChildren']">
-        <ng-container *ngFor="let child of node['children']">
-            <tree-view [node]="child"></tree-view>
-        </ng-container>
-        <ng-container *ngFor="let child of newChildrenToShow(node)">
+        <ng-container *ngFor="let child of treeService.childrenToShow(node)">
             <tree-view [node]="child"></tree-view>
         </ng-container>
     </div>
@@ -26,127 +23,7 @@
 <div class="subtree" *ngIf="node['path'] != '/' && (node['info']['config'] || activeSession.statusVisibility)"
     [class.status]="!node['info']['config']">
 
-    <div class="node" [class.dirty]="node['dirty']" [class.deleted]="modsService.isDeleted(node)"
-            [class.yang-container]="node['info']['type'] == 1"
-            [class.yang-leaf]="node['info']['type'] == 4"
-            [class.yang-leaflist]="node['info']['type'] == 8"
-            [class.yang-list]="node['info']['type'] == 16">
-		<tree-indent [node]="node" [indentation]="indentation"></tree-indent>
-		<img class="icon" src="assets/netopeer/icons/info.svg" alt="info" title="{{node['info']['dsc']}}"
-			onmouseover="this.src='assets/netopeer/icons/info_active.svg'"
-			onmouseout="this.src='assets/netopeer/icons/info.svg'"/>
-
-		<!-- BEGIN nodetype-specific code -->
-		<!-- leaf -->
-		<ng-container *ngIf="node['info']['type'] == 4 || (node['new'] && node['info']['type'] == 8)">
-			<ng-container *ngIf="node['info']['key']">
-				<img class="icon" src="assets/netopeer/icons/key.svg" alt="key" title="list key"/>
-			</ng-container>
-			<ng-container *ngIf="node['info']['config'] && !node['deleted'] && (!node['info']['key'] || node['new']) && node['info']['datatypebase'] != 'empty'">
-				<img *ngIf="!node['edit']" class="icon_action" src="assets/netopeer/icons/edit.svg"
-					alt="edit" title="edit value" tabindex=0
-					(click)="startEditing(node, $event.target);" (keyup.enter)="startEditing(node, $event.target);"
-					onmouseover="this.src='assets/netopeer/icons/edit_active.svg'"
-					onmouseout="this.src='assets/netopeer/icons/edit.svg'"/>
-				<img *ngIf="node['edit']" class="icon" src="assets/netopeer/icons/edit.svg" alt="edit" title="editing value"/>
-			</ng-container>
-		</ng-container>
-
-        <!-- container and lists -->
-        <ng-container *ngIf="!node['new'] && !node['deleted'] && ((node['info']['type'] == 16 || node['info']['type'] == 1)) && treeService.expandable(node)">
-            <img *ngIf="treeService.hasHiddenChild(node)" (click)="treeService.expand(activeSession, node, true)"
-                class="icon_action" src="assets/netopeer/icons/show_all.svg"
-                onmouseover="this.src='assets/netopeer/icons/show_all_active.svg'"
-                onmouseout="this.src='assets/netopeer/icons/show_all.svg'" alt="show-all" title="expand subtree"/>
-            <img *ngIf="!node['children']" (click)="treeService.expand(activeSession, node, false)"
-                class="icon_action" src="assets/netopeer/icons/show_children.svg"
-                onmouseover="this.src='assets/netopeer/icons/show_children_active.svg'"
-                onmouseout="this.src='assets/netopeer/icons/show_children.svg'" alt="show-children" title="expand children"/>
-            <img *ngIf="node['children']" (click)="treeService.collapse(activeSession, node)"
-                class="icon_action" src="assets/netopeer/icons/collapse.svg"  alt="collapse" title="collapse"
-                onmouseover="this.src='assets/netopeer/icons/collapse_active.svg'"
-                onmouseout="this.src='assets/netopeer/icons/collapse.svg'"/>
-        </ng-container>
-
-        <div class="node_info"><span class="node_name">{{node['info']['name']}}</span>
-            <!-- list's keys -->
-            <span *ngIf="node['info']['type'] == 16" class="keys">* [{{node['keys']}}]</span>
-
-            <!-- leaf and leaflists -->
-            <span *ngIf="node['info']['type'] == 8 || node['info']['type'] == 4">:</span>
-
-            <!-- leaf -->
-            <ng-container *ngIf="node['info']['type'] == 4">
-                <span class="value" *ngIf="!node['edit']" (click)="startEditing(node, $event.target);">{{node['value']}}</span>
-                <span class="value" *ngIf="node['edit']">{{node['info']['datatype']}}
-                    <span *ngIf="node['info']['datatype'] != node['info']['datatypebase']">({{node['info']['datatypebase']}})</span>
-                </span>
-            </ng-container>
-            <ng-container *ngIf="node['info']['type'] == 8">
-                <span class="value">{{node['info']['datatype']}}
-                    <span *ngIf="node['info']['datatype'] != node['info']['datatypebase']">({{node['info']['datatypebase']}})</span>
-                </span>
-            </ng-container>
-        </div>
-        <!-- END nodetype-specific code -->
-
-		<div class="module_name" (click)="showSchema(node)" title="open schema {{node['info']['module']}} in YANG Explorer">{{moduleName(node)}}</div>
-	</div>
-
-	<!-- BEGIN nodetype-specific code -->
-	<!-- leaf/leaf-list's edit value -->
-	<ng-container *ngIf="node['info']['type'] == 4 || node['info']['type'] == 8">
-		<div class="node_edit" [class.dirty]="node['dirty']" *ngIf="node['edit']">
-            <tree-indent [node]="node" [indentation]="inheritIndentation(node)" [type]="'edit'"></tree-indent>
-			<img *ngIf="node['edit'] " class="icon_action" src="assets/netopeer/icons/close.svg"
-				alt="cancel" title="cancel editing" tabindex=0
-				(click)="changeValueCancel(node)" (keyup.enter)="changeValueCancel(node)"
-				onmouseover="this.src='assets/netopeer/icons/close_active.svg'"
-				onmouseout="this.src='assets/netopeer/icons/close.svg'" />
-			<img *ngIf="node['edit']" class="icon_action icon_hidden" src="assets/netopeer/icons/confirm.svg"
-				id="{{node['path']}}_value_confirm" alt="done" title="store changes" tabindex=0
-				(click)="changeValue(node, $event.target)" (keyup.enter)="changeValue(node, $event.target)"
-				onmouseover="this.src='assets/netopeer/icons/confirm_active.svg'"
-				onmouseout="this.src='assets/netopeer/icons/confirm.svg'"/>
-            <select *ngIf="node['info']['values']"
-                id="{{node['path']}}_input" type="text" class="value"
-                (change)="checkValue(node, $event.target, true)"
-                checkLeafValue [node]="node" [trusted]="true" (onCheckValue)="checkValue($event.node, $event.element, $event.trusted)">
-                <ng-container *ngFor="let value of node['info']['values']; let i='index'">
-                    <option value="{{value}}">{{value}}</option>
-                </ng-container>
-            </select>
-            <input *ngIf="!node['info']['values']"
-                id="{{node['path']}}_input" type="text" class="value" value="{{nodeValue(node)}}" tabindex=0
-                (keyup)="checkValue(node, $event.target)" (change)="checkValue(node, $event.target)"
-                (keyup.enter)="changeValue(node, $event.target)" (keyup.escape)="changeValueCancel(node)"
-                checkLeafValue [node]="node" (onCheckValue)="checkValue($event.node, $event.element)"/>
-		</div>
-	</ng-container>
-
-    <!-- leaflist's values -->
-    <ng-container *ngIf="node['info']['type'] == 8 && !node['edit'] && !modsService.isDeleted(node)">
-        <div *ngFor="let value of node['value']"
-            class="node yang-leaflist-value" [class.dirty]="node['dirty']" [class.deleted]="modsService.isDeleted(node, value)">
-            <tree-indent [node]="node" [indentation]="inheritIndentation(node)" [type]="'value'" [value]="value"></tree-indent>
-            <div class="value_standalone">{{value}}</div>
-        </div>
+    <ng-container *ngFor="let item of treeService.nodesToShow(activeSession, node)">
+        <tree-node [activeSession]="activeSession" [node]="item" [indentation]="indentation"></tree-node>
     </ng-container>
-    <!-- END nodetype-specific code -->
-
-	<!-- recursion - show children -->
-    <div class="loading" *ngIf="node['loading']">
-        <netopeer-loading></netopeer-loading>
-    </div>
-    <div class="children" *ngIf="(node['children'] || node['newChildren']) && !node['deleted']">
-        <ng-container *ngFor="let child of node['children']">
-            <tree-view [node]="child" [indentation]="inheritIndentation(node)"></tree-view>
-        </ng-container>
-        <ng-container *ngFor="let child of newChildrenToShow(node)">
-            <tree-view [node]="child" [indentation]="inheritIndentation(node)"></tree-view>
-        </ng-container>
-    </div>
-
-    <!-- create new child dialog -->
-    <tree-create [node]="node" [indentation]="inheritIndentation(node)"></tree-create>
 </div>

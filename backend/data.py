@@ -96,6 +96,35 @@ def schemaInfoNode(schema):
 	return info
 
 
+def _sortChildren(node):
+	sorted = []
+	for index, item in enumerate(node["children"]):
+		sorted.append(item)
+		if item["info"]["type"] == yang.LYS_LIST:
+			removed = 0
+			for i, instance in enumerate(node["children"][index + 1:]):
+				if item["info"]["name"] == instance["info"]["name"] and item["info"]["module"] == instance["info"]["module"]:
+					sorted.append(node["children"].pop(index + 1 + i - removed))
+					removed += 1;
+		if item["info"]["type"] == yang.LYS_LEAFLIST:
+			lastLeafList = len(sorted) - 1
+			item["first"] = True
+			removed = 0
+			for i, instance in enumerate(node["children"][index + 1:]):
+				if item["info"]["name"] == instance["info"]["name"] and item["info"]["module"] == instance["info"]["module"]:
+					instance["first"] = False
+					sorted.append(node["children"].pop(index + 1 + i - removed))
+					removed += 1;
+	node["children"] = sorted
+	last = node["children"][len(node["children"]) - 1]
+	if last["info"]["type"] == yang.LYS_LEAFLIST:
+		node["children"][lastLeafList]["last"] = True
+		for item in node["children"][lastLeafList + 1:]:
+			item["lastLeafList"] = True;
+	else:
+		last["last"] = True
+
+
 def dataInfoNode(node, parent=None, recursion=False):
 	schema = node.schema()
 	casted = node.subtype()
@@ -103,22 +132,11 @@ def dataInfoNode(node, parent=None, recursion=False):
 	if node.dflt():
 		return None
 
-	if parent and schema.nodetype() == yang.LYS_LEAFLIST:
-		# find previous instance and just add value
-		for child in parent["children"]:
-			if child["info"]["name"] == schema.name():
-				child["value"].append(casted.value_str())
-				if not node.next():
-					child["last"] = True
-				return None
-
 	info = schemaInfoNode(schema);
 
 	result = {}
-	if info["type"] == yang.LYS_LEAF:
+	if info["type"] == yang.LYS_LEAF or info["type"] == yang.LYS_LEAFLIST:
 		result["value"] = casted.value_str()
-	elif info["type"] == yang.LYS_LEAFLIST:
-		result["value"] = [casted.value_str()]
 	elif recursion:
 		result["children"] = []
 		if node.child():
@@ -126,10 +144,9 @@ def dataInfoNode(node, parent=None, recursion=False):
 				childNode = dataInfoNode(child, result, True)
 				if not childNode:
 					continue
-				if not child.next():
-					childNode["last"] = True
 				result["children"].append(childNode)
-
+			# sort list instances
+			_sortChildren(result)
 		if info["type"] == yang.LYS_LIST:
 			result["keys"] = []
 			index = 0
@@ -160,9 +177,8 @@ def dataInfoSubtree(data, path, recursion=False):
 			childNode = dataInfoNode(child, result, recursion)
 			if not childNode:
 				continue
-			if not child.next():
-				childNode["last"] = True
 			result["children"].append(childNode)
+		_sortChildren(result)
 
 	return(json.dumps({'success': True, 'data': result}))
 
@@ -174,8 +190,6 @@ def dataInfoRoots(data, recursion=False):
 		rootNode = dataInfoNode(root, top, recursion)
 		if not rootNode:
 			continue
-		if not root.next():
-			rootNode["last"] = True
 		top["children"].append(rootNode)
-
+	_sortChildren(top)
 	return(json.dumps({'success': True, 'data': top["children"]}))

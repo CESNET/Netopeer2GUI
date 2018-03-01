@@ -5,15 +5,16 @@ import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/do';
 
+import { TreeService } from './tree.service';
 import { Device } from '../inventory/device';
 import { Session } from './session';
 
 @Injectable()
 export class SessionsService implements OnInit {
     public sessions: Session[];
-    public activeSession;
+    public activeSession: string;
 
-    constructor(private http: Http) {
+    constructor(private http: Http, private treeService: TreeService) {
         this.activeSession = localStorage.getItem('activeSession');
         if (!this.activeSession) {
             this.activeSession = "";
@@ -83,6 +84,35 @@ export class SessionsService implements OnInit {
                 });
             }
         }
+    }
+
+    collapse( activeSession, node = null ) {
+        if ( node ) {
+            delete node['children'];
+            activeSession.dataVisibility = 'mixed';
+        } else {
+            for ( let root of activeSession.data['children'] ) {
+                delete root['children'];
+            }
+            activeSession.dataVisibility = 'root';
+        }
+        this.treeService.updateHiddenFlags( activeSession );
+        this.storeData();
+    }
+
+    expand( activeSession, node, all: boolean ) {
+        node['loading'] = true;
+        this.rpcGetSubtree( activeSession.key, all, node['path'] ).subscribe( result => {
+            if ( result['success'] ) {
+                for ( let iter of result['data']['children'] ) {
+                    this.treeService.setDirty( activeSession, iter );
+                }
+                node['children'] = result['data']['children'];
+                this.treeService.updateHiddenFlags( activeSession );
+                delete node['loading'];
+                this.storeData();
+            }
+        } );
     }
 
     checkValue(key: string, path: string, value: string): Observable<string[]> {
@@ -202,6 +232,35 @@ export class SessionsService implements OnInit {
                 return resp.json();
             })
             .catch((err: Response | any) => Observable.throw(err));
+    }
+    rpcGet( activeSession: Session, all: boolean ) {
+        if ( activeSession.data ) {
+            if ( ( all && activeSession.dataVisibility == 'all' ) ||
+                ( !all && activeSession.dataVisibility == 'root' ) ) {
+                return;
+            }
+        }
+        activeSession.loading = true;
+        delete activeSession.data;
+        this.rpcGetSubtree( activeSession.key, all ).subscribe( result => {
+            if ( result['success'] ) {
+                for ( let iter of result['data'] ) {
+                    this.treeService.setDirty( activeSession, iter );
+                }
+                activeSession.data = {};
+                activeSession.data['path'] = '/';
+                activeSession.data['info'] = {};
+                activeSession.data['info']['path'] = '/';
+                activeSession.data['children'] = result['data'];
+                if ( all ) {
+                    activeSession.dataVisibility = 'all';
+                } else {
+                    activeSession.dataVisibility = 'root';
+                }
+            }
+            activeSession.loading = false;
+            this.storeData();
+        } );
     }
 
     commit(key: string) {

@@ -49,7 +49,7 @@
             <th class="item_right" >Data</th>
         </tr>
     </table>
-    <div class="loading" *ngIf="treeService.loading">
+    <div class="loading" *ngIf="activeSession.loading">
         <span>Retrieving data ...</span>
         <div><netopeer-loading spinner="true"></netopeer-loading></div>
     </div>
@@ -62,8 +62,8 @@
         <tree-view [node]="activeSession.data"></tree-view>
         <!--  <pre *ngIf="activeSession.data['schemaChildren']">{{activeSession.data['schemaChildren'] | json}}</pre> -->
     </div>
-	<div #modificationsStatus *ngIf="activeSession.modifications" class="modifications-status">&nbsp;
-		<div *ngIf="activeSession.modifications" class="msg-rounded" [style.width.px]="modificationsStatus.offsetWidth">
+    <div #modificationsStatus *ngIf="activeSession.modifications" class="modifications-status">&nbsp;
+        <div *ngIf="activeSession.modifications" class="msg-rounded" [style.width.px]="modificationsStatus.offsetWidth">
             <div>Configuration data were changed. Do you wish to
                 <button (click)="applyChanges()">apply</button> /
                 <button (click)="cancelChanges()">cancel</button>
@@ -72,8 +72,8 @@
             <ng-container *ngFor="let err of commit_error; let i = index">
                 <div class="msg-rounded msg-failure"><span class="msg-close" (click)="commit_error.splice(i,1)">x</span>{{err['message']}}</div>
             </ng-container>
-		</div>
-	</div>
+        </div>
+    </div>
     </ng-container>
 </div>
 

@@ -4,6 +4,7 @@ export class Session {
   constructor (
     public key: string,
     public device: Device,
+    public loading = false,
     public data = null,
     public modifications = null,
     public cpblts: string = "",
