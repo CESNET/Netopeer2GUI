@@ -62,15 +62,15 @@ cmake .. && make && make install
 cd ../../server; mkdir build; cd build
 cmake .. && make && make install
 cd ../../..
-useradd -p fYNPZFGfqq2rw vagrant 2>/dev/null
 chown -R vagrant:vagrant ./sysrepo/build/repository
 SCRIPT
 
 $liberoutergui = <<SCRIPT
 rm -rf liberouter-gui
 git clone -b devel https://github.com/CESNET/liberouter-gui.git
-ln -s /home/ubuntu/Netopeer2GUI liberouter-gui/modules/netopeer
+ln -s /home/vagrant/Netopeer2GUI liberouter-gui/modules/netopeer
 cd liberouter-gui
+cp -f modules/netopeer/app.config.json modules/
 python3 ./bootstrap.py
 pip3 install --upgrade pip
 pip3 install -r backend/requirements.txt
@@ -94,10 +94,11 @@ SCRIPT
 
 $netconf = <<SCRIPT
 /usr/local/bin/sysrepod -d > sysrepod.log 2>&1 &
-/home/ubuntu/sysrepo/build/examples/application_example turing-machine > turing_machine.log 2>&1 &
+/home/vagrant/sysrepo/build/examples/application_example turing-machine > turing_machine.log 2>&1 &
 /usr/local/bin/netopeer2-server -d > netopeer2.log 2>&1 &
 SCRIPT
 
+Vagrant::DEFAULT_SERVER_URL.replace('https://vagrantcloud.com')
 Vagrant.configure("2") do |config|
   config.vm.provider :virtualbox do |vb|
     vb.customize ["modifyvm", :id, "--memory", "2048"]
@@ -108,7 +109,7 @@ Vagrant.configure("2") do |config|
   end
 
   config.vm.define "Netopeer2GUI" do |gui|
-    gui.vm.synced_folder "../../", "/home/ubuntu/Netopeer2GUI", create: true 
+    gui.vm.synced_folder "../../", "/home/vagrant/Netopeer2GUI", create: true
     gui.vm.box = "ubuntu/xenial64"
     gui.vm.network "forwarded_port", host: "4200", guest: "4200", auto_correct: true
     gui.vm.network "forwarded_port", host: "8830", host_ip: "127.0.0.1", guest: "830", auto_correct: true
