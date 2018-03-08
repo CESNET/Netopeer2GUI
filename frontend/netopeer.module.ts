@@ -13,6 +13,7 @@ import {MatProgressSpinnerModule} from '@angular/material/progress-spinner';
 import {MatProgressBarModule} from '@angular/material/progress-bar';
 
 import { LoadingComponent } from './common/loading/loading.component';
+import { OrderingDirective } from './config/ordering.directive';
 
 import { NetopeerComponent } from './netopeer.component';
 import { DashboardComponent } from './dashboard.component';
@@ -20,7 +21,7 @@ import { InventoryComponent } from './inventory/inventory.component';
 import { InventorySchemasComponent } from './inventory/schemas.component';
 import { InventoryDevicesComponent } from './inventory/devices.component';
 import { ConfigComponent } from './config/config.component';
-import { TreeView, TreeNode, TreeIndent, TreeCreate, TreeScrollTo, CheckLeafValue } from './config/tree.component';
+import { TreeView, TreeNode, TreeLeaflistValue, TreeIndent, TreeCreate, TreeEdit, TreeScrollTo, CheckLeafValue } from './config/tree.component';
 import { YANGComponent } from './yang/yang.component';
 import { MonitoringComponent } from './monitoring/monitoring.component';
 import { PluginsComponent } from './plugins/plugins.component';
@@ -100,10 +101,13 @@ const routes: Routes = [
     InventoryDevicesComponent,
     ConfigComponent,
     LoadingComponent,
+    OrderingDirective,
     CheckLeafValue,
     TreeScrollTo,
     TreeIndent,
+    TreeEdit,
     TreeCreate,
+    TreeLeaflistValue,
     TreeNode,
     TreeView,
     YANGComponent,

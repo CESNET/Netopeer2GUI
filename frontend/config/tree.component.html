@@ -1,3 +1,5 @@
+<!--  tree-view  -->
+
 <div *ngIf="node['path'] == '/'">
     <!-- recursion - show children -->
     <div class="node">
@@ -18,12 +20,34 @@
     </div>
 
     <!-- create new child dialog -->
-    <tree-create [node]="node" [indentation]="indentation"></tree-create>
+    <tree-create [node]="node" [activeSession]="activeSession" [indentation]="indentation"></tree-create>
 </div>
 <div class="subtree" *ngIf="node['path'] != '/' && (node['info']['config'] || activeSession.statusVisibility)"
     [class.status]="!node['info']['config']">
 
-    <ng-container *ngFor="let item of treeService.nodesToShow(activeSession, node)">
-        <tree-node [activeSession]="activeSession" [node]="item" [indentation]="indentation"></tree-node>
-    </ng-container>
+    <div *ngIf="node['info']['ordered']; else systemOrdered">
+        <div *ngIf="node['info']['type'] == 16" orderingLists [node]="node" [activeSession]="activeSession">
+            <div *ngFor="let item of treeService.nodesToShow(activeSession, node)" class="ordered">
+                <tree-node [activeSession]="activeSession" [node]="item" [indentation]="indentation"></tree-node>
+            </div>
+        </div>
+        <ng-container *ngIf="node['info']['type'] == 8">
+            <ng-container *ngIf="node['first']">
+                <tree-node [activeSession]="activeSession" [node]="node" [indentation]="indentation"></tree-node>
+            </ng-container>
+            <div orderingLists [node]="node" [activeSession]="activeSession">
+                <div *ngFor="let item of treeService.nodesToShow(activeSession, node)" class="ordered">
+                    <tree-leaflist-value [node]="item" [activeSession]="activeSession" [indentation]="indentation"></tree-leaflist-value>
+                </div>
+            </div>
+        </ng-container>
+    </div>
+    <ng-template #systemOrdered>
+        <ng-container *ngFor="let item of treeService.nodesToShow(activeSession, node)">
+            <tree-node *ngIf="item['info']['type'] != 8 || item['first']"
+                [activeSession]="activeSession" [node]="item" [indentation]="indentation"></tree-node>
+            <tree-leaflist-value *ngIf="item['info']['type'] == 8" [node]="item" [activeSession]="activeSession" [indentation]="indentation"></tree-leaflist-value>
+        </ng-container>
+    </ng-template>
+
 </div>

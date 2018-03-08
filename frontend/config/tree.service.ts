@@ -15,31 +15,43 @@ export class TreeService {
         return false;
     }
 
-    nodeParent(activeSession: Session, node) {
-        if (node['path'] =='/') {
-            return null;
-        }
-
-        let match = false;
+    pathNode(activeSession: Session, path: string, type: string = 'node') {
+        let node = null
         let parent = null;
         let children = activeSession.data['children'];
         let newChildren = activeSession.data['newChildren'];
 
+        if (path == '/') {
+            node = activeSession.data;
+            return;
+        }
+
+        let match = false;
         while (children || newChildren) {
             match = false;
 
             if (children) {
                 for (let iter of children) {
-                    if (node['path'] == iter['path']) {
+                    let pathCompare;
+                    if (path[path.length - 1] == ']') {
+                        /* compare with predicate */
+                        pathCompare = iter['path'];
+                    } else {
+                        /* ignore predicate, so in case of list/leaflist specified
+                         * without predicate, return the first instance */
+                        pathCompare = this.pathCutPredicate(iter['path']);
+                    }
+                    if (path == pathCompare) {
+                        node = iter;
                         match = true;
                         children = null;
                         newChildren = null;
                         break;
-                    } else if (node['path'].startsWith(iter['path'] + '/')) {
+                    } else if (path.startsWith(iter['path'] + '/')) {
                         match = true;
                         parent = iter;
                         children = iter['children'];
-                        if (('new' in node) && ('newChildren' in iter)) {
+                        if ('newChildren' in iter) {
                             newChildren = iter['newChildren'];
                         } else {
                             newChildren = null;
@@ -56,16 +68,26 @@ export class TreeService {
             }
             if (newChildren) {
                 for (let iter of newChildren) {
-                    if (node['path'] == iter['path']) {
+                    let pathCompare;
+                    if (path[path.length - 1] == ']') {
+                        /* compare with predicate */
+                        pathCompare = iter['path'];
+                    } else {
+                        /* ignore predicate, so in case of list/leaflist specified
+                         * without predicate, return the first instance */
+                        pathCompare = this.pathCutPredicate(iter['path']);
+                    }
+                    if (path == pathCompare) {
+                        node = iter;
                         match = true;
                         children = null;
                         newChildren = null;
                         break;
-                    } else if (node['path'].startsWith(iter['path'] + '/')) {
+                    } else if (path.startsWith(iter['path'] + '/')) {
                         match = true;
                         parent = iter;
                         children = iter['children'];
-                        if (('new' in node) && ('newChildren' in iter)) {
+                        if ('newChildren' in iter) {
                             newChildren = iter['newChildren'];
                         } else {
                             newChildren = null;
@@ -79,6 +101,15 @@ export class TreeService {
             }
         }
 
+        if (type == 'parent') {
+            return parent;
+        } else {
+            return node;
+        }
+    }
+
+    nodeParent(activeSession: Session, node) {
+        let parent = this.pathNode(activeSession, node['path'], 'parent')
         if (!parent) {
             parent = activeSession.data;
         }
@@ -100,6 +131,69 @@ export class TreeService {
         }
     }
 
+    private minOrder(list, startIndex: number): number {
+        let result: number = list[startIndex]['order'];
+        for (let i = startIndex + 1; i < list.length; i++) {
+            if (list[i]['info']['name'] != list[startIndex]['info']['name'] || list[i]['info']['module'] != list[startIndex]['info']['module']) {
+                continue;
+            }
+            if (list[i]['order'] < result) {
+                result = list[i]['order'];
+            }
+        }
+        return result;
+    }
+
+    sortInstances(list, startFromZero = true) {
+        let processed = [];
+        for (let l in list) {
+            if (!list[l]['info']['ordered'] || (list[l]['info']['module']+':'+list[l]['info']['name'] in processed)) {
+                continue;
+            }
+            let id = list[l]['info']['module']+':'+list[l]['info']['name'];
+            processed.push(id)
+            let index;
+            if (startFromZero) {
+                index = 0;
+            } else {
+                index = this.minOrder(list, Number(l));
+            }
+            for (let i = Number(l); i < list.length; i++) {
+                if (id != list[i]['info']['module']+':'+list[i]['info']['name']) {
+                    continue;
+                }
+                if (list[i]['order'] != index) {
+                    for (let j = Number(i) + 1; j < list.length; j++) {
+                        if (list[j]['order'] == index && id == list[j]['info']['module']+':'+list[j]['info']['name']) {
+                            let move = list[j];
+                            console.log('moving ' + list[i]['path'])
+                            console.log('moving ' + move['path'])
+                            if (move['last']) {
+                                delete move['last'];
+                                list[i]['last'] = true;
+                            }
+                            if (move['lastLeafList'] && !('lastLeafList' in list[i])) {
+                                delete move['lastLeafList'];
+                                list[i]['lastLeafList'] = true;
+                            }
+                            if (list[i]['last']) {
+                                delete list[i]['last'];
+                                move['last'] = true;
+                            }
+                            if (list[i]['first']) {
+                                list[i]['first'] = false;
+                                move['first'] = true;
+                            }
+                            list.splice(j, 1, list[i]);
+                            list.splice(i, 1, move);
+                        }
+                    }
+                }
+                index++;
+            }
+        }
+    }
+
     childrenToShow(node) {
         let result = [];
         let nc_dup = [];
@@ -108,6 +202,10 @@ export class TreeService {
         }
         if ('children' in node) {
             let lastList = null;
+            if ('new' in node) {
+                /* sort lists/leaf-lists in newly created containers/lists */
+                this.sortInstances(node['children']);
+            }
             for (let child of node['children']) {
                 if (lastList) {
                     if (lastList['name'] == child['info']['name'] && lastList['module'] == child['info']['module']) {
@@ -128,25 +226,49 @@ export class TreeService {
             }
         }
         if (nc_dup.length) {
-            result = result.concat(nc_dup);
+            let lastList = null;
+            for (let child of nc_dup) {
+                if (lastList) {
+                    if (lastList['name'] == child['info']['name'] && lastList['module'] == child['info']['module']) {
+                        continue;
+                    } else {
+                        lastList = null;
+                    }
+                }
+                if (child['info']['type'] == 16 || child['info']['type'] == 8) {
+                    lastList = child['info'];
+                }
+                result.push(child);
+            }
         }
+        if (node['path'] == '/test:test') {console.log(result)}
         return result;
+    }
+
+    private getInstancesInsert(node, child, result) {
+        if (node['info']['name'] == child['info']['name'] && node['info']['module'] == child['info']['module']) {
+            if ('order' in child) {
+                for (let i in result) {
+                    if (result[i]['order'] > child['order']) {
+                        result.splice(Number(i), 0, child);
+                        return Number(i);
+                    }
+                }
+            }
+            result.push(child);
+        }
     }
 
     getInstances(activeSession, node, result = []) {
         let parent = this.nodeParent(activeSession, node);
         if ('children' in parent) {
             for (let child of parent['children']) {
-                if (node['info']['name'] == child['info']['name'] && node['info']['module'] == child['info']['module']) {
-                    result.push(child);
-                }
+                this.getInstancesInsert(node, child, result);
             }
         }
         if ('newChildren' in parent) {
             for (let child of parent['newChildren']) {
-                if (node['info']['name'] == child['info']['name'] && node['info']['module'] == child['info']['module']) {
-                    result.push(child);
-                }
+                this.getInstancesInsert(node, child, result);
             }
         }
         return result;
@@ -225,6 +347,24 @@ export class TreeService {
             } else {
                 activeSession.dataVisibility = 'mixed';
             }
+        }
+    }
+
+    pathCutPredicate(path: string) {
+        if (path[path.length - 1] == ']') {
+            return path.slice(0, path.lastIndexOf('['))
+        } else {
+            path = path;
+        }
+        return path;
+    }
+
+    moduleName(node): string {
+        let at = node['info']['module'].indexOf('@');
+        if (at == -1) {
+            return node['info']['module'];
+        } else {
+            return node['info']['module'].substring(0, at);
         }
     }
 }

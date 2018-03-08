@@ -88,7 +88,11 @@ def schemaInfoNode(schema):
 				info["default"] = tpdf.dflt()
 	elif info["type"] == yang.LYS_LEAFLIST:
 		schemaInfoType(schema.subtype(), info)
+		if schema.flags() & yang.LYS_USERORDERED:
+			info["ordered"] = True;
 	elif info["type"] == yang.LYS_LIST:
+		if schema.flags() & yang.LYS_USERORDERED:
+			info["ordered"] = True;
 		info["keys"] = []
 		for key in schema.subtype().keys():
 			info["keys"].append(key.name())
@@ -102,19 +106,27 @@ def _sortChildren(node):
 		sorted.append(item)
 		if item["info"]["type"] == yang.LYS_LIST:
 			removed = 0
+			if "ordered" in item["info"]:
+				item["order"] = removed
 			for i, instance in enumerate(node["children"][index + 1:]):
 				if item["info"]["name"] == instance["info"]["name"] and item["info"]["module"] == instance["info"]["module"]:
 					sorted.append(node["children"].pop(index + 1 + i - removed))
 					removed += 1;
+					if "ordered" in item["info"]:
+						instance["order"] = removed
 		if item["info"]["type"] == yang.LYS_LEAFLIST:
 			lastLeafList = len(sorted) - 1
 			item["first"] = True
 			removed = 0
+			if "ordered" in item["info"]:
+				item["order"] = removed
 			for i, instance in enumerate(node["children"][index + 1:]):
 				if item["info"]["name"] == instance["info"]["name"] and item["info"]["module"] == instance["info"]["module"]:
 					instance["first"] = False
 					sorted.append(node["children"].pop(index + 1 + i - removed))
 					removed += 1;
+					if "ordered" in item["info"]:
+						instance["order"] = removed
 	node["children"] = sorted
 	last = node["children"][len(node["children"]) - 1]
 	if last["info"]["type"] == yang.LYS_LEAFLIST:

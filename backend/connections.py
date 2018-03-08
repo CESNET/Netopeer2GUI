@@ -104,6 +104,10 @@ def session_get():
 
 	try:
 		sessions[user.username][key]['data'] = sessions[user.username][key]['session'].rpcGet()
+	except ConnectionError as e:
+		reply = {'success': False, 'error': [{'msg': str(e)}]}
+		del sessions[user.username][key]
+		return(json.dumps(reply))
 	except nc.ReplyError as e:
 		reply = {'success': False, 'error': []}
 		for err in e.args[0]:
@@ -287,6 +291,7 @@ def session_commit():
 	mods = req['modifications']
 	ctx = sessions[user.username][req['key']]['session'].context
 	root = None
+	reorders = []
 	for key in mods:
 		recursion = False
 		# get correct path and value if needed
@@ -308,6 +313,10 @@ def session_commit():
 			elif mods[key]['data']['info']['type'] == 16:
 				recursion = True
 				path = mods[key]['data']['path']
+		elif mods[key]['type'] == 'reorder':
+			# postpone reorders
+			reorders.extend(mods[key]['transactions'])
+			continue
 
 		# create node
 		# print("creating " + path)
@@ -335,6 +344,30 @@ def session_commit():
 				if 'key' in child['info'] and child['info']['key']:
 					continue
 				_create_child(ctx, node, child)
+
+	# finally process reorders which must be last since they may refer newly created nodes
+	# and they do not reflect removed nodes
+	for move in reorders:
+		try:
+			node = root.find_path(move['node']).data()[0];
+			parent = node.parent()
+			node.unlink()
+			if parent:
+				parent.insert(node)
+			else:
+				root.insert_sibling(node)
+		except:
+			if root:
+				root.new_path(ctx, move['node'], None, 0, 0)
+			else:
+				root = yang.Data_Node(ctx, move['node'], None, 0, 0)
+			node = root.find_path(move['node']).data()[0];
+		node.insert_attr(None, 'yang:insert', move['insert'])
+		if move['insert'] == 'after' or move['insert'] == 'before':
+			if 'key' in move:
+				node.insert_attr(None, 'yang:key', move['key'])
+			elif 'value' in move:
+				node.insert_attr(None, 'yang:value', move['value'])
 
 	# print(root.print_mem(yang.LYD_XML, yang.LYP_FORMAT))
 	try:

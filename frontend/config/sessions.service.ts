@@ -31,6 +31,14 @@ export class SessionsService implements OnInit {
 
     loadData() {
         this.sessions = JSON.parse(localStorage.getItem('sessions'));
+        for (let session of this.sessions) {
+            /* fix links in modifications data to link the currently reloaded objects */
+            for (let mod in session.modifications) {
+                if ('data' in session.modifications[mod]) {
+                    session.modifications[mod]['data'] = this.treeService.pathNode(session, mod);
+                }
+            }
+        }
     }
 
     getActiveSession(key: string = this.activeSession): Session {
@@ -56,6 +64,37 @@ export class SessionsService implements OnInit {
         return result;
     }
 
+    checkSessionIndex(i: number) {
+        this.alive(this.sessions[i].key).then(resp => {
+            if (!resp['success']) {
+                if (this.activeSession && this.sessions[i].key == this.activeSession) {
+                    /* active session is not alive - select new active session
+                     * as the one on the left from the current one, if there
+                     * is no one, choose the one on the right */
+                    if (i > 0) {
+                        this.activeSession = this.sessions[i - 1].key;
+                    } else if (i + 1 < this.sessions.length) {
+                        this.activeSession = this.sessions[i + 1].key;
+                    } else {
+                        this.activeSession = "";
+                    }
+                    localStorage.setItem('activeSession', this.activeSession);
+                }
+                this.sessions.splice(i, 1);
+                this.storeData();
+            }
+        });
+    }
+
+    checkSession(key: string) {
+        for (let i in this.sessions) {
+            if (this.sessions[i].key == key) {
+                this.checkSessionIndex(Number(i));
+                break;
+            }
+        }
+    }
+
     checkSessions() {
         this.loadData();
         if (!this.sessions) {
@@ -63,25 +102,7 @@ export class SessionsService implements OnInit {
         } else {
             /* verify that the sessions are still active */
             for (let i = this.sessions.length; i > 0; i--) {
-                this.alive(this.sessions[i - 1].key).then(resp => {
-                    if (!resp['success']) {
-                        if (this.activeSession && this.sessions[i - 1].key == this.activeSession) {
-                            /* active session is not alive - select new active session
-                             * as the one on the left from the current one, if there
-                             * is no one, choose the one on the right */
-                            if (i > 1) {
-                                this.activeSession = this.sessions[i - 2].key;
-                            } else if (this.sessions.length > i) {
-                                this.activeSession = this.sessions[i].key;
-                            } else {
-                                this.activeSession = "";
-                            }
-                            localStorage.setItem('activeSession', this.activeSession);
-                        }
-                        this.sessions.splice(i - 1, 1);
-                        this.storeData();
-                    }
-                });
+                this.checkSessionIndex(i - 1);
             }
         }
     }
@@ -150,7 +171,7 @@ export class SessionsService implements OnInit {
         return this.http.get('/netopeer/session/schema', options)
             .map((resp: Response) => {
                 let result = resp.json();
-                console.log(result)
+                //console.log(result)
                 if (result['success'] && node) {
                     if ('children' in node) {
                         for (let iter of node['children']) {
@@ -228,8 +249,12 @@ export class SessionsService implements OnInit {
         let options = new RequestOptions({ search: params });
         return this.http.get('/netopeer/session/rpcGet', options)
             .map((resp: Response) => {
-                //console.log(resp);
-                return resp.json();
+                console.log(resp);
+                let result = resp.json();
+                if (!result['success']) {
+                    this.checkSession(key);
+                }
+                return result;
             })
             .catch((err: Response | any) => Observable.throw(err));
     }
@@ -250,6 +275,7 @@ export class SessionsService implements OnInit {
                 activeSession.data = {};
                 activeSession.data['path'] = '/';
                 activeSession.data['info'] = {};
+                activeSession.data['info']['config'] = true;
                 activeSession.data['info']['path'] = '/';
                 activeSession.data['children'] = result['data'];
                 if ( all ) {

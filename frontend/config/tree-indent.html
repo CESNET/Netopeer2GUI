@@ -15,7 +15,7 @@
             (click)="cancelModification(node)"/>
     </ng-container>
     <ng-container *ngIf="getType() == 'value'">
-        <ng-container [ngSwitch]="modsService.isDeleted(node)">
+        <ng-container [ngSwitch]="modsService.isDeleted(node, true)">
             <img *ngSwitchCase="false" title="delete value"
                 class="icon_action" src="assets/netopeer/icons/close.svg"
                 onmouseover="this.src='assets/netopeer/icons/close_active.svg'"
@@ -25,7 +25,7 @@
                 class="icon_action" src="assets/netopeer/icons/close.svg"
                 onmouseover="this.src='assets/netopeer/icons/close_active.svg'"
                 onmouseout="this.src='assets/netopeer/icons/close.svg'"
-                (click)="cancelModification(node, value)"/>
+                (click)="cancelModification(node, true)"/>
         </ng-container>
     </ng-container>
     <ng-container *ngIf="getType() == 'current' || getType() == 'root'">
@@ -34,6 +34,14 @@
                 onmouseover="this.src='assets/netopeer/icons/menu_active.svg'"
                 onmouseout="this.src='assets/netopeer/icons/menu.svg'"/>
             <div class="editmenu msg-rounded">
+                <div *ngIf="node['info']['ordered'] && modsService.isMoved(activeSession, node)"
+                    class="button_action" title="cancel reordering"
+                    onmouseover="this.firstElementChild.src='assets/netopeer/icons/close_active.svg'"
+                    onmouseout="this.firstElementChild.src='assets/netopeer/icons/close.svg'"
+                    (click)="cancelModification(node);hideEditMenu($event.currentTarget.parentElement);">
+                    <img class="icon_action" src="assets/netopeer/icons/close.svg" />
+                    cancel reordering
+                </div>
                 <div *ngIf="getType() != 'root' && !node['info']['key']" class="button_action" title="remove subtree {{node['path']}}"
                     onmouseover="this.firstElementChild.src='assets/netopeer/icons/close_active.svg'"
                     onmouseout="this.firstElementChild.src='assets/netopeer/icons/close.svg'"

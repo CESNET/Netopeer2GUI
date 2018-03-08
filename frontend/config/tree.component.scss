@@ -5,7 +5,6 @@ $colorChangedBorder: #e4e4a4;
 $colorLineHover: #e1e1e1;
 
 .subtree {
-    cursor: default;
     display: flex;
     flex-direction: column;
     width: 100%;
@@ -68,6 +67,10 @@ $colorLineHover: #e1e1e1;
 
 .dirty {
     background-color: $colorChanged;
+}
+
+.moved {
+    background-color: #d8e8f8;
 }
 
 .deleted {
@@ -171,6 +174,10 @@ $colorLineHover: #e1e1e1;
 .value_standalone {
     flex-grow:1;
     word-break: break-all;
+}
+
+.ordered {
+    cursor: move;
 }
 
 tree-indent {

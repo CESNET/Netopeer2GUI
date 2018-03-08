@@ -34,7 +34,6 @@ export class CheckLeafValue {
     constructor(private elRef:ElementRef) {}
 
     ngAfterContentInit() {
-        console.log(this.node)
         let node = this.node;
         let trusted = this.trusted;
         let element = this.elRef.nativeElement;
@@ -48,28 +47,114 @@ export class CheckLeafValue {
     templateUrl: 'tree-create.html',
     styleUrls: ['./tree.component.scss']
 })
-export class TreeCreate implements OnInit {
+export class TreeCreate {
     @Input() node;
     @Input() indentation;
-    activeSession: Session;
+    @Input() activeSession: Session;
 
     constructor(private modsService: ModificationsService, private sessionsService: SessionsService) {}
-
-    ngOnInit(): void {
-        this.activeSession = this.sessionsService.getActiveSession();
-    }
 
     closeCreatingDialog(node, reason='abort') {
         this.modsService.createClose(this.activeSession, node, reason);
     }
 
     creatingDialogSelect(node, index, source) {
-        console.log(node)
         this.modsService.create(this.activeSession, node, index);
         this.sessionsService.storeData();
         if (('schemaChildren' in node) && node['schemaChildren'].length) {
             source.selectedIndex = 0;
         }
+    }
+}
+
+@Component({
+    selector: 'tree-edit',
+    templateUrl: 'tree-edit.html',
+    styleUrls: ['./tree.component.scss']
+})
+export class TreeEdit {
+    @Input() node;
+    @Input() indentation;
+    @Input() activeSession: Session;
+
+    constructor(private treeService: TreeService,
+                private modsService: ModificationsService,
+                private sessionsService: SessionsService) {}
+
+    changeValueCancel(node) {
+        if ('value' in node) {
+            this.modsService.setEdit(this.activeSession, node, false);
+        } else {
+            this.modsService.cancelModification(this.activeSession, node, false);
+        }
+        this.sessionsService.storeData();
+    }
+
+    changeValue(node, target) {
+        let input;
+        if (target.classList.contains('value_inline')) {
+            if (target.classList.contains('invalid')) {
+                return;
+            }
+            input = target;
+        } else {
+            input = target.nextElementSibling;
+        }
+
+        if (node['info']['type'] == 8) {
+            this.modsService.change(this.activeSession, node, input.value);
+        } else {
+            this.modsService.change(this.activeSession, node, input.value);
+        }
+        this.sessionsService.storeData();
+    }
+
+    checkValue(node, target, trusted = false) {
+        let confirm = target.previousElementSibling;
+        let cancel = confirm.previousElementSibling;
+
+        if (trusted) {
+            /* value is selected from valid options */
+            target.classList.remove("invalid");
+            confirm.style.visibility = "visible";
+            if ('value' in node) {
+                cancel.style.visibility = "visible";
+            }
+            return;
+        }
+
+        let path: string;
+        if ('creatingChild' in node) {
+            path = node['creatingChild']['path'];
+        } else {
+            path = node['info']['path'];
+        }
+        this.sessionsService.checkValue(this.activeSession.key, path, target.value).subscribe(result => {
+            if (result['success']) {
+                target.classList.remove("invalid");
+                confirm.style.visibility = "visible";
+                if ('value' in node) {
+                    cancel.style.visibility = "visible";
+                }
+            } else {
+                target.classList.add("invalid");
+                confirm.style.visibility = "hidden";
+                if (!('value' in node)) {
+                    cancel.style.visibility = "hidden";
+                }
+            }
+        });
+    }
+
+    nodeValue(node, index:number = 0): string {
+        if ('value' in node) {
+            if (node['info']['type'] == 4) {
+                return node['value'];
+            } else if (node['info']['type'] == 8 && node['value'].length > index) {
+                return node['value'][index];
+            }
+        }
+        return null;
     }
 }
 
@@ -100,7 +185,7 @@ export class TreeIndent implements OnInit {
         } else {
             if (this.node && ('new' in this.node)) {
                 return "new";
-            } else if (this.node && ('deleted' in this.node)) {
+            } else if (this.node && this.modsService.isDeleted(this.node)) {
                 return "deleted";
             } else {
                 return "current";
@@ -158,15 +243,41 @@ export class TreeIndent implements OnInit {
         this.modsService.createClose(this.activeSession, node, reason);
     }
 
-    cancelModification(node, value = null) {
-        if (value && node['deleted'].length > 1) {
-            let i = node['deleted'].indexOf(value);
-            node['deleted'].splice(i, 1);
+    cancelModification(node, value = false) {
+        console.log(node['path'])
+        console.log(value)
+        if (node['info']['type'] == 8 && !value) {
+            for (let item of this.treeService.nodesToShow(this.activeSession, node)) {
+                console.log(item['path'])
+                this.modsService.cancelModification(this.activeSession, item, false);
+            }
+        } else if (value) {
+            this.modsService.cancelModification(this.activeSession, node, false, undefined, false);
         } else {
             this.modsService.cancelModification(this.activeSession, node, false);
         }
         this.sessionsService.storeData();
     }
+}
+
+@Component({
+    selector: 'tree-leaflist-value',
+    template: `
+        <div class="node yang-leaflist-value" [class.dirty]="node['dirty']" [class.deleted]="modsService.isDeleted(node, true)">
+            <tree-indent [node]="node" [indentation]="treeService.inheritIndentation(indentation, node)" [type]="'value'" [value]="value"></tree-indent>
+            <div class="value_standalone">{{node['value']}}</div>
+        </div>
+        <tree-edit *ngIf="node['edit']" [node]="node" [indentation]="indentation" [activeSession]="activeSession"></tree-edit>`,
+    styleUrls: ['./tree.component.scss']
+})
+
+export class TreeLeaflistValue {
+    @Input() node;
+    @Input() activeSession: Session;
+    @Input() indentation;
+
+    constructor(private modsService: ModificationsService,
+                private treeService: TreeService) {}
 }
 
 @Component({
@@ -209,95 +320,10 @@ export class TreeNode {
 
         let container = target.parentElement.parentElement;
 
-        this.modsService.setEdit(this.activeSession, node, true)
+        this.modsService.setEdit(this.activeSession, node, true);
         this.changeDetector.detectChanges();
 
         container.nextElementSibling.lastElementChild.focus();
-    }
-
-    checkValue(node, target, trusted = false) {
-        let confirm = target.previousElementSibling;
-        let cancel = confirm.previousElementSibling;
-
-        if (trusted) {
-            /* value is selected from valid options */
-            target.classList.remove("invalid");
-            confirm.style.visibility = "visible";
-            if ('value' in node) {
-                cancel.style.visibility = "visible";
-            }
-            return;
-        }
-
-        let path: string;
-        if ('creatingChild' in node) {
-            path = node['creatingChild']['path'];
-        } else {
-            path = node['info']['path'];
-        }
-        this.sessionsService.checkValue(this.activeSession.key, path, target.value).subscribe(result => {
-            if (result['success']) {
-                target.classList.remove("invalid");
-                confirm.style.visibility = "visible";
-                if ('value' in node) {
-                    cancel.style.visibility = "visible";
-                }
-            } else {
-                target.classList.add("invalid");
-                confirm.style.visibility = "hidden";
-                if (!('value' in node)) {
-                    cancel.style.visibility = "hidden";
-                }
-            }
-        });
-    }
-
-    changeValueCancel(node) {
-        if ('value' in node) {
-            this.modsService.setEdit(this.activeSession, node, false);
-        } else {
-            this.modsService.cancelModification(this.activeSession, node, false);
-        }
-        this.sessionsService.storeData();
-    }
-
-    changeValue(node, target) {
-        let input;
-        if (target.classList.contains('value_inline')) {
-            if (target.classList.contains('invalid')) {
-                return;
-            }
-            input = target;
-        } else {
-            input = target.nextElementSibling;
-        }
-
-        if (node['info']['type'] == 8) {
-            this.modsService.change(this.activeSession, node, input.value);
-        } else {
-            this.modsService.change(this.activeSession, node, input.value);
-        }
-        this.sessionsService.storeData();
-    }
-
-    nodeValue(node, index:number = 0): string {
-        if ('value' in node) {
-            if (node['info']['type'] == 4) {
-                return node['value'];
-            } else if (node['info']['type'] == 8 && node['value'].length > index) {
-                return node['value'][index];
-            }
-        }
-        return null;
-    }
-
-    moduleName(node): string {
-        let at = node['info']['module'].indexOf('@');
-        if (at == -1) {
-            return node['info']['module'];
-        } else {
-            return node['info']['module'].substring(0, at);
-        }
     }
 
     showSchema(node) {
@@ -311,7 +337,7 @@ export class TreeNode {
         }
         let key = node['info']['module'] + '.yang';
 
-        schema.name = this.moduleName(node);
+        schema.name = this.treeService.moduleName(node);
         this.schemasService.show(key, schema);
         this.schemasService.changeActiveSchemaKey(key);
         this.router.navigateByUrl( '/netopeer/yang' );
@@ -337,7 +363,8 @@ export class TreeView implements OnInit {
     @Input() indentation;
     activeSession: Session;
 
-    constructor(private sessionsService: SessionsService,
+    constructor(private modsService: ModificationsService,
+                private sessionsService: SessionsService,
                 private treeService: TreeService) {}
 
     ngOnInit(): void {
