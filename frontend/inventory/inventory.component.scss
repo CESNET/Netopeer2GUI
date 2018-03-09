@@ -33,26 +33,32 @@ nav {
 }
 
 .item {
-	cursor: pointer;
-	margin-right: 0.5em;
-	padding: 0.3em 1em 0.3em 0.7em;
-	left: 0.5em;
-	top: 0.5em;
-	color: black;
-	
-	&:hover,
-	&.selected {
-		background-color: $colorMain;
-		color: $colorTextInverse;
-	}
-	&.selected:hover {
-		cursor: default;
-	}
+    cursor: pointer;
+    margin-right: 0.5em;
+    padding: 0.3em 1em 0.3em 0.7em;
+    left: 0.5em;
+    top: 0.5em;
+    color: black;
+
+    &:hover,
+    &.selected {
+        td {
+            display: box;
+            background-color: $colorMain;
+        }
+        color: $colorTextInverse;
+    }
+    &.selected:hover {
+        cursor: default;
+    }
 }
 
 .item_header {
-	background-color: $colorMain;
-	color: $colorTextInverse;
+    color: $colorTextInverse;
+    th {
+       display: box;
+       background-color: $colorMain;
+    }
 }
 
 .item_left {
