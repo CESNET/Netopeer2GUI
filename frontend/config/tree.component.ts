@@ -313,8 +313,15 @@ export class TreeNode {
         }
     }
 
-    startEditing(node, target) {
+    isEditable(node) {
         if ((node['info']['key'] && !node['new']) || node['deleted']) {
+            return false;
+        }
+        return true;
+    }
+
+    startEditing(node, target) {
+        if (!this.isEditable(node)) {
             return;
         }
 

@@ -52,8 +52,9 @@
 
         <!-- leaf -->
         <ng-container *ngIf="node['info']['type'] == 4">
-            <span class="value_inline" *ngIf="!node['edit']" (click)="startEditing(node, $event.target);">{{node['value']}}</span>
-            <span class="value_inline" *ngIf="node['edit']">{{node['info']['datatype']}}
+            <span *ngIf="!node['edit']" class="value_inline" [class.keys]="!isEditable(node)" [class.editable]="isEditable(node)"
+                (click)="startEditing(node, $event.target);">{{node['value']}}</span>
+            <span *ngIf="node['edit']" class="value_inline">{{node['info']['datatype']}}
                 <span *ngIf="node['info']['datatype'] != node['info']['datatypebase']">({{node['info']['datatypebase']}})</span>
             </span>
         </ng-container>

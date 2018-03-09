@@ -60,6 +60,10 @@ $colorLineHover: #e1e1e1;
     background-color: $colorChanged;;
 }
 
+.editable {
+    cursor: pointer;
+}
+
 .status,
 .keys {
     color: grey;
