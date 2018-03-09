@@ -31,6 +31,9 @@ export class SessionsService implements OnInit {
 
     loadData() {
         this.sessions = JSON.parse(localStorage.getItem('sessions'));
+        if (!this.sessions) {
+            this.sessions = [];
+        }
         for (let session of this.sessions) {
             /* fix links in modifications data to link the currently reloaded objects */
             for (let mod in session.modifications) {
@@ -97,13 +100,9 @@ export class SessionsService implements OnInit {
 
     checkSessions() {
         this.loadData();
-        if (!this.sessions) {
-            this.sessions = [];
-        } else {
-            /* verify that the sessions are still active */
-            for (let i = this.sessions.length; i > 0; i--) {
-                this.checkSessionIndex(i - 1);
-            }
+        /* verify that the sessions are still active */
+        for (let i = this.sessions.length; i > 0; i--) {
+            this.checkSessionIndex(i - 1);
         }
     }
 
