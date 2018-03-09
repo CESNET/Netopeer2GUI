@@ -33,6 +33,9 @@ export class OrderingDirective implements AfterContentChecked {
         event.dataTransfer.setDragImage(this._draggingElement.firstElementChild, event.offsetX, event.offsetY);
         this._dropSucceded = false;
         this._isInsideContainer = true;
+
+        /* Firefox hack */
+        event.dataTransfer.setData('text', 'bad firefox');
     }
 
     @HostListener( 'dragend', ['$event'] )
