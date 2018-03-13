@@ -53,7 +53,7 @@
         <span>Retrieving data ...</span>
         <div><netopeer-loading spinner="true"></netopeer-loading></div>
     </div>
-    <ng-container *ngIf="activeSession.dataVisibility!='none' && activeSession.data">
+    <ng-container *ngIf="activeSession.dataPresence!='none' && activeSession.data">
     <div id="config-data">
         <div>
             <span *ngIf="activeSession.statusVisibility"><a (click)="invertStatus()">hide</a> status data</span>

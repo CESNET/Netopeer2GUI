@@ -21,6 +21,7 @@ export class ConfigComponent implements OnInit {
 
     constructor(private sessionsService: SessionsService,
                 private modsService: ModificationsService,
+                private treeService: TreeService,
                 private router: Router) {}
 
     addSession() {
@@ -28,11 +29,65 @@ export class ConfigComponent implements OnInit {
     }
 
     reloadData() {
-        this.activeSession.data = null;
-        if (this.activeSession.dataVisibility == 'root') {
+        switch (this.activeSession.dataPresence) {
+        case 'root':
+            this.activeSession.data = null;
             this.sessionsService.rpcGet(this.activeSession, false);
-        } else {
+            break;
+        case 'all':
+            this.activeSession.data = null;
             this.sessionsService.rpcGet(this.activeSession, true);
+            break;
+        case 'mixed':
+            this.sessionsService.rpcGetSubtree(this.activeSession.key, false).subscribe(result => {
+                let root = this.activeSession.data;
+                if (result['success']) {
+                    for (let newRoot of result['data']) {
+                        let matchIndex = -1;
+                        for (let i in root['children']) {
+                            if (newRoot['path'] == root['children'][i]['path']) {
+                                matchIndex = Number(i);
+                                break;
+                            }
+                        }
+                        if (matchIndex == -1) {
+                            /* add new subtree */
+                            root['children'].push(newRoot);
+                        } else {
+                            let subtree = root['children'][matchIndex];
+                            let filterIndex = this.activeSession.treeFilters.indexOf(subtree['path']);
+                            if (filterIndex != -1) {
+                                /* reloading currently present but not visible subtrees is postponed to the point they are displayed */
+                                subtree['subtreeRoot'] = true;
+                                delete subtree['children'];
+                                this.activeSession.treeFilters.splice(filterIndex, 1);
+                                this.activeSession.dataPresence = 'root';
+                                for (let root of this.activeSession.data['children']) {
+                                    if (!('subtreeRoot' in root)) {
+                                        this.activeSession.dataPresence = 'mixed';
+                                        break;
+                                    }
+                                }
+                            } else if (!('subtreeRoot' in subtree)) {
+                                /* reload currently present and visible subtrees */
+                                subtree['loading'] = true;
+                                this.sessionsService.rpcGetSubtree(this.activeSession.key, true, subtree['path']).subscribe(result => {
+                                    subtree['loading'] = false;
+                                    if (result['success']) {
+                                        for (let iter of result['data']['children']) {
+                                            this.treeService.setDirty(this.activeSession, iter);
+                                        }
+                                        subtree['children'] = result['data']['children'];
+                                        this.treeService.updateHiddenFlags(this.activeSession);
+                                        this.sessionsService.storeSessions();
+                                    }
+                                });
+                            }
+                        }
+                    }
+                }
+                this.sessionsService.storeSessions();
+            });
         }
     }
 
@@ -155,6 +210,7 @@ export class ConfigComponent implements OnInit {
         this.activeSession = this.sessionsService.getSession();
         if (this.activeSession && !this.activeSession.data) {
             this.sessionsService.rpcGet(this.activeSession, false);
+            this.activeSession.dataPresence = 'root';
         }
     }
 }

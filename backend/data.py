@@ -202,6 +202,8 @@ def dataInfoRoots(data, recursion=False):
 		rootNode = dataInfoNode(root, top, recursion)
 		if not rootNode:
 			continue
+		if not recursion:
+			rootNode['subtreeRoot'] = True
 		top["children"].append(rootNode)
 	_sortChildren(top)
 	return(json.dumps({'success': True, 'data': top["children"]}))

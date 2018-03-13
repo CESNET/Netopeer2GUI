@@ -146,33 +146,113 @@ export class SessionsService {
         }
     }
 
-    collapse( activeSession, node = null ) {
-        if ( node ) {
-            delete node['children'];
-            activeSession.dataVisibility = 'mixed';
-        } else {
-            for ( let root of activeSession.data['children'] ) {
-                delete root['children'];
+    /**
+     * Hide a data subtree from view. Hiding is done via set of filters taken
+     * into account in tree-node template.
+     * @param activeSession Session to work with.
+     * @param node Root of the subtree to hide, this node is the last visible node.
+     */
+    collapse(activeSession: Session, node: Node = null ): void {
+        if (node) {
+            for (let i = activeSession.treeFilters.length; i > 0; i--) {
+                if (activeSession.treeFilters[Number(i) - 1].startsWith(node['path'])) {
+                    activeSession.treeFilters.splice(Number(i) - 1, 1);
+                }
             }
-            activeSession.dataVisibility = 'root';
+            activeSession.treeFilters.push(node['path'])
+            activeSession.dataPresence = 'mixed';
+        } else {
+            activeSession.treeFilters = [];
+            if (activeSession.data) {
+                for (let root of activeSession.data['children']) {
+                    if ('subtreeRoot' in root) {
+                        continue;
+                    }
+                    activeSession.treeFilters.push(root['path']);
+                }
+            }
+            activeSession.dataPresence = 'root';
         }
         this.treeService.updateHiddenFlags( activeSession );
         this.storeSessions();
     }
 
-    expand( activeSession, node, all: boolean ) {
-        node['loading'] = true;
-        this.rpcGetSubtree( activeSession.key, all, node['path'] ).subscribe( result => {
-            if ( result['success'] ) {
-                for ( let iter of result['data']['children'] ) {
-                    this.treeService.setDirty( activeSession, iter );
+    /**
+     * Show currently not visited data subtree.
+     * There are 2 situations why a subtree is not visible. a) It was previously
+     * collapsed and now it is filtered out via filters. b) It was not loaded
+     * yet - at the beginning, only the data roots are loaded from backend and
+     * it is up to user to select subtrees to work with. At that moment the
+     * complete subtree is loaded from backend even in case the user expanded
+     * only one level of children (so in such a case standard collapse filters
+     * are set).
+     * @param activeSession Session to work with.
+     * @param node Node to expand, null in case of root node.
+     * @param all Flag if all levels of children should be expanded or just one.
+     */
+    expand(activeSession: Session, node: Node = null, all: boolean = true): void {
+        if (!node) {
+            /* root */
+            let backup = activeSession.data;
+            activeSession.data = null;
+            delete backup['children'];
+            activeSession.loading = true;
+            this.rpcGetSubtree(activeSession.key, true).subscribe(result => {
+                if (result['success']) {
+                    for (let iter of result['data']) {
+                        this.treeService.setDirty( activeSession, iter );
+                    }
+                    activeSession.data = backup;
+                    activeSession.data['children'] = result['data'];
+                    activeSession.loading = false;
+                    activeSession.dataPresence = 'all';
+                    activeSession.treeFilters = [];
+                    this.storeSessions();
                 }
-                node['children'] = result['data']['children'];
-                this.treeService.updateHiddenFlags( activeSession );
+            });
+        } else if ('subtreeRoot' in node) {
+            node['loading'] = true;
+            this.rpcGetSubtree(activeSession.key, true, node['path']).subscribe(result => {
                 delete node['loading'];
-                this.storeSessions();
+                if (result['success']) {
+                    for (let iter of result['data']['children']) {
+                        this.treeService.setDirty(activeSession, iter);
+                        if (!all) {
+                            activeSession.treeFilters.push(iter['path']);
+                        }
+                    }
+                    node['children'] = result['data']['children'];
+                    this.treeService.updateHiddenFlags(activeSession);
+                    delete node['subtreeRoot'];
+                    activeSession.dataPresence = 'all';
+                    for (let root of activeSession.data['children']) {
+                        if ('subtreeRoot' in root) {
+                            activeSession.dataPresence = 'mixed';
+                            break;
+                        }
+                    }
+                    this.storeSessions();
+                }
+            } );
+        } else {
+            let index = activeSession.treeFilters.indexOf(node['path']);
+            if (index != -1) {
+                activeSession.treeFilters.splice(index, 1);
+            } else {
+                for (let i = activeSession.treeFilters.length; i > 0; i--) {
+                    if (activeSession.treeFilters[Number(i) - 1].startsWith(node['path'])) {
+                        activeSession.treeFilters.splice(Number(i) - 1, 1);
+                    }
+                }
             }
-        } );
+            if (!all && ('children' in node)) {
+                for (let child of node['children']) {
+                    activeSession.treeFilters.push(child['path'])
+                }
+            }
+            this.treeService.updateHiddenFlags(activeSession);
+            this.storeSessions();
+        }
     }
 
     checkValue(key: string, path: string, value: string): Observable<string[]> {
@@ -297,13 +377,8 @@ export class SessionsService {
             })
             .catch((err: Response | any) => Observable.throw(err));
     }
-    rpcGet( activeSession: Session, all: boolean ) {
-        if ( activeSession.data ) {
-            if ( ( all && activeSession.dataVisibility == 'all' ) ||
-                ( !all && activeSession.dataVisibility == 'root' ) ) {
-                return;
-            }
-        }
+
+    rpcGet(activeSession: Session, all: boolean) {
         activeSession.loading = true;
         delete activeSession.data;
         this.rpcGetSubtree( activeSession.key, all ).subscribe( result => {
@@ -317,11 +392,6 @@ export class SessionsService {
                 activeSession.data['info']['config'] = true;
                 activeSession.data['info']['path'] = '/';
                 activeSession.data['children'] = result['data'];
-                if ( all ) {
-                    activeSession.dataVisibility = 'all';
-                } else {
-                    activeSession.dataVisibility = 'root';
-                }
             }
             activeSession.loading = false;
             this.storeSessions();

@@ -15,9 +15,10 @@ export class Session {
     public device: Device,
     public loading = false,
     public data: Node = null,
+    public treeFilters = [],
     public modifications = null,
     public cpblts: string = "",
-    public dataVisibility: string = 'none',
+    public dataPresence: string = 'none',
     public statusVisibility: boolean = true,
     public cpbltsVisibility: boolean = false,
   ) {}

@@ -308,44 +308,67 @@ export class TreeService {
         }
     }
 
-    hasHiddenChild(node, clean=false): boolean {
+    isHidden(activeSession: Session, node: Node): boolean {
+        if (node['path'] == '/') {
+            /* in case of root, the 'is hidden' question actually changes to
+             * 'all children hidden' */
+            for (let root of node['children']) {
+                if (!('subtreeRoot' in root) && activeSession.treeFilters.indexOf(root['path']) == -1) {
+                    return false;
+                }
+            }
+            return true;
+        } else if (('subtreeRoot' in node) || activeSession.treeFilters.indexOf(node['path']) != -1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    hasHiddenChild(activeSession: Session, node, clean=false): boolean {
         if (!clean && 'hasHiddenChild' in node) {
             return node['hasHiddenChild'];
         }
-        node['hasHiddenChild'] = false;
+
         if (!this.expandable(node)) {
             /* terminal node (leaf or leaf-list) */
-            return node['hasHiddenChild'];
-        } else if (!('children' in node)) {
-            /* internal node without children */
+            node['hasHiddenChild'] = false;
+        } else if (this.isHidden(activeSession, node)) {
+            /* listed in tree filters */
             node['hasHiddenChild'] = true;
         } else {
+            node['hasHiddenChild'] = false;
             /* go recursively */
-            for (let child of node['children']) {
-                if (this.hasHiddenChild(child, clean)) {
-                    node['hasHiddenChild'] = true;
-                    break;
+            if ('children' in node) {
+                for (let child of node['children']) {
+                    if (this.hasHiddenChild(activeSession, child, clean)) {
+                        node['hasHiddenChild'] = true;
+                        if (!clean) {
+                            break;
+                        }
+                    }
                 }
             }
         }
         return node['hasHiddenChild'];
     }
 
-    updateHiddenFlags(activeSession) {
+    updateHiddenFlags(activeSession: Session) {
         let mixed = false;
         let rootsonly = true;
         for (let root of activeSession.data['children']) {
-            if (this.hasHiddenChild(root, true)) {
+            if (this.hasHiddenChild(activeSession, root, true)) {
                 mixed = true;
-            } else {
+            }
+            if (!('subtreeRoot' in root)){
                 rootsonly = false;
             }
         }
         if (mixed) {
             if (rootsonly) {
-                activeSession.dataVisibility = 'root';
+                activeSession.dataPresence = 'root';
             } else {
-                activeSession.dataVisibility = 'mixed';
+                activeSession.dataPresence = 'mixed';
             }
         }
     }

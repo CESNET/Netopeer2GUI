@@ -29,15 +29,15 @@
 
     <!-- container and lists -->
     <ng-container *ngIf="!node['new'] && !node['deleted'] && ((node['info']['type'] == 16 || node['info']['type'] == 1)) && treeService.expandable(node)">
-        <img *ngIf="treeService.hasHiddenChild(node)" (click)="sessionsService.expand(activeSession, node, true)"
+        <img *ngIf="treeService.hasHiddenChild(activeSession, node)" (click)="sessionsService.expand(activeSession, node, true)"
             class="icon_action" src="assets/netopeer/icons/show_all.svg"
             onmouseover="this.src='assets/netopeer/icons/show_all_active.svg'"
             onmouseout="this.src='assets/netopeer/icons/show_all.svg'" alt="show-all" title="expand subtree"/>
-        <img *ngIf="!node['children']" (click)="sessionsService.expand(activeSession, node, false)"
+        <img *ngIf="treeService.isHidden(activeSession, node)" (click)="sessionsService.expand(activeSession, node, false)"
             class="icon_action" src="assets/netopeer/icons/show_children.svg"
             onmouseover="this.src='assets/netopeer/icons/show_children_active.svg'"
             onmouseout="this.src='assets/netopeer/icons/show_children.svg'" alt="show-children" title="expand children"/>
-        <img *ngIf="node['children']" (click)="sessionsService.collapse(activeSession, node)"
+        <img *ngIf="!treeService.isHidden(activeSession, node)" (click)="sessionsService.collapse(activeSession, node)"
             class="icon_action" src="assets/netopeer/icons/collapse.svg"  alt="collapse" title="collapse"
             onmouseover="this.src='assets/netopeer/icons/collapse_active.svg'"
             onmouseout="this.src='assets/netopeer/icons/collapse.svg'"/>
@@ -78,7 +78,7 @@
 <div class="loading" *ngIf="node['loading']">
     <netopeer-loading></netopeer-loading>
 </div>
-<div class="children" *ngIf="(node['children'] || node['newChildren']) && !node['deleted']">
+<div class="children" *ngIf="(node['children'] || node['newChildren']) && !node['deleted'] && !treeService.isHidden(activeSession, node)">
     <ng-container *ngFor="let child of treeService.childrenToShow(node)">
         <tree-view [node]="child" [indentation]="treeService.inheritIndentation(indentation, node)"></tree-view>
     </ng-container>
