@@ -1,4 +1,4 @@
-import { Injectable, OnInit } from '@angular/core';
+import { Injectable } from '@angular/core';
 import { Http, Response, RequestOptions, URLSearchParams } from '@angular/http';
 import { Observable } from 'rxjs/Observable';
 import 'rxjs/add/operator/catch';
@@ -9,27 +9,44 @@ import { TreeService } from './tree.service';
 import { Device } from '../inventory/device';
 import { Session } from './session';
 
+/**
+ * Service to control NETCONF sessions.
+ * 
+ * The class maintain list of sessions by using localStorage.
+ */
 @Injectable()
-export class SessionsService implements OnInit {
+export class SessionsService {
+    /** List of opened NETCONF sessions. */
     public sessions: Session[];
+    /** Identifier of the currently active session. */
     public activeSession: string;
 
+    /**
+     * Initiate internal data.
+     * @param http Handler to communicate with the backend.
+     * @param treeService Handler to control data tree.
+     */
     constructor(private http: Http, private treeService: TreeService) {
         this.activeSession = localStorage.getItem('activeSession');
         if (!this.activeSession) {
             this.activeSession = "";
         }
-    }
-
-    ngOnInit(): void {
         this.checkSessions();
     }
 
-    storeData() {
+    /**
+     * Store the sessions list into localStorage for later use / reload. Does
+     * not store activeSession identifier, which is handled separately because
+     * of its possible more frequent change.
+     */
+    storeSessions(): void {
         localStorage.setItem('sessions', JSON.stringify(this.sessions));
     }
 
-    loadData() {
+    /**
+     * Load the sessions list from localStorage.
+     */
+    loadSessions(): void {
         this.sessions = JSON.parse(localStorage.getItem('sessions'));
         if (!this.sessions) {
             this.sessions = [];
@@ -44,7 +61,14 @@ export class SessionsService implements OnInit {
         }
     }
 
-    getActiveSession(key: string = this.activeSession): Session {
+    /**
+     * Get Session according to the specified key. If no key is specified, the
+     * current activeSession is returned.
+     * @param key Identifier of the session.
+     * @returns The session corresponding to the given key or null in case no
+     * such session exists.
+     */
+    getSession(key: string = this.activeSession): Session {
         if (key) {
             for (let i = this.sessions.length; i > 0; i--) {
                 if (this.sessions[i - 1].key == key) {
@@ -55,11 +79,13 @@ export class SessionsService implements OnInit {
         return null;
     }
 
+    /**
+     * Change the current activeSession.
+     * @param key Identifier of the session supposed to became activeSession
+     * @returns The new activeSession object.
+     */
     changeActiveSession(key: string): Session {
-        if (!this.activeSession) {
-            return null;
-        }
-        let result = this.getActiveSession(key);
+        let result = this.getSession(key);
         if (result) {
             this.activeSession = key;
             localStorage.setItem('activeSession', this.activeSession);
@@ -67,7 +93,12 @@ export class SessionsService implements OnInit {
         return result;
     }
 
-    checkSessionIndex(i: number) {
+    /**
+     * Check with backend that session on the specific index in the sessions
+     * list is still alive.
+     * @param i Index of the session to check in the sessions list.
+     */
+    private checkSessionIndex(i: number): void {
         this.alive(this.sessions[i].key).then(resp => {
             if (!resp['success']) {
                 if (this.activeSession && this.sessions[i].key == this.activeSession) {
@@ -84,12 +115,16 @@ export class SessionsService implements OnInit {
                     localStorage.setItem('activeSession', this.activeSession);
                 }
                 this.sessions.splice(i, 1);
-                this.storeData();
+                this.storeSessions();
             }
         });
     }
 
-    checkSession(key: string) {
+    /**
+     * Check with backend that the session with the given key is still alive.
+     * @param key Identifier of the session to check.
+     */
+    private checkSession(key: string): void {
         for (let i in this.sessions) {
             if (this.sessions[i].key == key) {
                 this.checkSessionIndex(Number(i));
@@ -98,8 +133,13 @@ export class SessionsService implements OnInit {
         }
     }
 
-    checkSessions() {
-        this.loadData();
+    /**
+     * Check all the sessions if they are still alive. If not, the session is
+     * removed from the list and if it was activeSession, the new one is
+     * selected.
+     */
+    checkSessions(): void {
+        this.loadSessions();
         /* verify that the sessions are still active */
         for (let i = this.sessions.length; i > 0; i--) {
             this.checkSessionIndex(i - 1);
@@ -117,7 +157,7 @@ export class SessionsService implements OnInit {
             activeSession.dataVisibility = 'root';
         }
         this.treeService.updateHiddenFlags( activeSession );
-        this.storeData();
+        this.storeSessions();
     }
 
     expand( activeSession, node, all: boolean ) {
@@ -130,7 +170,7 @@ export class SessionsService implements OnInit {
                 node['children'] = result['data']['children'];
                 this.treeService.updateHiddenFlags( activeSession );
                 delete node['loading'];
-                this.storeData();
+                this.storeSessions();
             }
         } );
     }
@@ -218,7 +258,7 @@ export class SessionsService implements OnInit {
     }
 
     setDirty(node) {
-        let activeSession = this.getActiveSession();
+        let activeSession = this.getSession();
         if (!activeSession.modifications) {
             return;
         }
@@ -284,12 +324,12 @@ export class SessionsService implements OnInit {
                 }
             }
             activeSession.loading = false;
-            this.storeData();
+            this.storeSessions();
         } );
     }
 
     commit(key: string) {
-        let activeSession = this.getActiveSession(key);
+        let activeSession = this.getSession(key);
         let options = new RequestOptions({body: JSON.stringify({'key': key, 'modifications': activeSession.modifications})});
         return this.http.post('/netopeer/session/commit', null, options)
             .map((resp: Response) => resp.json()).toPromise();
@@ -314,7 +354,7 @@ export class SessionsService implements OnInit {
                             this.activeSession = ""
                         }
                     }
-                    this.storeData();
+                    this.storeSessions();
                     localStorage.setItem('activeSession', this.activeSession);
                 }
             })
@@ -334,7 +374,7 @@ export class SessionsService implements OnInit {
                 if (resp['success']) {
                     this.sessions.push(new Session(resp['session-key'], dev));
                     this.activeSession = resp['session-key'];
-                    this.storeData();
+                    this.storeSessions();
                     localStorage.setItem('activeSession', this.activeSession);
                 }
             })

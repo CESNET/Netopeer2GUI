@@ -54,13 +54,13 @@ export class TreeCreate {
 
     constructor(private modsService: ModificationsService, private sessionsService: SessionsService) {}
 
-    closeCreatingDialog(node, reason='abort') {
-        this.modsService.createClose(this.activeSession, node, reason);
+    closeCreatingDialog(node, abort:boolean = true) {
+        this.modsService.createClose(this.activeSession, node, abort);
     }
 
     creatingDialogSelect(node, index, source) {
         this.modsService.create(this.activeSession, node, index);
-        this.sessionsService.storeData();
+        this.sessionsService.storeSessions();
         if (('schemaChildren' in node) && node['schemaChildren'].length) {
             source.selectedIndex = 0;
         }
@@ -87,7 +87,7 @@ export class TreeEdit {
         } else {
             this.modsService.cancelModification(this.activeSession, node, false);
         }
-        this.sessionsService.storeData();
+        this.sessionsService.storeSessions();
     }
 
     changeValue(node, target) {
@@ -106,7 +106,7 @@ export class TreeEdit {
         } else {
             this.modsService.change(this.activeSession, node, input.value);
         }
-        this.sessionsService.storeData();
+        this.sessionsService.storeSessions();
     }
 
     checkValue(node, target, trusted = false) {
@@ -176,7 +176,7 @@ export class TreeIndent implements OnInit {
                 private sessionsService: SessionsService) {}
 
     ngOnInit(): void {
-        this.activeSession = this.sessionsService.getActiveSession();
+        this.activeSession = this.sessionsService.getSession();
     }
 
     getType():string {
@@ -217,12 +217,12 @@ export class TreeIndent implements OnInit {
         for (let item of rmlist) {
             this.modsService.delete(this.activeSession, item);
         }
-        this.sessionsService.storeData();
+        this.sessionsService.storeSessions();
     }
 
     deleteInstance(node) {
         this.modsService.delete(this.activeSession, node);
-        this.sessionsService.storeData();
+        this.sessionsService.storeSessions();
     }
 
     openCreatingDialog(element, node, parent = false) {
@@ -239,8 +239,8 @@ export class TreeIndent implements OnInit {
         }
     }
 
-    closeCreatingDialog(node, reason='abort') {
-        this.modsService.createClose(this.activeSession, node, reason);
+    closeCreatingDialog(node, abort:boolean = true) {
+        this.modsService.createClose(this.activeSession, node, abort);
     }
 
     cancelModification(node, value = false) {
@@ -249,14 +249,14 @@ export class TreeIndent implements OnInit {
         if (node['info']['type'] == 8 && !value) {
             for (let item of this.treeService.nodesToShow(this.activeSession, node)) {
                 console.log(item['path'])
-                this.modsService.cancelModification(this.activeSession, item, false);
+                this.modsService.cancelModification(this.activeSession, item, false, true);
             }
         } else if (value) {
-            this.modsService.cancelModification(this.activeSession, node, false, undefined, false);
+            this.modsService.cancelModification(this.activeSession, node, false, false);
         } else {
-            this.modsService.cancelModification(this.activeSession, node, false);
+            this.modsService.cancelModification(this.activeSession, node, false, true);
         }
-        this.sessionsService.storeData();
+        this.sessionsService.storeSessions();
     }
 }
 
@@ -375,7 +375,7 @@ export class TreeView implements OnInit {
                 private treeService: TreeService) {}
 
     ngOnInit(): void {
-        this.activeSession = this.sessionsService.getActiveSession();
+        this.activeSession = this.sessionsService.getSession();
     }
 }
 

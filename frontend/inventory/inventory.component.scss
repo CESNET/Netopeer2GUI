@@ -43,7 +43,7 @@ nav {
     &:hover,
     &.selected {
         td {
-            display: box;
+            display: inherited;
             background-color: $colorMain;
         }
         color: $colorTextInverse;
@@ -56,7 +56,7 @@ nav {
 .item_header {
     color: $colorTextInverse;
     th {
-       display: box;
+       display: inherited;
        background-color: $colorMain;
     }
 }

@@ -42,7 +42,7 @@ export class ConfigComponent implements OnInit {
                 if (!this.sessionsService.activeSession) {
                     this.router.navigateByUrl('/netopeer/inventory/devices');
                 }
-                this.activeSession = this.sessionsService.getActiveSession();
+                this.activeSession = this.sessionsService.getSession();
             } else {
                 this.err_msg = result['error-msg'];
             }
@@ -51,18 +51,18 @@ export class ConfigComponent implements OnInit {
 
     setCpbltsVisibility(value: boolean) {
         this.activeSession.cpbltsVisibility = value;
-        this.sessionsService.storeData();
+        this.sessionsService.storeSessions();
     }
 
     invertStatus() {
         this.activeSession.statusVisibility = !this.activeSession.statusVisibility;
-        this.sessionsService.storeData();
+        this.sessionsService.storeSessions();
     }
 
     getCapabilities(key: string) {
         if (this.activeSession.cpblts) {
             this.activeSession.cpbltsVisibility = true;
-            this.sessionsService.storeData();
+            this.sessionsService.storeSessions();
             return;
         }
         this.sessionsService.getCpblts(key).subscribe(result => {
@@ -73,7 +73,7 @@ export class ConfigComponent implements OnInit {
                 this.activeSession.cpbltsVisibility = false;
                 this.err_msg = result['error-msg'];
             }
-            this.sessionsService.storeData();
+            this.sessionsService.storeSessions();
         });
     }
 
@@ -134,7 +134,7 @@ export class ConfigComponent implements OnInit {
         //console.log(JSON.stringify(this.activeSession.modifications))
         this.modsService.cancelModification(this.activeSession);
         this.commit_error = [];
-        this.sessionsService.storeData();
+        this.sessionsService.storeSessions();
         //console.log(JSON.stringify(this.activeSession.modifications))
     }
 
@@ -152,13 +152,9 @@ export class ConfigComponent implements OnInit {
 
     ngOnInit(): void {
         this.sessionsService.checkSessions();
-        this.activeSession = this.sessionsService.getActiveSession();
+        this.activeSession = this.sessionsService.getSession();
         if (this.activeSession && !this.activeSession.data) {
             this.sessionsService.rpcGet(this.activeSession, false);
         }
-    }
-
-    changeActiveSession(key: string) {
-        this.activeSession = this.sessionsService.changeActiveSession(key);
     }
 }

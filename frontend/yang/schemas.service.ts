@@ -12,7 +12,7 @@ export class SchemasService {
     public activeSchema: string;
 
     constructor( private http: Http ) {
-        this.loadData();
+        this.loadSchemas();
         this.activeSchema = localStorage.getItem('activeSchema');
         if (!this.schemas) {
             this.schemas = {};
@@ -22,11 +22,11 @@ export class SchemasService {
         }
     }
 
-    storeData() {
+    storeSchemas() {
         localStorage.setItem('schemas', JSON.stringify(this.schemas));
     }
 
-    loadData() {
+    loadSchemas() {
         this.schemas = JSON.parse(localStorage.getItem('schemas'));
     }
 
@@ -35,17 +35,17 @@ export class SchemasService {
             return Object.keys(this.schemas);
         }
     }
-
+/*
     getSchemaKey(schema: Schema) {
         if (!schema) {
-            return null
+            return null;
         } else if ('revision' in schema) {
             return schema.name + '@' + schema.revision + '.yang';
         } else {
             return schema.name + '.yang';
         }
     }
-
+*/
     getActiveSchema(key: string = this.activeSchema): Schema {
         if (key in this.schemas) {
             return this.schemas[key];
@@ -84,14 +84,14 @@ export class SchemasService {
                     console.log(result)
                     if (result['success']) {
                         schema['data'] = result['data'];
-                        this.storeData();
+                        this.storeSchemas();
                     }
                 });
         }
 
         if (newSchema) {
             this.schemas[key] = schema;
-            this.storeData();
+            this.storeSchemas();
         }
     }
 
@@ -108,7 +108,7 @@ export class SchemasService {
             }
         }
         delete this.schemas[key];
-        this.storeData();
+        this.storeSchemas();
     }
 
     addSchema( schema: File ) {

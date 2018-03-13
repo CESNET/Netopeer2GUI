@@ -1,6 +1,6 @@
 import { Directive, ElementRef, HostListener, Input, AfterContentChecked } from '@angular/core';
 
-import { ModificationsService } from './modifications.service';
+import { ModificationsService, ModificationRecord, ModificationType } from './modifications.service';
 import { SessionsService } from './sessions.service';
 import { TreeService } from './tree.service';
 
@@ -127,7 +127,7 @@ export class OrderingDirective implements AfterContentChecked {
             let record = this.modsService.createModificationsRecord(this.activeSession, path);
             if (!('type' in record)) {
                 /* new record */
-                record['type'] = 'reorder';
+                record['type'] = ModificationType.Reorder;
                 record['reorder'] = [];
                 for (let i in nodes) {
                     record['reorder'].push(Number(i));
@@ -150,7 +150,7 @@ export class OrderingDirective implements AfterContentChecked {
                 this.modsService.removeModificationsRecord(this.activeSession, path);
             }
         }
-        this.sessionsService.storeData();
+        this.sessionsService.storeSessions();
         event.preventDefault();
     }
 

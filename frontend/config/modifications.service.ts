@@ -1,29 +1,77 @@
 import { Injectable } from '@angular/core';
-import {Router} from '@angular/router';
+import { Router } from '@angular/router';
 
-import { Session} from './session';
+import { Session, Node, NodeSchema } from './session';
 import { SessionsService } from './sessions.service';
 import { TreeService } from './tree.service';
 
+/**
+ * Enumeration of the ModificationRecord types.
+ */
+export const enum ModificationType {
+    /** Creating a new node */
+    Create = "create",
+    /** Changing value of a current leaf node */
+    Change = "change",
+    /** Delete a current node */
+    Delete = "delete",
+    /** Replacing a current node */
+    Replace = "replace",
+    /** Reordering user-ordered lists or leaf-lists */
+    Reorder = "reorder"
+}
+
+/**
+ * Record of a particular modification on configuration data.
+ */
+export class ModificationRecord {}
+
+/**
+ * Service to handle modification records stored in the Session. The class does not
+ * provide any storage, it just implements functions to manipulate with the records
+ * stored in particular Session.
+ */
 @Injectable()
 export class ModificationsService {
 
+    /**
+     * Initiate services handlers.
+     * @param sessionsService Handler to get data from the current activeSession.
+     * @param treeService Handler to control data tree.
+     * @param router Handler to redirect to other pages.
+     */
     constructor(private sessionsService: SessionsService,
                 private treeService: TreeService,
                 private router: Router) {}
 
-    createModificationsRecord(activeSession, path) {
+    /**
+     * Get the Modification record for the given path, if the record does not
+     * exist, a new one is created and returned to fill. If there are no records
+     * so far, the Modifications list is created as dictionary.
+     * @param activeSession Session to work with.
+     * @param path Identifier of the modified node.
+     * @returns Modification record for the given path.
+     */
+    createModificationsRecord(activeSession: Session, path: string): ModificationRecord {
         if (!activeSession.modifications) {
             activeSession.modifications = {};
         }
 
         if (!(path in activeSession.modifications)) {
-            activeSession.modifications[path] = {};
+            activeSession.modifications[path] = new ModificationRecord();
         }
         return activeSession.modifications[path];
     }
 
-    getModificationsRecord(activeSession, path) {
+    /**
+     * Get the Modification record for the given path, if the record
+     * exist in the provided activeSession.
+     * @param activeSession Session to work with.
+     * @param path Identifier of the modified node.
+     * @returns Modification record for the specified path or null
+     * if there is no record for the given path.
+     */
+    getModificationsRecord(activeSession: Session, path: string): ModificationRecord {
         if (!activeSession.modifications) {
             return null;
         }
@@ -34,7 +82,13 @@ export class ModificationsService {
         return activeSession.modifications[path];
     }
 
-    removeModificationsRecord(activeSession, path = null) {
+    /**
+     * Remove the Modification record from the given activeSession. If it
+     * is the last record, the Modifications list is removed.
+     * @param activeSession Session to work with.
+     * @param path Identifier of the modified node.
+     */
+    removeModificationsRecord(activeSession: Session, path: string = null): void {
         if (!activeSession.modifications) {
             return;
         }
@@ -48,7 +102,15 @@ export class ModificationsService {
         }
     }
 
-    renameModificationsRecord(activeSession, oldPath, newPath) {
+    /**
+     * Change the key of a particular record in the Modifications list of the
+     * given activeSession.
+     * @param activeSession Session to work with.
+     * @param oldPath The current Identifier of the modified node used as a key.
+     * @param newPath New value of the key for the Modification record so far
+     * identified by oldPath.
+     */
+    renameModificationsRecord(activeSession: Session, oldPath: string, newPath: string): void {
         let record = this.getModificationsRecord(activeSession, oldPath);
         if (record) {
             activeSession.modifications[newPath] = record;
@@ -56,7 +118,13 @@ export class ModificationsService {
         }
     }
 
-    setEdit(activeSession, node, set = true) {
+    /**
+     * Set edit flag of the node to the given set value.
+     * @param activeSession Session to work with.
+     * @param node Node to work with.
+     * @param set True to set, False to unset.
+     */
+    setEdit(activeSession: Session, node: Node, set: boolean = true): void {
         let waiting = false;
         if (set && node['info']['datatypebase'] == 'empty') {
             node['value'] = '';
@@ -84,28 +152,18 @@ export class ModificationsService {
         }
     }
 
-    setLast(list) {
-        let last;
-        for (let iter of list) {
-            delete iter['last'];
-            last = iter;
-        }
-        last['last'] = true;
-    }
-
-    schemaName(parent, child):string {
-        if (parent['module'] != child['module']) {
-            return child['module'] + ':' + child['name'];
-        } else {
-            return child['name'];
-        }
-    }
-
-    isDeleted(node, value = false): boolean {
+    /**
+     * Checker function to get know if the node was marked as deleted.
+     * @param node Node to be checked.
+     * @param value Flag for leaf-lists, true if the specific instance node is
+     * supposed to be checked, false in case any of the instances counts.
+     * @returns true if the node was marked as deleted, false otherwise.
+     */
+    isDeleted(node: Node, value: boolean = false): boolean {
         if ('deleted' in node) {
             return node['deleted'];
-        } else if (!value && node['info']['type'] == 8 && node['first']) {
-            for (let item of this.treeService.nodesToShow(this.sessionsService.getActiveSession(), node)) {
+        } else if (!value && node['info']['type'] == 8) {
+            for (let item of this.treeService.nodesToShow(this.sessionsService.getSession(), node)) {
                 if (item['deleted']) {
                     return true;
                 }
@@ -114,15 +172,30 @@ export class ModificationsService {
         return false;
     }
 
-    isMoved(activeSession: Session, node): boolean {
+    /**
+     * Checker function to get know if some instance of the list or leaf-list
+     * was moved (reordered).
+     * @param activeSession Session to work with.
+     * @param node Node to be checked.
+     * @returns true if there is a moved instance of the given list or leaf-list.
+     */
+    isMoved(activeSession: Session, node: Node): boolean {
        let path = this.treeService.pathCutPredicate(node['path']);
-       if (this.getModificationsRecord(activeSession, path)) {
+       let record = this.getModificationsRecord(activeSession, path);
+       if (record && record['type'] == ModificationType.Reorder) {
             return true;
         }
         return false;
     }
 
-    private deleteChild(activeSession, parent, childArray, node) {
+    /**
+     * Physically remove the specific node from the parent's child list
+     * @param activeSession Session to work with
+     * @param parent Parent to be modified.
+     * @param childArray Name of the children array: 'children' or 'newChildren'
+     * @param node Node to be removed.
+     */
+    private deleteChild(activeSession: Session, parent: Node, childArray: string, node: Node): void {
         for (let i in parent[childArray]) {
             if (parent[childArray][i]['path'] == node['path']) {
                 parent[childArray].splice(i, 1);
@@ -134,7 +207,15 @@ export class ModificationsService {
         }
     }
 
-    delete(activeSession, node) {
+    /**
+     * Delete the given node from the configuration data. If the node exists
+     * only in frontend's data (created but not committed), it is physically
+     * removed. Otherwise, it is marked as deleted (checkable via isDeleted())
+     * and Modification record is created.
+     * @param activeSession Session to work with.
+     * @param node Node to delete.
+     */
+    delete(activeSession: Session, node: Node): void {
         if ('new' in node) {
             if (node['info']['ordered']) {
                 let path = this.treeService.pathCutPredicate(node['path']);
@@ -179,11 +260,11 @@ export class ModificationsService {
             node['deleted'] = true;
             if (!('type' in record)) {
                 /* new record */
-                record['type'] = 'delete';
+                record['type'] = ModificationType.Delete;
                 record['original'] = node;
                 node['dirty'] = true;
-            } else if (record['type'] == 'change') {
-                record['type'] = 'delete';
+            } else if (record['type'] == ModificationType.Change) {
+                record['type'] = ModificationType.Delete;
                 node['value'] = record['original'];
                 delete record['original'];
                 delete record['value'];
@@ -191,7 +272,16 @@ export class ModificationsService {
         }
     }
 
-    change(activeSession, node, leafValue) {
+    /**
+     * Change value of the given leaf Node. If the Node exists only in
+     * frontend's data (created but not committed), the changed value will be
+     * reflected in the create modification record. Otherwise, new record is
+     * created.
+     * @param activeSession Session to work with.
+     * @param node Leaf node to be changed.
+     * @param leafValue New value of the leaf node
+     */
+    change(activeSession: Session, node: Node, leafValue: string) {
         let record = null;
         if (!('new' in node)) {
             record = this.createModificationsRecord(activeSession, node['path']);
@@ -203,11 +293,11 @@ export class ModificationsService {
                     this.removeModificationsRecord(activeSession);
                     return;
                 }
-                record['type'] = 'change';
+                record['type'] = ModificationType.Change;
                 record['original'] = node['value'];
                 record['value'] = leafValue;
                 node['dirty'] = true;
-            } else if (record['type'] == 'change' && record['original'] == leafValue) {
+            } else if (record['type'] == ModificationType.Change && record['original'] == leafValue) {
                 /* change back to the original value, remove the change record */
                 this.removeModificationsRecord(activeSession, node['path']);
                 node['dirty'] = false;
@@ -233,12 +323,18 @@ export class ModificationsService {
         this.setEdit(activeSession, node, false);
     }
 
-    createOpen(activeSession, schemas, node) {
+    /**
+     * Open creating dialogue by setting necessary flags on given parent node.
+     * @param activeSession Session to work with.
+     * @param schemas List of available schema nodes for the node's children.
+     * @param node Parent node where a new children is supposed to be created.
+     */
+    createOpen(activeSession: Session, schemas: string[], node: Node): void {
         //console.trace();
-        node['schemaChildren'] = schemas;
-        node['creatingChild'] = {};
-
         if (schemas.length) {
+            node['schemaChildren'] = schemas;
+            node['creatingChild'] = {};
+
             let children = this.treeService.childrenToShow(node);
             if (children.length) {
                 let last = children[children.length - 1];
@@ -259,7 +355,14 @@ export class ModificationsService {
         }
     }
 
-    private maintainLast(activeSession, parent) {
+    /**
+     * Set the 'last' flag to the correct child node, does not remove the flag
+     * on wrong children. Correctly goes thogh both, 'children' as well as
+     * 'newChildren' lists.
+     * @param activeSession Session to work with.
+     * @param parent Parent node to be processed.
+     */
+    private maintainLast(activeSession: Session, parent: Node): void {
         if ('schemaChildren' in parent) {
             return;
         }
@@ -282,21 +385,34 @@ export class ModificationsService {
         }
     }
 
-    createClose(activeSession, node, reason='abort') {
+    /**
+     * Close creating dialogue by removing flags from the given parent node.
+     * @param activeSession Session to work with.
+     * @param node Parent node where the creating dialogue was opened
+     * @param abort Flag if the dialogue is closed due to abort or as success close.
+     */
+    createClose(activeSession: Session, node: Node, abort:boolean = true): void {
         //console.trace();
-        if (reason == 'abort' && node['schemaChildren'].length) {
+        if (abort && node['schemaChildren'].length) {
             this.maintainLast(activeSession, node);
         }
         delete node['creatingChild'];
         delete node['schemaChildren'];
     }
 
-    private list_nextpos(node, path: string): number {
+    /**
+     * Get free position number for the list instance. Taken as a successor of the
+     * highest id of the sibling list instances.
+     * @param parent Parent node where a new list instance will be inserted.
+     * @param path Path of the list to identify instances of the specific list
+     * @return free position for the new instance (starts by 1)
+     */
+    private list_nextpos(parent: Node, path: string): number {
         let search;
-        if ('new' in node) {
-            search = node['children'];
+        if ('new' in parent) {
+            search = parent['children'];
         } else {
-            search = node['newChildren'];
+            search = parent['newChildren'];
         }
         let pos = 1;
         if (search.length) {
@@ -312,33 +428,57 @@ export class ModificationsService {
         return pos;
     }
 
-    create(activeSession, node, index) {
+    /**
+     * Generate correct name for the schema node (so prefixed if needed)
+     * @param parent Schema node of the parent.
+     * @param child Schema node of the node to be processed.
+     */
+    schemaName(parent: NodeSchema, node: NodeSchema): string {
+        if (parent['module'] != node['module']) {
+            return node['module'] + ':' + node['name'];
+        } else {
+            return node['name'];
+        }
+    }
+
+    /**
+     * Create new node in given parent. If the parent Node exists only in
+     * frontend's data (created but not committed), the child is inserted into
+     * the 'children' list and no new Modification record is created - the node
+     * will be created as part of creating the parent's subtree. Otherwise, the
+     * child is inserted in 'newChildren' list and new record is created. In
+     * case of creating list, all its keys are also created.
+     * @param activeSession Session to work with.
+     * @param parent Parent node where a new child is supposed to be created.
+     * @param index Index in the 'schemaChildren' list specifying which node is supposed to be created.
+     */
+    create(activeSession: Session, parent: Node, index: number): void {
         //console.trace();
         let newNode = {};
         newNode['new'] = true;
-        newNode['info'] = node['schemaChildren'][index];
-        if (node['path'] == '/') {
-            newNode['path'] = '/' + this.schemaName(node['info'], newNode['info']);
+        newNode['info'] = parent['schemaChildren'][index];
+        if (parent['path'] == '/') {
+            newNode['path'] = '/' + this.schemaName(parent['info'], newNode['info']);
         } else {
-            newNode['path'] = node['path'] + '/' + this.schemaName(node['info'], newNode['info']);
+            newNode['path'] = parent['path'] + '/' + this.schemaName(parent['info'], newNode['info']);
         }
         newNode['dirty'] = true;
 
-        if ('new' in node) {
-            if (!('children' in node)) {
-                node['children'] = [];
+        if ('new' in parent) {
+            if (!('children' in parent)) {
+                parent['children'] = [];
             }
-            node['children'].push(newNode);
+            parent['children'].push(newNode);
         } else {
-            if (!('newChildren' in node)) {
-                node['newChildren'] = [];
+            if (!('newChildren' in parent)) {
+                parent['newChildren'] = [];
             }
-            node['newChildren'].push(newNode);
+            parent['newChildren'].push(newNode);
         }
 
         switch(newNode['info']['type']) {
         case 1: /* container */
-            node['schemaChildren'].splice(index, 1);
+            parent['schemaChildren'].splice(index, 1);
 
             newNode['children'] = [];
             /* open creation dialog for nodes inside the created container */
@@ -347,7 +487,7 @@ export class ModificationsService {
             });
             break;
         case 4: /* leaf */
-            node['schemaChildren'].splice(index, 1);
+            parent['schemaChildren'].splice(index, 1);
 
             if ('default' in newNode['info']) {
                 newNode['value'] = newNode['info']['default'];
@@ -371,7 +511,7 @@ export class ModificationsService {
                 }
             }
 
-            newNode['path'] = newNode['path'] + '[' + this.list_nextpos(node, newNode['path']) + ']';
+            newNode['path'] = newNode['path'] + '[' + this.list_nextpos(parent, newNode['path']) + ']';
             this.setEdit(activeSession, newNode, true)
             break;
         case 16: /* list */
@@ -385,7 +525,7 @@ export class ModificationsService {
                     record['reorder'].push(record['reorder'].length);
                 }
             }
-            newNode['path'] = newNode['path'] + '[' + this.list_nextpos(node, newNode['path']) + ']';
+            newNode['path'] = newNode['path'] + '[' + this.list_nextpos(parent, newNode['path']) + ']';
             newNode['keys'] = [];
             for (let key of newNode['info']['keys']) {
                 newNode['keys'].push("");
@@ -397,22 +537,21 @@ export class ModificationsService {
                     this.createOpen(activeSession, result, newNode);
                 }
 
-                if (newNode['schemaChildren'].length) {
+                for (let key of newNode['info']['keys']) {
                     for (let i in newNode['schemaChildren']) {
-                        if (!newNode['schemaChildren'][i]['key']) {
-                            continue;
-                        }
-                        let newKey = {};
-                        newKey['new'] = true;
-                        newKey['info'] = newNode['schemaChildren'][i];
-                        newKey['path'] = newNode['path'] + '/' + this.schemaName(newNode['info'], newKey['info']);
-                        newKey['dirty'] = true;
-                        this.setEdit(activeSession, newKey, true)
-                        newNode['children'].push(newKey)
-                        newNode['schemaChildren'].splice(i, 1);
-                        if (!newNode['schemaChildren'].length) {
-                            newKey['last'] = true;
-                            this.createClose(activeSession, newNode, 'success');
+                        if (newNode['schemaChildren'][i]['name'] == key && newNode['schemaChildren'][i]['module'] == newNode['info']['module']) {
+                            let newKey = {};
+                            newKey['new'] = true;
+                            newKey['info'] = newNode['schemaChildren'][i];
+                            newKey['path'] = newNode['path'] + '/' + this.schemaName(newNode['info'], newKey['info']);
+                            newKey['dirty'] = true;
+                            this.setEdit(activeSession, newKey, true)
+                            newNode['children'].push(newKey)
+                            newNode['schemaChildren'].splice(i, 1);
+                            if (!newNode['schemaChildren'].length) {
+                                newKey['last'] = true;
+                                this.createClose(activeSession, newNode, false);
+                            }
                         }
                     }
                 }
@@ -421,32 +560,43 @@ export class ModificationsService {
             break;
         }
 
-        if (!node['schemaChildren'].length) {
+        if (!parent['schemaChildren'].length) {
             newNode['last'] = true;
-            this.createClose(activeSession, node, 'success');
+            this.createClose(activeSession, parent, false);
         }
 
-        if (!('new' in node)) {
+        if (!('new' in parent)) {
             /* store the record about the newly created data */
             let record = this.createModificationsRecord(activeSession, newNode['path']);
-            if (('type' in record) && record['type'] == 'delete') {
-                record['type'] = 'replace';
+            if (('type' in record) && record['type'] == ModificationType.Delete) {
+                record['type'] = ModificationType.Replace;
                 delete record['original']['deleted'];
-                for (let i in node['children']) {
-                    if (node['children'][i] == record['original']) {
-                        node['children'].splice(i, 1);
+                for (let i in parent['children']) {
+                    if (parent['children'][i] == record['original']) {
+                        parent['children'].splice(i, 1);
                         break;
                     }
                 }
             } else {
-                record['type'] = 'create';
+                record['type'] = ModificationType.Create;
             }
             record['data'] = newNode;
         }
         //console.log(node)
     }
 
-    cancelModification(activeSession, node = activeSession.data, recursion = true, firstcall = true, reorder = true) {
+    /**
+     * Cancel modification record connected with the given node.
+     * @param activeSession Session to work with.
+     * @param node Node element whose modification record will be removed.
+     * @param recursion Flag to recursively process the node's subtree
+     * @param reorder Boolean flag to remove also the reorder modification
+     * connected with all the instances of the given node's schema node.
+     * @param firstcall Flag for top level call to control recursion, do not
+     * use outside the function itself
+     */
+    cancelModification(activeSession: Session, node: Node = activeSession.data,
+                       recursion: boolean = true, reorder: boolean = true, firstcall: boolean = true): void {
         if ('creatingChild' in node) {
             delete node['creatingChild'];
         }
@@ -475,7 +625,7 @@ export class ModificationsService {
             let record = this.getModificationsRecord(activeSession, node['path']);
             if (record) {
                 delete node['dirty'];
-                if (record['type'] == 'change') {
+                if (record['type'] == ModificationType.Change) {
                     node['value'] = record['original'];
                 }
                 this.removeModificationsRecord(activeSession, node['path']);
@@ -501,7 +651,7 @@ export class ModificationsService {
             if ('newChildren' in node) {
                 for (let child of node['newChildren']) {
                     let record = this.getModificationsRecord(activeSession, child['path']);
-                    if (record['type'] == 'change') {
+                    if (record['type'] == ModificationType.Change) {
                         node['children'].push(record['original'])
                     }
                     this.removeModificationsRecord(activeSession, child['path']);
@@ -515,7 +665,7 @@ export class ModificationsService {
             for (let child of node['children']) {
                 delete child['last'];
                 delete child['moved'];
-                this.cancelModification(activeSession, child, true, false);
+                this.cancelModification(activeSession, child, true, reorder, false);
                 if (child['info']['ordered']) {
                     /* revert order change */
                     let path = this.treeService.pathCutPredicate(child['path']);
@@ -536,27 +686,20 @@ export class ModificationsService {
         }
     }
 
-    private sortKeys(list) {
-        let key_index = 0;
-        for (let key of list['info']['keys']) {
-            for (let i in list['children']) {
-                if (list['children'][i]['info']['name'] == key && list['children'][i]['info']['module'] == list['info']['module']) {
-                    let moved = list['children'].splice(i, 1);
-                    list['children'].splice(key_index++, 0, moved[0]);
-                }
-            }
-        }
-        return key_index;
-    }
-
-    private resolveKeys(node, top = true): string {
+    /**
+     * Check presence of the necessary keys in lists and update its predicate if safe.
+     * @param node Root node where to start checking
+     * @param top internal recursion flag, do not use
+     * @return null in case of success, error message in case of error.
+     */
+    private resolveKeys(node: Node, top: boolean = true): string {
         if (node['info']['type'] == 16) {
             if (!('children' in node) || !node['children'].length) {
                 return 'no key in ' + node['path'];
             }
-            let count = this.sortKeys(node);
-            if (count != node['info']['keys'].length) {
-                return 'invalid number (' + count + ') of keys in ' + node['path'];
+            let count = node['info']['keys'].length;
+            if (node['children'].length != count || !node['children'][count - 1]['info']['key']) {
+                return 'invalid number (expected ' + count + ') of keys in ' + node['path'];
             }
         }
 
@@ -600,7 +743,14 @@ export class ModificationsService {
         return null;
     }
 
-    private getHighestDistIndex(nodes) {
+    /**
+     * Find the position of the highest absolute distance of the moved nodes.
+     * @param nodes Array of user-ordered lists or leaf-lists with counted
+     * distance information
+     * @return Index in the given array of a node with the highest absolute
+     * distance value
+     */
+    private getHighestDistIndex(nodes: Node[]): number {
         let val = 0;
         let pos = -1;
         for (let i in nodes) {
@@ -613,16 +763,27 @@ export class ModificationsService {
         return pos;
     }
 
-    private listPredicates(list) {
+    /**
+     * Create complete list predicate with all its keys
+     * @param list Node to process
+     * @return Predicate string.
+     */
+    private listPredicates(list: Node): string {
         let result = "";
         for (let key of list['children']) {
             if (!('key' in key['info'])) {
                 break;
             }
-            result.concat('[' + this.treeService.moduleName(key) + ':' + key['info']['name'] + '=\'' + key['value'] + '\']')
+            result.concat('[' + this.treeService.moduleName(key) + ':' + key['info']['name'] + '=\'' + key['value'] + '\']');
         }
+        return result;
     }
 
+    /**
+     * Apply all the modification records of the given session by sending them to the backend.
+     * @param activeSession Session whose Modification records will be applied
+     * @return Received backend's result message
+     */
     applyModification(activeSession: Session) {
         for (let mod in activeSession.modifications) {
             //console.log(JSON.stringify(mod));
@@ -633,11 +794,11 @@ export class ModificationsService {
             if (activeSession.modifications[mod]['data']['info']['type'] == 4 || activeSession.modifications[mod]['data']['info']['type'] == 8) {
                 if (!('value' in activeSession.modifications[mod]['data'])) {
                     console.log('not confirmed node ' + activeSession.modifications[mod]['data']['path'] + ', removing it');
-                    this.cancelModification(activeSession, mod['data'], false);
+                    this.cancelModification(activeSession, mod['data'], false, false);
                 }
             }
             /* remove deleted nodes from the reorder data */
-            if (activeSession.modifications[mod]['data']['info']['ordered'] && activeSession.modifications[mod]['type'] == 'delete') {
+            if (activeSession.modifications[mod]['data']['info']['ordered'] && activeSession.modifications[mod]['type'] == ModificationType.Delete) {
                 let record = this.getModificationsRecord(activeSession, this.treeService.pathCutPredicate(activeSession.modifications[mod]['data']['path']));
                 if (record) {
                     record['reorder'].splice(activeSession.modifications[mod]['data']['order'], 1);
@@ -652,7 +813,7 @@ export class ModificationsService {
 
         /* transform reorder records to move transactions */
         for (let mod in activeSession.modifications) {
-            if (activeSession.modifications[mod]['type'] != 'reorder') {
+            if (activeSession.modifications[mod]['type'] != ModificationType.Reorder) {
                 continue;
             }
             let record = activeSession.modifications[mod];
