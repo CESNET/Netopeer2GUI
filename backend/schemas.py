@@ -28,12 +28,12 @@ def __schema_parse(path, format = yang.LYS_IN_UNKNOWN):
 		raise NetopeerException(str(e))
 	
 	try:
-		module = ctx.parse_path(path, yang.LYS_IN_YANG if format == yang.LYS_IN_UNKNOWN else format)
+		module = ctx.parse_module_path(path, yang.LYS_IN_YANG if format == yang.LYS_IN_UNKNOWN else format)
 	except Exception as e:
 		if format != yang.LYS_IN_UNKOWN:
 			raise NetopeerException(str(e))
 		try:
-			module = ctx.parse_path(path, ly_LYS_IN_YIN)
+			module = ctx.parse_module_path(path, ly_LYS_IN_YIN)
 		except Exception as e:
 			raise NetopeerException(str(e))
 
