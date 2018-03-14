@@ -8,6 +8,6 @@
         "class" : "NetopeerModule",
         "frontend" : "frontend",
         "backend" : "backend",
-        "assets" : "frontend-assets"
+        "assets" : "assets"
     }
 }

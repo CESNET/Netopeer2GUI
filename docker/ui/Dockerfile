@@ -41,32 +41,29 @@ WORKDIR /opt/dev
 
 RUN \
 # libyang
-      git clone -b devel https://github.com/CESNET/libyang.git cloned && \
-      cd cloned && mkdir build && cd build && \
+      git clone -b devel https://github.com/CESNET/libyang.git && \
+      cd libyang && mkdir build && cd build && \
       cmake -DCMAKE_BUILD_TYPE:String="Release" -DENABLE_BUILD_TESTS=OFF .. && \
       make -j2 && \
       make install && \
       ldconfig && \
       cd /opt/dev && \
-      rm -rf cloned && \
 # libssh
-      git clone http://git.libssh.org/projects/libssh.git cloned && \
-      cd cloned && mkdir build && cd build && \
+      git clone http://git.libssh.org/projects/libssh.git && \
+      cd libssh && mkdir build && cd build && \
       cmake .. && \
       make -j2 && \
       make install && \
       ldconfig && \
       cd /opt/dev && \
-      rm -rf cloned && \
 # libnetconf2
-      git clone https://github.com/CESNET/libnetconf2.git cloned && \
-      cd cloned && mkdir build && cd build && \
+      git clone -b devel https://github.com/CESNET/libnetconf2.git && \
+      cd libnetconf2 && mkdir build && cd build && \
       cmake -DCMAKE_BUILD_TYPE:String="Release" -DENABLE_BUILD_TESTS=OFF .. && \
       make -j2 && \
       make install && \
       ldconfig && \
-      cd /opt/dev && \
-      rm -rf cloned
+      cd /opt/dev
 
 RUN git clone -b devel https://github.com/CESNET/liberouter-gui.git
 
@@ -77,7 +74,6 @@ RUN \
     python3 ./bootstrap.py && \
     pip3 install --upgrade pip && \
     pip3 install -r backend/requirements.txt && \
-    pip3 install -r modules/netopeer/backend/requirements.txt && \
     cd frontend && \
     npm install --unsafe-perm -g @angular/cli && \
     npm install --unsafe-perm
