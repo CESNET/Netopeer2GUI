@@ -48,6 +48,7 @@ make install
 ```
 
 ## Vagrant
+
 For fast and simple testing/development deployment, you can use the prepared
 Vagrantfiles for instantiating virtual machine. More information can be found
 [here](./vagrant/).
@@ -56,7 +57,28 @@ Vagrantfiles for instantiating virtual machine. More information can be found
 
 ```bash
 docker build -t netopeer2-gui .
-docker run --rm -p 4200:4200 --name netopeer2-gui netopeer2-gui
+docker run -d --rm -p 4200:4200 --name netopeer2-gui netopeer2-gui
 # Start a netconf server also
-docker run --rm --name sysrepo -p 830:830 sysrepo/sysrepo-netopeer2:latest
+docker run -d --rm --name sysrepo -p 830:830 sysrepo/sysrepo-netopeer2:latest
+# Capture IP of container:
+docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' sysrepo
+```
+
+Connect to web client [localhost:4200](localhost:4200)
+Login, then add device:
+  - IP of sysrepo container: netconf/netconf
+
+## Docker-compose
+
+```bash
+docker build -t netopeer2-gui .
+docker-compose up
+```
+
+Connect to web client [localhost:4200](localhost:4200)
+Login, then add device:
+  - sysrepo:netconf/netconf
+
+```bash
+docker-compose down
 ```

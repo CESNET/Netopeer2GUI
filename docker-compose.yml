@@ -1,0 +1,11 @@
+version: '3.3'
+
+services:
+  sysrepo:
+    image: sysrepo/sysrepo-netopeer2:latest
+    ports:
+      - "830:830"
+  netopeer2-gui:
+    image: netopeer2-gui
+    ports:
+      - "4200:4200"
