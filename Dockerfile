@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:16.04 as builder
 
 MAINTAINER mislav.novakovic@sartura.hr
 
@@ -40,27 +40,41 @@ RUN \
 # libyang
       git clone -b devel https://github.com/CESNET/libyang.git && \
       cd libyang && mkdir build && cd build && \
-      cmake -DCMAKE_BUILD_TYPE:String="Release" -DENABLE_BUILD_TESTS=OFF .. && \
+      cmake -DGEN_LANGUAGE_BINDINGS=ON -DCMAKE_BUILD_TYPE:String="Release" -DENABLE_BUILD_TESTS=OFF .. && \
       make -j2 && \
       make install && \
-      ldconfig && \
-      cd /opt/dev && \
+      ldconfig
+RUN \
 # libssh
       git clone http://git.libssh.org/projects/libssh.git && \
       cd libssh && mkdir build && cd build && \
       cmake .. && \
       make -j2 && \
       make install && \
-      ldconfig && \
-      cd /opt/dev && \
+      ldconfig
+RUN \
 # libnetconf2
       git clone -b devel https://github.com/CESNET/libnetconf2.git && \
       cd libnetconf2 && mkdir build && cd build && \
-      cmake -DCMAKE_BUILD_TYPE:String="Release" -DENABLE_BUILD_TESTS=OFF .. && \
-      make -j2 && \
+      cmake -DENABLE_PYTHON=ON -DENABLE_BUILD_TESTS=OFF .. && \
+      make && \
       make install && \
       ldconfig && \
       cd /opt/dev
+
+# FROM node:9.8-wheezy
+# RUN \
+#       apt-get update && apt-get install -y \
+#       # general tools
+#       openssh-client \
+#       git \
+#       vim \
+#       supervisor \
+#       # GUI 
+#       curl \
+#       python3 \
+#       python3-flask \
+#       python3-pip
 
 RUN git clone -b devel https://github.com/CESNET/liberouter-gui.git
 
@@ -78,7 +92,7 @@ RUN \
 WORKDIR /opt/dev/liberouter-gui/frontend
 
 ENV EDITOR vim
-EXPOSE 830 4200
+EXPOSE 4200
 
 COPY supervisord.conf /etc/supervisord.conf
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
