@@ -1,7 +1,5 @@
 FROM node:9.8.0-alpine
 
-MAINTAINER mislav.novakovic@sartura.hr
-
 RUN \
       apk update && apk add git python3 && \
       # Clean-up
