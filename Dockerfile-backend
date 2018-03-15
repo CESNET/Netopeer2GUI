@@ -1,4 +1,4 @@
-FROM ubuntu:16.04
+FROM ubuntu:16.04 as builder
 
 MAINTAINER mislav.novakovic@sartura.hr
 
@@ -10,7 +10,6 @@ RUN \
       cmake \
       build-essential \
       vim \
-      supervisor \
       # libyang
       libpcre3-dev \
       pkg-config \
@@ -70,15 +69,8 @@ RUN \
     cd liberouter-gui && \
     python3 ./bootstrap.py && \
     pip3 install --upgrade pip && \
-    pip3 install -r backend/requirements.txt && \
-    cd frontend && \
-    npm install --unsafe-perm -g @angular/cli && \
-    npm install --unsafe-perm
+    pip3 install -r backend/requirements.txt
 
-WORKDIR /opt/dev/liberouter-gui/frontend
+EXPOSE 5555
 
-ENV EDITOR vim
-EXPOSE 4200
-
-COPY supervisord.conf /etc/supervisord.conf
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+CMD ["python3", "/opt/dev/liberouter-gui/backend/"]

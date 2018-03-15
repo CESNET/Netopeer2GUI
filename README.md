@@ -60,7 +60,7 @@ docker build -t netopeer2-gui .
 docker run -d --rm -p 4200:4200 --name netopeer2-gui netopeer2-gui
 # Start a netconf server also
 docker run -d --rm --name sysrepo -p 830:830 sysrepo/sysrepo-netopeer2:latest
-# Capture IP of container:
+# Capture IP of sysrepo container:
 docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' sysrepo
 ```
 
@@ -71,7 +71,8 @@ Login, then add device:
 ## Docker-compose
 
 ```bash
-docker build -t netopeer2-gui .
+docker build -t backend -f Dockerfile-backend .
+docker build -t frontend -f Dockerfile-frontend .
 docker-compose up
 ```
 

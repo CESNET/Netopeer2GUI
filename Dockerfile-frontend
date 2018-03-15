@@ -1,0 +1,31 @@
+FROM node:9.8.0-alpine
+
+MAINTAINER mislav.novakovic@sartura.hr
+
+RUN \
+      apk update && apk add git python3 && \
+      # Clean-up
+      rm -rf /var/lib/apt/lists/* && \
+      git config --global http.sslVerify false
+
+# use /opt/dev as working directory
+RUN mkdir /opt/dev
+WORKDIR /opt/dev
+
+RUN git clone -b devel https://github.com/CESNET/liberouter-gui.git
+
+COPY modules/ /opt/dev/liberouter-gui/modules/
+COPY liberouter-gui/frontend/proxy.json /opt/dev/liberouter-gui/frontend/
+
+RUN \
+    cd liberouter-gui && \
+    python3 ./bootstrap.py && \    
+    cd frontend && \
+    npm install --unsafe-perm -g @angular/cli && \
+    npm install --unsafe-perm
+
+WORKDIR /opt/dev/liberouter-gui/frontend
+
+EXPOSE 4200
+
+CMD ["/usr/local/bin/ng", "serve", "--preserve-symlinks", "--host", "0.0.0.0", "--proxy", "proxy.json"]
