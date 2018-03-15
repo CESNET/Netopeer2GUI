@@ -54,6 +54,9 @@ Vagrantfiles for instantiating virtual machine. More information can be found
 
 ## Docker
 
-docker build -t netopeer2 -f docker/full/Dockerfile .
-
-docker build -t netopeer2 -f docker/ui/Dockerfile .
+```bash
+docker build -t netopeer2-gui .
+docker run --rm -p 4200:4200 --name netopeer2-gui netopeer2-gui
+# Start a netconf server also
+docker run --rm --name sysrepo -p 830:830 sysrepo/sysrepo-netopeer2:latest
+```

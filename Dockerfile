@@ -14,9 +14,6 @@ RUN \
       # libyang
       libpcre3-dev \
       pkg-config \
-      # netopeer2 \
-      libssh-dev \
-      libssl-dev \
       # bindings
       swig \
       python-dev \
@@ -83,5 +80,5 @@ WORKDIR /opt/dev/liberouter-gui/frontend
 ENV EDITOR vim
 EXPOSE 830 4200
 
-COPY ./docker/ui/supervisord.conf /etc/supervisord.conf
+COPY supervisord.conf /etc/supervisord.conf
 CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
