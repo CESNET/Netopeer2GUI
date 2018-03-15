@@ -8,22 +8,32 @@ import { Schema } from '../inventory/schema';
 
 @Injectable()
 export class SchemasService {
-    public schemas;
+    public schemas: Schema[];
     public activeSchema: string;
 
     constructor( private http: Http ) {
         this.loadSchemas();
         this.activeSchema = localStorage.getItem('activeSchema');
         if (!this.schemas) {
-            this.schemas = {};
+            this.schemas = null;
         }
         if (!this.activeSchema) {
             this.activeSchema = "";
+        } else if (!(this.activeSchema in this.schemas)) {
+            if (this.schemas.length) {
+                this.activeSchema = this.schemas[0]['name'];
+            } else {
+                this.activeSchema = "";
+            }
         }
     }
 
     storeSchemas() {
-        localStorage.setItem('schemas', JSON.stringify(this.schemas));
+        if (this.schemas) {
+            localStorage.setItem('schemas', JSON.stringify(this.schemas));
+        } else {
+            localStorage.removeItem('schemas');
+        }
     }
 
     loadSchemas() {
@@ -81,7 +91,6 @@ export class SchemasService {
             let options = new RequestOptions({ search: params });
             this.http.get('/netopeer/inventory/schema', options)
                 .map((resp: Response) => resp.json()).toPromise().then(result => {
-                    console.log(result)
                     if (result['success']) {
                         schema['data'] = result['data'];
                         this.storeSchemas();

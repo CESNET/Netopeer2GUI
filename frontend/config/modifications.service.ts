@@ -135,7 +135,7 @@ export class ModificationsService {
             case 'bits':
             case 'enumeration':
                 waiting = true;
-                this.sessionsService.schemaValues(activeSession.key, node['info']['path']).then(result => {
+                this.sessionsService.schemaValues(activeSession.key, node).then(result => {
                     if (result['success']) {
                         node['info']['values'] = result['data'];
                     }
@@ -146,6 +146,7 @@ export class ModificationsService {
                 node['info']['values'] = ['true', 'false'];
                 break;
             }
+            /* TODO instance identifiers, leafrefs */
         }
         if (!waiting) {
             node['edit'] = set;
@@ -331,10 +332,10 @@ export class ModificationsService {
      */
     createOpen(activeSession: Session, schemas: string[], node: Node): void {
         //console.trace();
-        if (schemas.length) {
-            node['schemaChildren'] = schemas;
-            node['creatingChild'] = {};
+        node['schemaChildren'] = schemas;
+        node['creatingChild'] = {};
 
+        if (schemas.length) {
             let children = this.treeService.childrenToShow(node);
             if (children.length) {
                 let last = children[children.length - 1];
@@ -482,7 +483,7 @@ export class ModificationsService {
 
             newNode['children'] = [];
             /* open creation dialog for nodes inside the created container */
-            this.sessionsService.childrenSchemas(activeSession.key, newNode['info']['path'], newNode).then(result => {
+            this.sessionsService.childrenSchemas(activeSession.key, newNode).then(result => {
                 this.createOpen(activeSession, result, newNode);
             });
             break;
@@ -532,7 +533,7 @@ export class ModificationsService {
             }
             newNode['children'] = [];
             /* open creation dialog for nodes inside the created list */
-            this.sessionsService.childrenSchemas(activeSession.key, newNode['info']['path'], newNode).then(result => {
+            this.sessionsService.childrenSchemas(activeSession.key, newNode).then(result => {
                 if (result && result.length) {
                     this.createOpen(activeSession, result, newNode);
                 }
@@ -893,7 +894,7 @@ export class ModificationsService {
         }
 
         //console.log(JSON.stringify(activeSession.modifications));
-        return this.sessionsService.commit(activeSession.key).then(result => {
+        return this.sessionsService.commit(activeSession).then(result => {
             if (result['success']) {
                 delete activeSession.modifications;
             } else {

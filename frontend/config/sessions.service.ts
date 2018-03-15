@@ -7,7 +7,7 @@ import 'rxjs/add/operator/do';
 
 import { TreeService } from './tree.service';
 import { Device } from '../inventory/device';
-import { Session } from './session';
+import { Session, Node, NodeSchema } from './session';
 
 /**
  * Service to control NETCONF sessions.
@@ -255,9 +255,21 @@ export class SessionsService {
         }
     }
 
-    checkValue(key: string, path: string, value: string): Observable<string[]> {
+    /**
+     * Backend request to check validity of the value for the specified node.
+     *
+     * Accesses backend REST API GET:/netopeer/session/schema/checkvalue
+     *
+     * TODO check keys, uniques
+     *
+     * @param sessionKey Session identifier.
+     * @param path Schema path of the node to check
+     * @param value Value of the node to be checked
+     * @returns Observable
+     */
+    checkValue(sessionKey: string, path: string, value: string): Observable<string[]> {
         let params = new URLSearchParams();
-        params.set('key', key);
+        params.set('key', sessionKey);
         params.set('path', path);
         params.set('value', value);
         let options = new RequestOptions({ search: params });
@@ -266,44 +278,73 @@ export class SessionsService {
             .catch((err: Response | any) => Observable.throw(err));
     }
 
-    private filterSchemas(node, schemas) {
-        if (node['deleted'] || (node['info']['type'] & 0x18)) {
-            /* ignore deleted nodes and nodes that can be instantiated multiple times */
-            return;
-        }
-        for (let index in schemas) {
-            if (!schemas[index]['config'] ||
-                    (schemas[index]['name'] == node['info']['name'] && schemas[index]['module'] == node['info']['module'])) {
-                /* 1. read-only node */
-                /* 2. the node is already instantiated */
+    /**
+     * Filter given schemas list by the information about the node's children.
+     * Only the schemas which can be instantiated as child of node are kept
+     * in the list.
+     *
+     * TODO check max-instances
+     *
+     * @param parent Parent node to fit the children schemas list.
+     * @param schemas Schemas list to be reduced.
+     */
+    private filterSchemas(parent: Node, schemas: NodeSchema[]): void {
+        for (let index = schemas.length - 1; index >= 0; index--) {
+            if (schemas[index]['type'] & 0x18) {
+                /* schema nodes that can be instantiated multiple times
+                 * - lists and leaf-lists */
+                continue;
+            }
+            if (!schemas[index]['config']) {
+                /* read-only nodes cannot be instantiated */
                 schemas.splice(index, 1);
+                continue
+            }
+            /* try to find existing instance */
+            let children;
+            if (('children' in parent) && 'newChildren' in parent) {
+                children = parent['children'].concat(parent['newChildren']);
+            } else if ('children' in parent) {
+                children = parent['children'];
+            } else {
+                children = parent['newChildren'];
+            }
+            for (let item of children) {
+                if (parent['deleted']) {
+                    continue;
+                }
+                if (schemas[index]['name'] == item['info']['name'] && schemas[index]['module'] == item['info']['module']) {
+                    /* node is already instantiated */
+                    schemas.splice(index, 1);
+                    break;
+                }
             }
         }
     }
 
-    childrenSchemas(key: string, path: string, node = null) {
+    /**
+     * Backend request to get list of children schemas for the given node. The
+     * list is further filtered to remove nodes that cannot be created in the
+     * given node (e.g. because instance is already present).
+     *
+     * Accesses backend REST API GET:/netopeer/session/schema
+     *
+     * @param sessionKey Session identifier.
+     * @param node Node, whose children schema should be obtained.
+     * @returns Promise
+     */
+    childrenSchemas(sessionKey: string, node: Node): Promise<string[]> {
         let params = new URLSearchParams();
-        params.set('key', key);
-        params.set('path', path);
+        params.set('key', sessionKey);
+        params.set('path', node['info']['path']);
         params.set('relative', 'children');
         let options = new RequestOptions({ search: params });
         return this.http.get('/netopeer/session/schema', options)
             .map((resp: Response) => {
                 let result = resp.json();
                 //console.log(result)
-                if (result['success'] && node) {
-                    if ('children' in node) {
-                        for (let iter of node['children']) {
-                            this.filterSchemas(iter, result['data']);
-                        }
-                    }
-                    if ('newChildren' in node) {
-                        for (let iter of node['newChildren']) {
-                            this.filterSchemas(iter, result['data']);
-                        }
-                    }
-                }
                 if (result['success']) {
+                    this.filterSchemas(node, result['data']);
                     return result['data'];
                 } else {
                     return [];
@@ -311,56 +352,72 @@ export class SessionsService {
             }).toPromise();
     }
 
-    schemaValues(key: string, path: string) {
+    /**
+     * Backend request to get list of values for the specific schema node.
+     *
+     * TODO in case of leaf-list check values of siblings
+     *
+     * Accesses backend REST API GET:/netopeer/session/schema/values
+     *
+     * @param sessionKey Session identifier.
+     * @param node Node, whose possible values should be obtained.
+     * @returns Promise
+     */
+    schemaValues(sessionKey: string, node: Node): Promise<any> {
         let params = new URLSearchParams();
-        params.set('key', key);
-        params.set('path', path);
+        params.set('key', sessionKey);
+        params.set('path', node['info']['path']);
         let options = new RequestOptions({ search: params });
         return this.http.get('/netopeer/session/schema/values', options)
             .map((resp: Response) => resp.json()).toPromise();
     }
 
-    alive(key: string): Promise<string[]> {
+    /**
+     * Backend request to check if the session is still alive.
+     *
+     * Accesses backend REST API GET:/netopeer/session/alive
+     *
+     * @param sessionKey Session identifier.
+     * @returns Promise
+     */
+    alive(sessionKey: string): Promise<string[]> {
         let params = new URLSearchParams();
-        params.set('key', key);
+        params.set('key', sessionKey);
         let options = new RequestOptions({ search: params });
         return this.http.get('/netopeer/session/alive', options)
             .map((resp: Response) => resp.json()).toPromise();
     }
 
-    getCpblts(key: string): Observable<string[]> {
+    /**
+     * Backend request to get the list of NETCONF capabilities of the session.
+     *
+     * Accesses backend REST API GET:/netopeer/session/capabilities
+     *
+     * @param sessionKey Session identifier.
+     * @returns Observable
+     */
+    getCpblts(sessionKey: string): Observable<string[]> {
         let params = new URLSearchParams();
-        params.set('key', key);
+        params.set('key', sessionKey);
         let options = new RequestOptions({ search: params });
         return this.http.get('/netopeer/session/capabilities', options)
             .map((resp: Response) => resp.json())
             .catch((err: Response | any) => Observable.throw(err));
     }
 
-    setDirty(node) {
-        let activeSession = this.getSession();
-        if (!activeSession.modifications) {
-            return;
-        }
-
-        if (node['path'] in activeSession.modifications) {
-            node['dirty'] = true;
-            if (activeSession.modifications[node['path']]['type'] == 'change') {
-                activeSession.modifications[node['path']]['original'] = node['value'];
-            }
-            node['value'] = activeSession.modifications[node['path']]['value']; 
-        }
-        /* recursion */
-        if ('children' in node) {
-            for (let child of node['children']) {
-                this.setDirty(child);
-            }
-        }
-    }
-
-    rpcGetSubtree(key: string, all: boolean, path: string = ""): Observable<string[]> {
+    /**
+     * Backend request to get running data.
+     *
+     * Accesses backend REST API GET:/netopeer/session/rpcGet
+     *
+     * @param sessionKey Session identifier.
+     * @param all Flag to get whole subtree or only one level of children
+     * @param path Optional path to get the selected subtree of data.
+     * @returns Observable
+     */
+    rpcGetSubtree(sessionKey: string, all: boolean, path: string = ""): Observable<string[]> {
         let params = new URLSearchParams();
-        params.set('key', key);
+        params.set('key', sessionKey);
         params.set('recursive', String(all));
         if (path.length) {
             params.set('path', path);
@@ -371,40 +428,65 @@ export class SessionsService {
                 console.log(resp);
                 let result = resp.json();
                 if (!result['success']) {
-                    this.checkSession(key);
+                    this.checkSession(sessionKey);
                 }
                 return result;
             })
             .catch((err: Response | any) => Observable.throw(err));
     }
 
-    rpcGet(activeSession: Session, all: boolean) {
-        activeSession.loading = true;
-        delete activeSession.data;
-        this.rpcGetSubtree( activeSession.key, all ).subscribe( result => {
+    /**
+     * Backend request to get complete running data. The returned data are
+     * connected with the provided session.
+     *
+     * Accesses backend REST API GET:/netopeer/session/rpcGet via rpcGetSubtree()
+     *
+     * @param session Session to work with.
+     * @param all Flag to get whole subtree or only one level of children
+     */
+    rpcGet(session: Session, all: boolean): void {
+        session.loading = true;
+        delete session.data;
+        this.rpcGetSubtree( session.key, all ).subscribe( result => {
             if ( result['success'] ) {
                 for ( let iter of result['data'] ) {
-                    this.treeService.setDirty( activeSession, iter );
+                    this.treeService.setDirty( session, iter );
                 }
-                activeSession.data = {};
-                activeSession.data['path'] = '/';
-                activeSession.data['info'] = {};
-                activeSession.data['info']['config'] = true;
-                activeSession.data['info']['path'] = '/';
-                activeSession.data['children'] = result['data'];
+                session.data = {};
+                session.data['path'] = '/';
+                session.data['info'] = {};
+                session.data['info']['config'] = true;
+                session.data['info']['path'] = '/';
+                session.data['children'] = result['data'];
             }
-            activeSession.loading = false;
+            session.loading = false;
             this.storeSessions();
         } );
     }
 
-    commit(key: string) {
-        let activeSession = this.getSession(key);
-        let options = new RequestOptions({body: JSON.stringify({'key': key, 'modifications': activeSession.modifications})});
+    /**
+     * Backend request to apply configuration changes.
+     *
+     * Accesses backend REST API POST:/netopeer/session/commit
+     *
+     * @param session Session to work with.
+     * @returns Backend's response as json in Promise.
+     */
+    commit(session: Session): Promise<any> {
+        let options = new RequestOptions({body: JSON.stringify({'key': session.key, 'modifications': session.modifications})});
         return this.http.post('/netopeer/session/commit', null, options)
             .map((resp: Response) => resp.json()).toPromise();
     }
 
+    /**
+     * Backend request to close NETCONF session. Internally handles maintenance
+     * of the sessions list and selects activeSession if necessary.
+     *
+     * Accesses backend REST API DELETE:/netopeer/session
+     *
+     * @param key Session identifier.
+     * @returns Backend's response as JSON in Observable.
+     */
     close(key: string) {
         let params = new URLSearchParams();
         params.set('key', key);
@@ -431,6 +513,14 @@ export class SessionsService {
             .catch((err: Response | any) => Observable.throw(err));
     }
 
+    /**
+     * Backend request to create NETCONF session to the specified device.
+     * Internally handles maintenance of the sessions list and activeSession value.
+     *
+     * Accesses backend REST API POST:/netopeer/session
+     *
+     * @param dev NETCONF device to connect to.
+     */
     connect(dev: Device) {
         let options = null; // = new RequestOptions({body: JSON.stringify({'id': dev.id})});
         if (dev.id) {
