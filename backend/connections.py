@@ -282,7 +282,7 @@ def session_commit():
 	session = auth.lookup(request.headers.get('Authorization', None))
 	user = session['user']
 
-	req = request.get_json()
+	req = request.get_json(keep_order = True)
 	if not 'key' in req:
 		return(json.dumps({'success': False, 'error-msg': 'Missing session key.'}))
 	if not 'modifications' in req:
