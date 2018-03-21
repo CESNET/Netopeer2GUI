@@ -19,9 +19,9 @@ export class ConfigComponent implements OnInit {
     err_msg = "";
     commit_error = [];
 
-    constructor(private sessionsService: SessionsService,
-                private modsService: ModificationsService,
-                private treeService: TreeService,
+    constructor(public sessionsService: SessionsService,
+                public modsService: ModificationsService,
+                public treeService: TreeService,
                 private router: Router) {}
 
     addSession() {

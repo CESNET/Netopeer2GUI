@@ -52,7 +52,7 @@ export class TreeCreate {
     @Input() indentation;
     @Input() activeSession: Session;
 
-    constructor(private modsService: ModificationsService, private sessionsService: SessionsService) {}
+    constructor(public modsService: ModificationsService, public sessionsService: SessionsService) {}
 
     closeCreatingDialog(node, abort:boolean = true) {
         this.modsService.createClose(this.activeSession, node, abort);
@@ -77,9 +77,9 @@ export class TreeEdit {
     @Input() indentation;
     @Input() activeSession: Session;
 
-    constructor(private treeService: TreeService,
-                private modsService: ModificationsService,
-                private sessionsService: SessionsService) {}
+    constructor(public treeService: TreeService,
+                public modsService: ModificationsService,
+                public sessionsService: SessionsService) {}
 
     changeValueCancel(node) {
         if ('value' in node) {
@@ -165,15 +165,14 @@ export class TreeEdit {
 })
 export class TreeIndent implements OnInit {
     @Input() node;
-    @Input() value;
     @Input() indentation;
     @Input() type;
     activeSession: Session;
     private timeout;
 
-    constructor(private treeService: TreeService,
-                private modsService: ModificationsService,
-                private sessionsService: SessionsService) {}
+    constructor(public treeService: TreeService,
+                public modsService: ModificationsService,
+                public sessionsService: SessionsService) {}
 
     ngOnInit(): void {
         this.activeSession = this.sessionsService.getSession();
@@ -265,7 +264,7 @@ export class TreeIndent implements OnInit {
     selector: 'tree-leaflist-value',
     template: `
         <div class="node yang-leaflist-value" [class.dirty]="node['dirty']" [class.deleted]="modsService.isDeleted(node, true)">
-            <tree-indent [node]="node" [indentation]="treeService.inheritIndentation(indentation, node)" [type]="'value'" [value]="value"></tree-indent>
+            <tree-indent [node]="node" [indentation]="treeService.inheritIndentation(indentation, node)" [type]="'value'"></tree-indent>
             <div class="value_standalone">{{node['value']}}</div>
         </div>
         <tree-edit *ngIf="node['edit']" [node]="node" [indentation]="indentation" [activeSession]="activeSession"></tree-edit>`,
@@ -277,8 +276,8 @@ export class TreeLeaflistValue {
     @Input() activeSession: Session;
     @Input() indentation;
 
-    constructor(private modsService: ModificationsService,
-                private treeService: TreeService) {}
+    constructor(public modsService: ModificationsService,
+                public treeService: TreeService) {}
 }
 
 @Component({
@@ -292,10 +291,10 @@ export class TreeNode {
     @Input() indentation;
     @Input() activeSession: Session;
 
-    constructor(private modsService: ModificationsService,
-                private sessionsService: SessionsService,
-                private treeService: TreeService,
-                private schemasService: SchemasService,
+    constructor(public modsService: ModificationsService,
+                public sessionsService: SessionsService,
+                public treeService: TreeService,
+                public schemasService: SchemasService,
                 private changeDetector: ChangeDetectorRef,
                 private router: Router) {}
 
@@ -371,9 +370,9 @@ export class TreeView implements OnInit {
     @Input() indentation;
     activeSession: Session;
 
-    constructor(private modsService: ModificationsService,
-                private sessionsService: SessionsService,
-                private treeService: TreeService) {}
+    constructor(public modsService: ModificationsService,
+                public sessionsService: SessionsService,
+                public treeService: TreeService) {}
 
     ngOnInit(): void {
         this.activeSession = this.sessionsService.getSession();

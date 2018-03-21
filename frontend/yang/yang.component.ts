@@ -14,8 +14,7 @@ export class YANGComponent {
     title = 'YANG Explorer';
     test = null;
 
-    constructor( private schemasService: SchemasService,
-        private router: Router ) { }
+    constructor(public schemasService: SchemasService, private router: Router ) { }
 
     addSchema() {
         this.router.navigateByUrl( '/netopeer/inventory/schemas' );
