@@ -1,0 +1,60 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+$init = <<SCRIPT
+sh -c "echo 'deb http://download.opensuse.org/repositories/home:/liberouter/xUbuntu_16.04/ /' > /etc/apt/sources.list.d/home:liberouter.list"
+wget -nv https://download.opensuse.org/repositories/home:liberouter/xUbuntu_16.04/Release.key -O Release.key
+sudo apt-key add - < Release.key
+apt-get update -y
+apt-get upgrade -y
+apt-get install -y python3-pip python3-flask 
+apt-get install -y virtualenv
+apt-get install -y apache2 libapache2-mod-wsgi-py3
+SCRIPT
+
+$libyang = <<SCRIPT
+apt-get install -y libyang-experimental python3-yang-experimental
+SCRIPT
+
+$libnetconf2 = <<SCRIPT
+apt-get install -y libnetconf2-experimental python3-netconf2-experimental
+SCRIPT
+
+$setup = <<SCRIPT
+wget https://github.com/CESNET/Netopeer2GUI/releases/download/0.1/ncgui.tgz
+tar -xzf ncgui.tgz
+cp /home/vagrant/shared/ncgui.conf /etc/apache2/sites-available/
+a2enmod rewrite
+a2dissite 000-default.conf
+a2ensite ncgui.conf
+ln -s /home/vagrant/ncgui /var/www/html/ncgui
+cd /var/www/html/ncgui/backend
+/home/vagrant/shared/setvenv.sh
+cp /home/vagrant/shared/lgui-config.ini /var/www/html/ncgui/backend/config.ini
+cp /home/vagrant/shared/netopeer-config.ini /var/www/html/ncgui/backend/liberouterapi/modules/netopeer/config.ini
+service apache2 restart
+SCRIPT
+
+Vagrant::DEFAULT_SERVER_URL.replace('https://vagrantcloud.com')
+Vagrant.configure("2") do |config|
+  config.vm.provider :virtualbox do |vb|
+    vb.customize ["modifyvm", :id, "--memory", "1024"]
+    vb.customize ["modifyvm", :id, "--cpus", "2"]
+    vb.customize ["modifyvm", :id, "--hwvirtex", "on"]
+    vb.customize ["modifyvm", :id, "--audio", "none"]
+    vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
+  end
+
+  config.vm.define "Netopeer2GUI" do |gui|
+    gui.vm.synced_folder ".", "/home/vagrant/shared", create: true
+    gui.vm.box = "ubuntu/xenial64"
+    gui.vm.network "forwarded_port", host: "8080", guest: "80", auto_correct: true
+    gui.vm.network "forwarded_port", host: "8443", guest: "443", auto_correct: true
+    gui.ssh.shell = "sh"
+
+    gui.vm.provision :shell, inline: $init
+    gui.vm.provision :shell, inline: $libyang
+    gui.vm.provision :shell, inline: $libnetconf2
+    gui.vm.provision :shell, inline: $setup
+  end
+end
