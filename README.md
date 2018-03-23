@@ -43,6 +43,8 @@ $ make
 # make install
 ```
 
+Or alternatively install binary packages of [libyang](https://software.opensuse.org//download.html?project=home%3Aliberouter&package=libyang-experimental) and libnetconf2(https://software.opensuse.org//download.html?project=home%3Aliberouter&package=libnetconf2-experimental).
+
 # Vagrant
 For fast and simple testing/development deployment, you can use the prepared
 Vagrantfiles for instantiating virtual machine. More information can be found
