@@ -17,7 +17,7 @@ $libyang = <<SCRIPT
 rm -rf libyang
 git clone -b devel https://github.com/CESNET/libyang.git
 cd libyang; mkdir build; cd build
-cmake -DGEN_LANGUAGE_BINDINGS=ON .. && make && make install
+CC=clang cmake -DGEN_LANGUAGE_BINDINGS=ON .. && make && make install
 cd ../..
 ldconfig
 SCRIPT
@@ -26,7 +26,7 @@ $libnetconf2 = <<SCRIPT
 rm -rf libnetconf2
 git clone -b devel https://github.com/CESNET/libnetconf2.git
 cd libnetconf2; mkdir build; cd build
-cmake -DENABLE_PYTHON=ON .. && make && make install
+CC=clang cmake -DENABLE_PYTHON=ON .. && make && make install
 cd ../..
 ldconfig
 SCRIPT
@@ -43,7 +43,7 @@ $sysrepo = <<SCRIPT
 rm -rf sysrepo
 git clone -b devel https://github.com/sysrepo/sysrepo.git
 cd sysrepo; mkdir build; cd build
-cmake -DGEN_LANGUAGE_BINDINGS=OFF .. && make && make install
+CC=clang cmake -DGEN_LANGUAGE_BINDINGS=OFF .. && make && make install
 cd ../..
 ldconfig
 SCRIPT
@@ -54,7 +54,7 @@ git clone -b devel-server https://github.com/CESNET/Netopeer2.git
 cd Netopeer2/keystored; mkdir build; cd build
 cmake .. && make && make install
 cd ../../server; mkdir build; cd build
-cmake .. && make && make install
+CC=clang cmake .. && make && make install
 cd ../../..
 chown -R vagrant:vagrant ./sysrepo/build/repository
 SCRIPT
