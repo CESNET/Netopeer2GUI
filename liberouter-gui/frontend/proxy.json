@@ -1,0 +1,12 @@
+{
+	"/libapi": {
+		"target": "http://liberouter-gui-backend:5555/",
+	  	"secure": false,
+	  	"pathRewrite" : {"/libapi" : ""}
+	},
+	"/virt/*": {
+		"target": "http://localhost:15555/",
+		"secure": false,
+		"pathRewrite": {"/virt" : ""}
+	}
+}

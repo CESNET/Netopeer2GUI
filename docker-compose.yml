@@ -1,0 +1,16 @@
+version: '3.3'
+
+services:
+  sysrepo:
+    image: sysrepo/sysrepo-netopeer2:latest
+    ports:
+      - "830:830"
+  netopeer2-gui:
+    image: frontend
+    ports:
+      - "4200:4200"
+  liberouter-gui-backend:
+    image: backend
+    ports:
+      - "5555:5555"
+      - "15555:15555"
