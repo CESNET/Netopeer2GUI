@@ -61,9 +61,9 @@ Vagrantfiles for instantiating virtual machine. More information can be found
 
 ```bash
 docker build -t netopeer2-gui .
-docker run -d --rm -p 4200:4200 --name netopeer2-gui netopeer2-gui
+docker run -d -p 4200:4200 --name netopeer2-gui netopeer2-gui
 # Start a netconf server also
-docker run -d --rm --name sysrepo -p 830:830 sysrepo/sysrepo-netopeer2:latest
+docker run -d --name sysrepo -p 830:830 sysrepo/sysrepo-netopeer2:latest
 # Capture IP of sysrepo container:
 docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' sysrepo
 ```
