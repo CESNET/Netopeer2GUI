@@ -16,6 +16,7 @@ n stable
 ln -fs /usr/local/bin/node /usr/bin/node
 ln -fs /usr/local/bin/npm /usr/bin/npm
 ln -fs /usr/local/bin/npx /usr/bin/npx
+ln -fs /bin/bash /bin/sh
 SCRIPT
 
 $libyang = <<SCRIPT
