@@ -56,6 +56,8 @@ def devices_list():
 	inventory_check(path)
 	devices = __devices_inv_load(path)
 	
+	for dev in devices['device']:
+		del dev['password']
 	return(json.dumps(devices['device']))
 
 @auth.required()
