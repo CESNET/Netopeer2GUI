@@ -1,4 +1,4 @@
-import { NgModule } from '@angular/core';
+import { NgModule, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Routes, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -28,6 +28,7 @@ import { PluginsComponent } from './plugins/plugins.component';
 
 import { SessionsService } from './config/sessions.service';
 import { SchemasService } from './yang/schemas.service';
+import { DevicesService } from './inventory/devices.service';
 import { TreeService } from './config/tree.service';
 
 const routes: Routes = [
@@ -117,6 +118,7 @@ const routes: Routes = [
   providers: [
     SessionsService,
     SchemasService,
+    DevicesService,
     TreeService
   ],
   entryComponents : [
@@ -124,3 +126,15 @@ const routes: Routes = [
   ]
 })
 export class NetopeerModule { }
+
+export class NetopeerModuleHooks {
+    constructor () { }
+
+    login() {
+        localStorage.setItem('netopeer-autoconnect', 'enabled');
+    }
+
+    logout() {
+        localStorage.removeItem('netopeer-autoconnect');
+    }
+}

@@ -1,6 +1,6 @@
 <nav #subnav id="subnav">
     <a *ngFor="let session of sessionsService.sessions" [class.active]="session.key == sessionsService.activeSession"
-        (click)="sessionsService.changeActiveSession(session.key)">{{session.device.hostname}}:{{session.device.port}}
+        (click)="sessionsService.changeActiveSession(session.key)">{{session.device.name}}
         <img *ngIf="session.key == sessionsService.activeSession"
             class="tab-icon tab-reload tab-action-first" src="assets/netopeer/icons/reload.svg"  alt="o" title="reload"
             onmouseover="this.src='assets/netopeer/icons/reload_active.svg'"

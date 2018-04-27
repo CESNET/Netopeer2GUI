@@ -6,6 +6,7 @@
         "name" : "netopeer",
         "file" : "netopeer.module.ts",
         "class" : "NetopeerModule",
+        "hooks" : "NetopeerModuleHooks",
         "frontend" : "frontend",
         "backend" : "backend",
         "assets" : "frontend-assets"

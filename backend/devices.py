@@ -75,7 +75,11 @@ def devices_add():
 		if dev['id'] == device['id']:
 			return (json.dumps({'success': False}))
 
-	device_json = {'id':device['id'], 'hostname':device['hostname'], 'port':device['port']}
+	device_json = {'id':device['id'],
+		'name':device['name'],
+		'hostname':device['hostname'],
+		'port':device['port'],
+		'autoconnect':device['autoconnect']}
 	if 'username' in device:
 		device_json['username'] = device['username']
 		if 'password' in device:

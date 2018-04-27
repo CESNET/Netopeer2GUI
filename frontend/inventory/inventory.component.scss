@@ -99,17 +99,18 @@ nav {
 .device-login {
 }
 
-.input_block {
-    display: inline-block;
-}
-
 .input_line {
-    display: block;
-    margin-right: 2em;
+    display: table-row;
 
-    input {
-        display: inline-block;
-        padding-left: 1em;
+    label, .input_label {
+        display: table-cell;
+        padding-right: 1em;
+    }
+
+    input, select, .input_data {
+        display: table-cell;
+        padding-left: 0.5em;
+        margin-right: 0.5em;
     }
 }
 
@@ -117,6 +118,10 @@ nav {
     display: inline-block;
     background-color: $colorFailure;
     color: $red;
+}
+
+.input_control {
+    padding-top: 1em;
 }
 
 form {
