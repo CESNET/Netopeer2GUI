@@ -15,7 +15,7 @@ export class SchemasService {
         this.loadSchemas();
         this.activeSchema = localStorage.getItem('activeSchema');
         if (!this.schemas) {
-            this.schemas = null;
+            this.schemas = [];
         }
         if (!this.activeSchema) {
             this.activeSchema = "";
