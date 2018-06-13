@@ -61,7 +61,7 @@ SCRIPT
 
 $liberoutergui = <<SCRIPT
 rm -rf liberouter-gui
-git clone -b devel https://github.com/CESNET/liberouter-gui.git
+git clone https://github.com/CESNET/liberouter-gui.git
 ln -s /home/vagrant/Netopeer2GUI liberouter-gui/modules/netopeer
 cd liberouter-gui
 cp -f modules/netopeer/app.config.json modules/
