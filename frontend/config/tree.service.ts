@@ -16,7 +16,7 @@ export class TreeService {
     }
 
     pathNode(activeSession: Session, path: string, type: string = 'node') {
-        let node = null
+        let node = null;
         let parent = null;
         let children = activeSession.data['children'];
         let newChildren = activeSession.data['newChildren'];
