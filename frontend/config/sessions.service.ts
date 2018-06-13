@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpParams } from '@angular/common/http'
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 import { catchError, tap, map } from 'rxjs/operators';
 import 'rxjs/add/operator/catch';
@@ -198,7 +198,6 @@ export class SessionsService {
             activeSession.data = null;
             delete backup['children'];
             activeSession.loading = true;
-            console.log('subscribing to rpcGetSubtree');
             this.rpcGetSubtree(activeSession.key, true).subscribe((result: object) => {
                 if (result['success']) {
                     for (let iter of result['data']) {
@@ -401,7 +400,6 @@ export class SessionsService {
      * @returns Observable
      */
     getCpblts(sessionKey: string): Observable<object> {
-        console.log("Getting capabilities");
         let params = new HttpParams()
                 .set('key', sessionKey);
         return this.http.get<object>('/netopeer/session/capabilities', { params: params })
