@@ -104,7 +104,8 @@ $netconf = <<SCRIPT
 /usr/local/bin/netopeer2-server -d > netopeer2.log 2>&1 &
 SCRIPT
 
-Vagrant::DEFAULT_SERVER_URL.replace('https://vagrantcloud.com')
+# uncomment the following line for vagrant < 2.0.0
+#Vagrant::DEFAULT_SERVER_URL.replace('https://vagrantcloud.com')
 Vagrant.configure("2") do |config|
   config.vm.provider :virtualbox do |vb|
     vb.customize ["modifyvm", :id, "--memory", "2048"]

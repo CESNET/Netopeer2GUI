@@ -13,6 +13,9 @@ Requirements
 - [Virtualbox](https://www.virtualbox.org/wiki/Downloads)
 - [Vagrant](http://www.vagrantup.com/downloads.html)
 
+In case you are using vagrant version < 2.0.0, you are supposed to uncomment
+a single line in Vagrant file to correct vagrant server URL.
+
 Running Netopeer2GUI in Vagrant
 -------------------------------
 
