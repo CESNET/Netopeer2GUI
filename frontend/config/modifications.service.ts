@@ -486,7 +486,7 @@ export class ModificationsService {
             newNode['children'] = [];
             /* open creation dialog for nodes inside the created container */
             this.sessionsService.childrenSchemas(activeSession.key, newNode).subscribe(result => {
-                this.createOpen(activeSession, result['data'], newNode);
+                this.createOpen(activeSession, result, newNode);
             });
             break;
         case 4: /* leaf */
@@ -495,7 +495,7 @@ export class ModificationsService {
             if ('default' in newNode['info']) {
                 newNode['value'] = newNode['info']['default'];
             }
-            this.setEdit(activeSession, newNode, true)
+            this.setEdit(activeSession, newNode, true);
             break;
         case 8: /* leaf-list */
             /* check number of instances, if first, mark this as the first leaf-list instance */
@@ -536,8 +536,8 @@ export class ModificationsService {
             newNode['children'] = [];
             /* open creation dialog for nodes inside the created list */
             this.sessionsService.childrenSchemas(activeSession.key, newNode).subscribe(result => {
-                if (result && result['data'].length) {
-                    this.createOpen(activeSession, result['data'], newNode);
+                if (result && result.length) {
+                    this.createOpen(activeSession, result, newNode);
                 }
 
                 for (let key of newNode['info']['keys']) {

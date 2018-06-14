@@ -3,7 +3,6 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
 import { catchError, tap, map } from 'rxjs/operators';
 import 'rxjs/add/operator/catch';
-import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/do';
 
 import { TreeService } from './tree.service';
@@ -12,7 +11,7 @@ import { Session, Node, NodeSchema } from './session';
 
 /**
  * Service to control NETCONF sessions.
- * 
+ *
  * The class maintain list of sessions by using localStorage.
  */
 @Injectable()
@@ -199,6 +198,7 @@ export class SessionsService {
             delete backup['children'];
             activeSession.loading = true;
             this.rpcGetSubtree(activeSession.key, true).subscribe((result: object) => {
+                console.log(result);
                 if (result['success']) {
                     for (let iter of result['data']) {
                         this.treeService.setDirty( activeSession, iter );
@@ -336,14 +336,15 @@ export class SessionsService {
      * @param node Node, whose children schema should be obtained.
      * @returns Observable
      */
-    childrenSchemas(sessionKey: string, node: Node): Observable<object> {
+    childrenSchemas(sessionKey: string, node: Node): Observable<NodeSchema[]> {
         let params = new HttpParams()
             .set('key', sessionKey)
             .set('path', node['info']['path'])
             .set('relative', 'children');
         return this.http.get<object>('/netopeer/session/schema', { params: params })
             .pipe(
-                tap((resp: object) => this.filterSchemas(node, resp['data']))
+                map((resp : NodeSchema[]) => resp['data']),
+                tap((resp: NodeSchema[]) => this.filterSchemas(node, resp['data']))
             );
         /*
         * map((resp: Response) => {
@@ -370,7 +371,7 @@ export class SessionsService {
      * @param node Node, whose possible values should be obtained.
      * @returns Observable
      */
-    schemaValues(sessionKey: string, node: Node): Observable<any> {
+    schemaValues(sessionKey: string, node: Node): Observable<object> {
         let params = new HttpParams()
                 .set('key', sessionKey)
                 .set('path', node['info']['path']);
@@ -452,6 +453,7 @@ export class SessionsService {
         delete session.data;
         this.rpcGetSubtree( session.key, all ).subscribe( result => {
             if ( result['success'] ) {
+              console.log(result);
                 for ( let iter of result['data'] ) {
                     this.treeService.setDirty( session, iter );
                 }
