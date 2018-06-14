@@ -198,7 +198,6 @@ export class SessionsService {
             delete backup['children'];
             activeSession.loading = true;
             this.rpcGetSubtree(activeSession.key, true).subscribe((result: object) => {
-                console.log(result);
                 if (result['success']) {
                     for (let iter of result['data']) {
                         this.treeService.setDirty( activeSession, iter );
