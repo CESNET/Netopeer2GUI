@@ -214,7 +214,7 @@ export class SessionsService {
             node['loading'] = true;
             this.rpcGetSubtree(activeSession.key, true, node['path']).subscribe(result => {
                 delete node['loading'];
-                if (result['success'] && result['data']['children'] !== undefined) {
+                if (result['success']) {
                     for (let iter of result['data']['children']){
                         this.treeService.setDirty(activeSession, iter);
                         if (!all) {
