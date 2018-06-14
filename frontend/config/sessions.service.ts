@@ -344,7 +344,7 @@ export class SessionsService {
         return this.http.get<object>('/netopeer/session/schema', { params: params })
             .pipe(
                 map((resp : NodeSchema[]) => resp['data']),
-                tap((resp: NodeSchema[]) => this.filterSchemas(node, resp['data']))
+                tap((resp: NodeSchema[]) => this.filterSchemas(node, resp))
             );
         /*
         * map((resp: Response) => {
@@ -453,7 +453,6 @@ export class SessionsService {
         delete session.data;
         this.rpcGetSubtree( session.key, all ).subscribe( result => {
             if ( result['success'] ) {
-              console.log(result);
                 for ( let iter of result['data'] ) {
                     this.treeService.setDirty( session, iter );
                 }
@@ -478,10 +477,7 @@ export class SessionsService {
      * @returns Backend's response as json in Promise.
      */
     commit(session: Session): Observable<any> {
-        let params = new HttpParams()
-            .set('key', session.key)
-            .set('modifications', session.modifications);
-        return this.http.post('/netopeer/session/commit', params)
+        return this.http.post('/netopeer/session/commit', {'key': session.key, 'modifications': session.modifications})
             .pipe(
                 catchError((err: any) => Observable.throw(err))
             );

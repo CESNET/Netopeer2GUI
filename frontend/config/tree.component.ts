@@ -230,7 +230,7 @@ export class TreeIndent implements OnInit {
         }
         if (!('creatingChild' in node)) {
             this.sessionsService.childrenSchemas(this.activeSession.key, node).subscribe(result => {
-                this.modsService.createOpen(this.activeSession, result['data'], node);
+                this.modsService.createOpen(this.activeSession, result, node);
             });
         } else if (element){
             /* scroll to the existing element */
