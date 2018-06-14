@@ -1,7 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { Observable } from 'rxjs/Observable'
-import { tap } from 'rxjs/operators'
+import { Observable } from 'rxjs/Observable';
+import { tap } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 import { Session, Node, NodeSchema } from './session';
 import { SessionsService } from './sessions.service';
@@ -810,9 +811,7 @@ export class ModificationsService {
             let err = this.resolveKeys(activeSession.modifications[mod]['data']);
             if (err) {
                 console.log(err);
-                return Observable.fromPromise(new Promise((resolve, reject) => {
-                    resolve({'success': false, 'error': [{'message': err}]})
-                }));
+                return of({'success': false, 'error': [{'message': err}]});
             }
         }
 
