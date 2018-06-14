@@ -215,8 +215,8 @@ export class SessionsService {
             node['loading'] = true;
             this.rpcGetSubtree(activeSession.key, true, node['path']).subscribe(result => {
                 delete node['loading'];
-                if (result['success']) {
-                    for (let iter of result['data']){
+                if (result['success'] && result['data']['children'] !== undefined) {
+                    for (let iter of result['data']['children']){
                         this.treeService.setDirty(activeSession, iter);
                         if (!all) {
                             activeSession.treeFilters.push(iter['path']);
@@ -429,7 +429,7 @@ export class SessionsService {
 
         return this.http.get<object>('/netopeer/session/rpcGet', { params: params })
             .pipe(
-                tap( response => {
+                map( (response: object) => {
                     if( !response['success'] ) {
                         this.checkSession( sessionKey );
                     }
