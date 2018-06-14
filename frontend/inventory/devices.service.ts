@@ -1,32 +1,34 @@
 import { Injectable } from '@angular/core';
-import { Http, Response, RequestOptions } from '@angular/http';
+import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
-import 'rxjs/add/operator/catch';
-import 'rxjs/add/operator/map';
+import { catchError } from 'rxjs/operators';
 
 import { Device } from './device';
 
 @Injectable()
 export class DevicesService {
-    constructor(private http: Http) {}
+    constructor(private http: HttpClient) {}
 
   getDevices(): Observable<Device[]> {
-      return this.http.get('/netopeer/inventory/devices/list')
-          .map((resp: Response) => resp.json())
-          .catch((err: Response | any) => Observable.throw(err));
+      return this.http.get<Device[]>('/netopeer/inventory/devices/list')
+          .pipe(
+              catchError(err => Observable.throw(err))
+          );
   }
 
   addDevice(device: Device) {
-      let options = new RequestOptions({ body: JSON.stringify(device) });
-      return this.http.post('/netopeer/inventory/devices', null, options)
-          .map((resp: Response) => resp.json())
-          .catch((err: Response | any) => Observable.throw(err));
+      // let options = new HttpOptions({ body: JSON.stringify(device) });
+      return this.http.post<object>('/netopeer/inventory/devices', device)
+          .pipe(
+              catchError(err => Observable.throw(err))
+          );
   }
 
   rmDevice(device_id: number) {
-      let options = new RequestOptions({ body: JSON.stringify({'id':device_id}) });
-      return this.http.delete('/netopeer/inventory/devices', options)
-          .map((resp: Response) => resp.json())
-          .catch((err: Response | any) => Observable.throw(err));
+      // We need to use generic HTTP request, because HttpClient does not support body in DELETE requests.
+      return this.http.request('DELETE', '/netopeer/inventory/devices', { body: JSON.stringify({'id':device_id}) })
+          .pipe(
+              catchError(err => Observable.throw(err))
+          );
   }
 }

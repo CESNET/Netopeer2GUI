@@ -1,5 +1,6 @@
 import {Component, OnInit} from '@angular/core';
-import {Router} from '@angular/router';
+import { Router } from '@angular/router';
+import { Observable } from 'rxjs/Observable';
 
 import {TreeService} from './tree.service';
 import {ModificationsService} from './modifications.service';
@@ -195,14 +196,15 @@ export class ConfigComponent implements OnInit {
 
     applyChanges() {
         //console.log(JSON.stringify(this.activeSession.modifications))
-        this.modsService.applyModification(this.activeSession).then(result => {
+        this.modsService.applyModification(this.activeSession).subscribe(result => {
             if (result['success']) {
                 this.reloadData();
                 this.commit_error = [];
-            } else {
+            }
+            else {
                 this.commit_error = result['error'];
             }
-        })
+        });
     }
 
     ngOnInit(): void {

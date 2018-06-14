@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { Http, Headers, Response, RequestOptions, URLSearchParams } from '@angular/http';
+import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
+import { catchError } from "rxjs/operators";
 import 'rxjs/add/operator/catch';
 import 'rxjs/add/operator/map';
 
@@ -11,7 +12,7 @@ export class SchemasService {
     public schemas: Schema[];
     public activeSchema: string;
 
-    constructor( private http: Http ) {
+    constructor( private http: HttpClient ) {
         this.loadSchemas();
         this.activeSchema = localStorage.getItem('activeSchema');
         if (!this.schemas) {
@@ -28,7 +29,7 @@ export class SchemasService {
         }
     }
 
-    storeSchemas() {
+    storeSchemas(): void {
         if (this.schemas) {
             localStorage.setItem('schemas', JSON.stringify(this.schemas));
         } else {
@@ -36,11 +37,11 @@ export class SchemasService {
         }
     }
 
-    loadSchemas() {
+    loadSchemas(): void {
         this.schemas = JSON.parse(localStorage.getItem('schemas'));
     }
 
-    schemasKeys() {
+    schemasKeys(): object {
         if (this.schemas) {
             return Object.keys(this.schemas);
         }
@@ -72,9 +73,8 @@ export class SchemasService {
         return this.schemas[key];
     }
 
-    getSchemas() {
-        return this.http.get( '/netopeer/inventory/schemas' )
-            .map(( resp: Response ) => resp.json()).toPromise();
+    getSchemas(): Observable<object> {
+        return this.http.get( '/netopeer/inventory/schemas' );
     }
 
     show( key: string, schema: Schema) {
@@ -86,11 +86,10 @@ export class SchemasService {
         }
 
         if (!('data' in schema)) {
-            let params = new URLSearchParams();
-            params.set('key', key);
-            let options = new RequestOptions({ search: params });
-            this.http.get('/netopeer/inventory/schema', options)
-                .map((resp: Response) => resp.json()).toPromise().then(result => {
+            let params = new HttpParams()
+                .set('key', key);
+            this.http.get<object>('/netopeer/inventory/schema', {params: params})
+                .subscribe((result: object) => {
                     if (result['success']) {
                         schema['data'] = result['data'];
                         this.storeSchemas();
@@ -121,19 +120,20 @@ export class SchemasService {
     }
 
     addSchema( schema: File ) {
-        let headers = new Headers( { 'specific-content-type': '' } );
-        let options = new RequestOptions( { headers: headers } );
+        let headers = new HttpHeaders( { 'specific-content-type': '' } );
         let input = new FormData();
         input.append( "schema", schema );
-        return this.http.post( '/netopeer/inventory/schemas', input, options )
-            .map(( resp: Response ) => resp.json() )
-            .catch(( err: Response | any ) => Observable.throw( err ) );
+        return this.http.post<object>( '/netopeer/inventory/schemas', input, { headers: headers } )
+            .pipe(
+                catchError((err: any) => Observable.throwError(err))
+            )
     }
 
     rmSchema(key: string) {
-        let options = new RequestOptions( { body: JSON.stringify(key) } );
-        return this.http.delete( '/netopeer/inventory/schemas', options )
-            .map(( resp: Response ) => resp.json() )
-            .catch(( err: Response | any ) => Observable.throw( err ) );
+
+        return this.http.request('DELETE', '/netopeer/inventory/schemas', { body: JSON.stringify(key)})
+            .pipe(
+                catchError((err: any) => Observable.throwError(err))
+            )
     }
 }

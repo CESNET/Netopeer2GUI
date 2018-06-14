@@ -1,8 +1,8 @@
 import { Injectable } from '@angular/core';
-import { Http, Response, RequestOptions, URLSearchParams } from '@angular/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs/Observable';
+import { catchError, tap, map } from 'rxjs/operators';
 import 'rxjs/add/operator/catch';
-import 'rxjs/add/operator/map';
 import 'rxjs/add/operator/do';
 
 import { TreeService } from './tree.service';
@@ -11,7 +11,7 @@ import { Session, Node, NodeSchema } from './session';
 
 /**
  * Service to control NETCONF sessions.
- * 
+ *
  * The class maintain list of sessions by using localStorage.
  */
 @Injectable()
@@ -26,7 +26,7 @@ export class SessionsService {
      * @param http Handler to communicate with the backend.
      * @param treeService Handler to control data tree.
      */
-    constructor(private http: Http, private treeService: TreeService) {
+    constructor(private http: HttpClient, private treeService: TreeService) {
         this.activeSession = localStorage.getItem('activeSession');
         if (!this.activeSession) {
             this.activeSession = "";
@@ -99,7 +99,7 @@ export class SessionsService {
      * @param i Index of the session to check in the sessions list.
      */
     private checkSessionIndex(i: number): void {
-        this.alive(this.sessions[i].key).then(resp => {
+        this.alive(this.sessions[i].key).subscribe(resp => {
             if (!resp['success']) {
                 if (this.activeSession && this.sessions[i].key == this.activeSession) {
                     /* active session is not alive - select new active session
@@ -159,7 +159,7 @@ export class SessionsService {
                     activeSession.treeFilters.splice(Number(i) - 1, 1);
                 }
             }
-            activeSession.treeFilters.push(node['path'])
+            activeSession.treeFilters.push(node['path']);
             activeSession.dataPresence = 'mixed';
         } else {
             activeSession.treeFilters = [];
@@ -197,7 +197,7 @@ export class SessionsService {
             activeSession.data = null;
             delete backup['children'];
             activeSession.loading = true;
-            this.rpcGetSubtree(activeSession.key, true).subscribe(result => {
+            this.rpcGetSubtree(activeSession.key, true).subscribe((result: object) => {
                 if (result['success']) {
                     for (let iter of result['data']) {
                         this.treeService.setDirty( activeSession, iter );
@@ -215,7 +215,7 @@ export class SessionsService {
             this.rpcGetSubtree(activeSession.key, true, node['path']).subscribe(result => {
                 delete node['loading'];
                 if (result['success']) {
-                    for (let iter of result['data']['children']) {
+                    for (let iter of result['data']['children']){
                         this.treeService.setDirty(activeSession, iter);
                         if (!all) {
                             activeSession.treeFilters.push(iter['path']);
@@ -225,6 +225,7 @@ export class SessionsService {
                     this.treeService.updateHiddenFlags(activeSession);
                     delete node['subtreeRoot'];
                     activeSession.dataPresence = 'all';
+                    //console.log(activeSession);
                     for (let root of activeSession.data['children']) {
                         if ('subtreeRoot' in root) {
                             activeSession.dataPresence = 'mixed';
@@ -268,14 +269,15 @@ export class SessionsService {
      * @returns Observable
      */
     checkValue(sessionKey: string, path: string, value: string): Observable<string[]> {
-        let params = new URLSearchParams();
-        params.set('key', sessionKey);
-        params.set('path', path);
-        params.set('value', value);
-        let options = new RequestOptions({ search: params });
-        return this.http.get('/netopeer/session/schema/checkvalue', options)
-            .map((resp: Response) => resp.json())
-            .catch((err: Response | any) => Observable.throw(err));
+        let params = new HttpParams()
+            .set('key', sessionKey)
+            .set('path', path)
+            .set('value', value);
+        //let options = new RequestOptions();
+        return this.http.get<string[]>('/netopeer/session/schema/checkvalue', { params: params })
+            .pipe(
+                catchError(err => Observable.throw(err))
+            );
     }
 
     /**
@@ -331,16 +333,20 @@ export class SessionsService {
      *
      * @param sessionKey Session identifier.
      * @param node Node, whose children schema should be obtained.
-     * @returns Promise
+     * @returns Observable
      */
-    childrenSchemas(sessionKey: string, node: Node): Promise<string[]> {
-        let params = new URLSearchParams();
-        params.set('key', sessionKey);
-        params.set('path', node['info']['path']);
-        params.set('relative', 'children');
-        let options = new RequestOptions({ search: params });
-        return this.http.get('/netopeer/session/schema', options)
-            .map((resp: Response) => {
+    childrenSchemas(sessionKey: string, node: Node): Observable<NodeSchema[]> {
+        let params = new HttpParams()
+            .set('key', sessionKey)
+            .set('path', node['info']['path'])
+            .set('relative', 'children');
+        return this.http.get<object>('/netopeer/session/schema', { params: params })
+            .pipe(
+                map((resp : NodeSchema[]) => resp['data']),
+                tap((resp: NodeSchema[]) => this.filterSchemas(node, resp))
+            );
+        /*
+        * map((resp: Response) => {
                 let result = resp.json();
                 //console.log(result)
                 if (result['success']) {
@@ -350,6 +356,7 @@ export class SessionsService {
                     return [];
                 }
             }).toPromise();
+        * */
     }
 
     /**
@@ -361,15 +368,13 @@ export class SessionsService {
      *
      * @param sessionKey Session identifier.
      * @param node Node, whose possible values should be obtained.
-     * @returns Promise
+     * @returns Observable
      */
-    schemaValues(sessionKey: string, node: Node): Promise<any> {
-        let params = new URLSearchParams();
-        params.set('key', sessionKey);
-        params.set('path', node['info']['path']);
-        let options = new RequestOptions({ search: params });
-        return this.http.get('/netopeer/session/schema/values', options)
-            .map((resp: Response) => resp.json()).toPromise();
+    schemaValues(sessionKey: string, node: Node): Observable<object> {
+        let params = new HttpParams()
+                .set('key', sessionKey)
+                .set('path', node['info']['path']);
+        return this.http.get<object>('/netopeer/session/schema/values', { params: params });
     }
 
     /**
@@ -378,14 +383,12 @@ export class SessionsService {
      * Accesses backend REST API GET:/netopeer/session/alive
      *
      * @param sessionKey Session identifier.
-     * @returns Promise
+     * @returns Observable<string[]>
      */
-    alive(sessionKey: string): Promise<string[]> {
-        let params = new URLSearchParams();
-        params.set('key', sessionKey);
-        let options = new RequestOptions({ search: params });
-        return this.http.get('/netopeer/session/alive', options)
-            .map((resp: Response) => resp.json()).toPromise();
+    alive(sessionKey: string): Observable<string[]> {
+        let params = new HttpParams()
+            .set('key', sessionKey);
+        return this.http.get<string[]>('/netopeer/session/alive', { params: params });
     }
 
     /**
@@ -396,13 +399,13 @@ export class SessionsService {
      * @param sessionKey Session identifier.
      * @returns Observable
      */
-    getCpblts(sessionKey: string): Observable<string[]> {
-        let params = new URLSearchParams();
-        params.set('key', sessionKey);
-        let options = new RequestOptions({ search: params });
-        return this.http.get('/netopeer/session/capabilities', options)
-            .map((resp: Response) => resp.json())
-            .catch((err: Response | any) => Observable.throw(err));
+    getCpblts(sessionKey: string): Observable<object> {
+        let params = new HttpParams()
+                .set('key', sessionKey);
+        return this.http.get<object>('/netopeer/session/capabilities', { params: params })
+            .pipe(
+                catchError((err: any) => Observable.throw(err))
+            );
     }
 
     /**
@@ -415,24 +418,24 @@ export class SessionsService {
      * @param path Optional path to get the selected subtree of data.
      * @returns Observable
      */
-    rpcGetSubtree(sessionKey: string, all: boolean, path: string = ""): Observable<string[]> {
-        let params = new URLSearchParams();
-        params.set('key', sessionKey);
-        params.set('recursive', String(all));
-        if (path.length) {
-            params.set('path', path);
+    rpcGetSubtree(sessionKey: string, all: boolean, path: string = ""): Observable<object> { // <string[]>
+        let params = new HttpParams()
+                        .set('key', sessionKey)
+                        .set('recursive', all.toString());
+        if (path !== "") {
+            params = params.append('path', path);
         }
-        let options = new RequestOptions({ search: params });
-        return this.http.get('/netopeer/session/rpcGet', options)
-            .map((resp: Response) => {
-                console.log(resp);
-                let result = resp.json();
-                if (!result['success']) {
-                    this.checkSession(sessionKey);
-                }
-                return result;
-            })
-            .catch((err: Response | any) => Observable.throw(err));
+
+        return this.http.get<object>('/netopeer/session/rpcGet', { params: params })
+            .pipe(
+                map( (response: object) => {
+                    if( !response['success'] ) {
+                        this.checkSession( sessionKey );
+                    }
+                    return response;
+                }),
+                catchError((err: any) => Observable.throw(err))
+            );
     }
 
     /**
@@ -472,10 +475,12 @@ export class SessionsService {
      * @param session Session to work with.
      * @returns Backend's response as json in Promise.
      */
-    commit(session: Session): Promise<any> {
-        let options = new RequestOptions({body: JSON.stringify({'key': session.key, 'modifications': session.modifications})});
-        return this.http.post('/netopeer/session/commit', null, options)
-            .map((resp: Response) => resp.json()).toPromise();
+    commit(session: Session): Observable<any> {
+        return this.http.post('/netopeer/session/commit', {'key': session.key, 'modifications': session.modifications})
+            .pipe(
+                catchError((err: any) => Observable.throw(err))
+            );
+
     }
 
     /**
@@ -488,29 +493,28 @@ export class SessionsService {
      * @returns Backend's response as JSON in Observable.
      */
     close(key: string) {
-        let params = new URLSearchParams();
-        params.set('key', key);
-        let options = new RequestOptions({search: params});
-        return this.http.delete('/netopeer/session', options)
-            .map((resp: Response) => resp.json())
-            .do(resp => {
-                if (resp['success']) {
-                    let index = this.sessions.findIndex((s: Session) => s.key == key);
-                    this.sessions.splice(index, 1);
-                    if (key == this.activeSession) {
-                        if (index > 0) {
-                            this.activeSession = this.sessions[index - 1].key;
-                        } else if (this.sessions.length) {
-                            this.activeSession = this.sessions[0].key;
-                        } else {
-                            this.activeSession = ""
+        let params = new HttpParams()
+                .set('key', key);
+        // We need to use generic request, HttpClient.delete does not support sending params.
+        return this.http.request('DELETE', '/netopeer/session', { params: params })
+            .pipe(
+                tap(resp => {
+                    if (resp['success']) {
+                        let index = this.sessions.findIndex((s: Session) => s.key == key);
+                        this.sessions.splice(index, 1);
+                        if (key == this.activeSession) {
+                            if (index > 0) {
+                                this.activeSession = this.sessions[index - 1].key;
+                            } else if (this.sessions.length) {
+                                this.activeSession = this.sessions[0].key;
+                            } else {
+                                this.activeSession = ""
+                            }
                         }
                     }
-                    this.storeSessions();
-                    localStorage.setItem('activeSession', this.activeSession);
-                }
-            })
-            .catch((err: Response | any) => Observable.throw(err));
+                }),
+                catchError((err: any) => Observable.throw(err))
+            )
     }
 
     /**
@@ -522,22 +526,25 @@ export class SessionsService {
      * @param dev NETCONF device to connect to.
      */
     connect(dev: Device) {
-        let options = null; // = new RequestOptions({body: JSON.stringify({'id': dev.id})});
+
+        let body = {};
         if (dev.id) {
-            options = new RequestOptions({body: JSON.stringify({'id': dev.id})});
+            body = {'id': dev.id};
         } else {
-            options = new RequestOptions({body: JSON.stringify({'device': {'name': dev.name, 'hostname': dev.hostname, 'port': dev.port, 'username': dev.username, 'password': dev.password}})});
+            body = {'name': dev.name, 'hostname': dev.hostname, 'port': dev.port, 'username': dev.username, 'password': dev.password};
+            //options = new RequestOptions({body: JSON.stringify({'device': {'name': dev.name, 'hostname': dev.hostname, 'port': dev.port, 'username': dev.username, 'password': dev.password}})});
         }
-        return this.http.post('/netopeer/session', null, options)
-            .map((resp: Response) => resp.json())
-            .do(resp => {
-                if (resp['success']) {
-                    this.sessions.push(new Session(resp['session-key'], dev));
-                    this.activeSession = resp['session-key'];
-                    this.storeSessions();
-                    localStorage.setItem('activeSession', this.activeSession);
-                }
-            })
-            .catch((err: Response | any) => Observable.throw(err))
+        return this.http.post('/netopeer/session', body)
+            .pipe(
+                tap(resp => {
+                    if (resp['success']) {
+                        this.sessions.push(new Session(resp['session-key'], dev));
+                        this.activeSession = resp['session-key'];
+                        this.storeSessions();
+                        localStorage.setItem('activeSession', this.activeSession);
+                    }
+                }),
+                catchError((err: any) => Observable.throw(err))
+            );
     }
 }

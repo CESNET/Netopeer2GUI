@@ -20,7 +20,7 @@ export class InventorySchemasComponent implements OnInit {
         private router: Router ) { }
 
     getSchemas(): void {
-        this.schemasService.getSchemas().then( result => {this.schemas = result;});
+        this.schemasService.getSchemas().subscribe( result => {this.schemas = result;});
     }
 
     showAddSchema() {
@@ -52,6 +52,7 @@ export class InventorySchemasComponent implements OnInit {
         if (this.schemas) {
             return Object.keys(this.schemas);
         }
+        else return [];
     }
 
     onSelect(key: string): void {
