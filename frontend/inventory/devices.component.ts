@@ -102,7 +102,6 @@ export class InventoryDevicesComponent implements OnInit {
     }
 
     bitStatus(bit: number): boolean {
-
         if (this.validAddForm & bit) {
             return true;
         } else {
