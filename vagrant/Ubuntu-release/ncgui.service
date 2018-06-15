@@ -1,0 +1,12 @@
+[Unit]
+Description=Netopeer2GUI backend
+
+[Service]
+Type=oneshot
+ExecStart=/var/www/html/ncgui/backend/run.sh
+RemainAfterExit=true
+StandardOutput=syslog
+StandardError=syslog
+
+[Install]
+WantedBy=multi-user.target

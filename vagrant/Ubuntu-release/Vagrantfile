@@ -21,17 +21,23 @@ apt-get install -y libnetconf2-experimental python3-netconf2-experimental
 SCRIPT
 
 $setup = <<SCRIPT
-wget https://github.com/CESNET/Netopeer2GUI/releases/download/0.1/ncgui.tgz
+wget https://github.com/CESNET/Netopeer2GUI/releases/download/0.2/ncgui.tgz
 tar -xzf ncgui.tgz
 cp /home/vagrant/shared/ncgui.conf /etc/apache2/sites-available/
 a2enmod rewrite
+a2enmod proxy_http
 a2dissite 000-default.conf
 a2ensite ncgui.conf
 ln -s /home/vagrant/ncgui /var/www/html/ncgui
+mkdir /var/www/html/ncgui/data
 cd /var/www/html/ncgui/backend
 /home/vagrant/shared/setvenv.sh
 cp /home/vagrant/shared/lgui-config.ini /var/www/html/ncgui/backend/config.ini
 cp /home/vagrant/shared/netopeer-config.ini /var/www/html/ncgui/backend/liberouterapi/modules/netopeer/config.ini
+cp /home/vagrant/shared/run.sh /var/www/html/ncgui/backend/run.sh
+cp /home/vagrant/shared/ncgui.service /etc/systemd/system/ncgui.service
+systemctl enable ncgui.service
+service ncgui start
 service apache2 restart
 SCRIPT
 
