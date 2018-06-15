@@ -21,7 +21,7 @@ apt-get install -y libnetconf2-experimental python3-netconf2-experimental
 SCRIPT
 
 $setup = <<SCRIPT
-wget https://github.com/CESNET/Netopeer2GUI/releases/download/0.2/ncgui.tgz
+wget https://github.com/CESNET/Netopeer2GUI/releases/download/v0.2/ncgui.tgz
 tar -xzf ncgui.tgz
 cp /home/vagrant/shared/ncgui.conf /etc/apache2/sites-available/
 a2enmod rewrite
