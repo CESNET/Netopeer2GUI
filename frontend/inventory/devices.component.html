@@ -60,6 +60,16 @@
   <hr/>
 </div>
 
+<div *ngIf="hostcheck" class="user-dialogue">
+    <div *ngIf="hostcheck.msg">{{hostcheck.msg}}</div>
+    <div>The authenticity of the host <span class="keyword">{{hostcheck.hostname}}</span> cannot be established.<br/>
+    <span class="keyword">{{hostcheck.keytype}}</span> key fingerprint is <span class="keyword">{{hostcheck.hexa}}</span>.</div>
+    <div>Are you sure you want to continue connecting?
+        <button (click)="hostcheckAnswer(true)">yes</button> /
+        <button (click)="hostcheckAnswer(false)">no</button>
+    </div>
+</div>
+
 <p class="msg-failure msg-rounded" *ngIf="err_msg"><span class="msg-close" (click)="err_msg=''">x</span>{{err_msg}}</p>
 <table class="items">
   <tr class="item_header">

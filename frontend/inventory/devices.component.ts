@@ -8,6 +8,15 @@ import {Device} from './device';
 import {DevicesService} from './devices.service'
 import {SessionsService} from '../config/sessions.service'
 
+import {SocketService} from 'app/services/socket.service';
+
+enum ssh_hostcheck_status {
+    SSH_SERVER_KNOWN_CHANGED = 2,
+    SSH_SERVER_FOUND_OTHER = 3,
+    SSH_SERVER_FILE_NOT_FOUND = 4,
+    SSH_SERVER_NOT_KNOWN = 0
+}
+
 @Component({
     selector: 'inventoryDevices',
     templateUrl: './devices.component.html',
@@ -24,10 +33,12 @@ export class InventoryDevicesComponent implements OnInit {
     namePlaceholder: string = "";
     id: number;
     err_msg = "";
+    hostcheck = null;
 
     constructor(
         private devicesService: DevicesService,
         private sessionsService: SessionsService,
+        public socketService: SocketService,
         private router: Router) {}
 
     getDevices(): void {
@@ -109,15 +120,32 @@ export class InventoryDevicesComponent implements OnInit {
         }
     }
 
+    hostcheckAnswer(result: boolean) {
+        this.socketService.send('hostcheck_result', {'id': this.hostcheck.id, 'result': result});
+        delete this.hostcheck;
+    }
+
     connect(device: Device) {
         /* for backward compatibility */
         if (!device.name) {
             device.name = device.hostname + ":" + device.port;
         }
+        this.socketService.listen('hostcheck').subscribe((message: any) => {
+            this.hostcheck = message;
+            switch(message['state']) {
+            case ssh_hostcheck_status.SSH_SERVER_KNOWN_CHANGED:
+                this.hostcheck['msg'] = "Server has changed.";
+                break;
+            case ssh_hostcheck_status.SSH_SERVER_NOT_KNOWN:
+                this.hostcheck['msg'] = "Server not known.";
+                break;
+            }
+        });
         this.sessionsService.connect(device).subscribe(result => {
             if (result['success']) {
                 this.router.navigateByUrl('/netopeer/config');
             } else {
+                delete this.hostcheck;
                 this.err_msg = result['error-msg']
             }
         });

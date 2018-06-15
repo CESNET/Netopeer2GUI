@@ -14,7 +14,7 @@
   },
   "homepage": "https://github.com/CESNET/Netopeer2GUI",
   "dependencies" : {
-    "@angular/material": "^5.0.0",
-    "@angular/cdk": "^5.0.0"
+    "@angular/material": "^6.0.0",
+    "@angular/cdk": "^6.0.0"
   }
 }

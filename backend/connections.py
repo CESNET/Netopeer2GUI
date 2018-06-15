@@ -7,8 +7,11 @@ Author: Radek Krejci <rkrejci@cesnet.cz>
 import json
 import os
 
-from liberouterapi import auth
+from liberouterapi import socketio, auth
 from flask import request
+from flask_socketio import emit
+from eventlet import event
+from eventlet.timeout import Timeout
 import yang
 import netconf2 as nc
 
@@ -18,10 +21,39 @@ from .error import NetopeerException
 from .data import *
 
 sessions = {}
+hostcheck = {}
+
+
+def hostkey_check_send(data):
+	print(json.dumps(data))
+	try:
+		e = hostcheck[data['id']]
+		e.send(data['result'])
+	except KeyError:
+		pass
+
+
+@socketio.on('hostcheck_result')
+def hostkey_check_answer(data):
+	hostkey_check_send(data)
+
 
 def hostkey_check(hostname, state, keytype, hexa, priv):
-	# TODO real check
-	return True
+	params = {'id': priv, 'hostname' : hostname, 'state' : state, 'keytype' : keytype, 'hexa' : hexa}
+	socketio.emit('hostcheck', params, callback = hostkey_check_send)
+
+	timeout = Timeout(30)
+	try:
+		e = hostcheck[priv] = event.Event()
+		result = e.wait()
+	except Timeout:
+		return False;
+	finally:
+		hostcheck.pop(priv, None)
+		timeout.cancel()
+
+	return result
+
 
 @auth.required()
 def connect():
@@ -45,9 +77,9 @@ def connect():
 	nc.setSearchpath(path)
 
 	ssh = nc.SSH(device['username'], password=device['password'])
-	ssh.setAuthHostkeyCheckClb(hostkey_check)
+	ssh.setAuthHostkeyCheckClb(hostkey_check, session['session_id'])
 	try:
-		session = nc.Session(device['hostname'], device['port'], ssh)
+		ncs = nc.Session(device['hostname'], device['port'], ssh)
 	except Exception as e:
 		return(json.dumps({'success': False, 'error-msg': str(e)}))
 
@@ -55,9 +87,9 @@ def connect():
 		sessions[user.username] = {}
 
 	# use key (as hostname:port:session-id) to store the created NETCONF session
-	key = session.host + ":" + str(session.port) + ":" + session.id
+	key = ncs.host + ":" + str(ncs.port) + ":" + ncs.id
 	sessions[user.username][key] = {}
-	sessions[user.username][key]['session'] = session
+	sessions[user.username][key]['session'] = ncs
 
 	return(json.dumps({'success': True, 'session-key': key}))
 
