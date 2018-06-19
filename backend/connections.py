@@ -16,7 +16,7 @@ import yang
 import netconf2 as nc
 
 from .inventory import INVENTORY
-from .devices import devices_get
+from .devices import devices_get, devices_replace
 from .error import NetopeerException
 from .data import *
 
@@ -39,18 +39,35 @@ def hostkey_check_answer(data):
 
 
 def hostkey_check(hostname, state, keytype, hexa, priv):
-	params = {'id': priv, 'hostname' : hostname, 'state' : state, 'keytype' : keytype, 'hexa' : hexa}
+	if 'fingerprint' in priv['device']:
+		# check according to the stored fingerprint from previous connection
+		if hexa == priv['device']['fingerprint']:
+			return True
+		elif state != 2:
+			print("Incorrect host key state")
+			state = 2
+
+	# ask frontend/user for hostkey check
+	params = {'id': priv['session']['session_id'], 'hostname' : hostname, 'state' : state, 'keytype' : keytype, 'hexa' : hexa}
 	socketio.emit('hostcheck', params, callback = hostkey_check_send)
 
 	timeout = Timeout(30)
 	try:
-		e = hostcheck[priv] = event.Event()
+		# wait for response from the frontend
+		e = hostcheck[priv['session']['session_id']] = event.Event()
 		result = e.wait()
 	except Timeout:
+		# no response received within the timeout
 		return False;
 	finally:
-		hostcheck.pop(priv, None)
+		# we have the response
+		hostcheck.pop(priv['session']['session_id'], None)
 		timeout.cancel()
+
+	if result:
+		# store confirmed fingerprint for future connections
+		priv['device']['fingerprint'] = hexa;
+		devices_replace(priv['device']['id'], priv['session']['user'].username, priv['device'])
 
 	return result
 
@@ -77,7 +94,7 @@ def connect():
 	nc.setSearchpath(path)
 
 	ssh = nc.SSH(device['username'], password=device['password'])
-	ssh.setAuthHostkeyCheckClb(hostkey_check, session['session_id'])
+	ssh.setAuthHostkeyCheckClb(hostkey_check, {'session': session, 'device' : device})
 	try:
 		ncs = nc.Session(device['hostname'], device['port'], ssh)
 	except Exception as e:

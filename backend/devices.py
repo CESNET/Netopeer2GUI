@@ -52,12 +52,13 @@ def devices_list():
 	session = auth.lookup(request.headers.get('Authorization', None))
 	user = session['user']
 	path = os.path.join(INVENTORY, user.username)
-	
+
 	inventory_check(path)
 	devices = __devices_inv_load(path)
-	
+
 	for dev in devices['device']:
 		del dev['password']
+
 	return(json.dumps(devices['device']))
 
 @auth.required()
@@ -107,7 +108,7 @@ def devices_rm():
 		if device['id'] == rm_id:
 			devices['device'].pop(i)
 			device = None
-			break;
+			break
 
 	if device:
 		# device not in inventory
@@ -128,3 +129,16 @@ def devices_get(device_id, username):
 			return device
 
 	return None
+
+
+def devices_replace(device_id, username, device):
+	path = os.path.join(INVENTORY, username)
+	devices = __devices_inv_load(path)
+
+	for i in range(len(devices['device'])):
+		if devices['device'][i]['id'] == device_id:
+			devices['device'][i] = device
+			break
+
+	# update the inventory database
+	__devices_inv_save(path, devices)

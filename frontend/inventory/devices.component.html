@@ -76,6 +76,7 @@
     <th class="item_left">&nbsp;</th>
     <th>name</th>
     <th>hostname : port</th>
+    <th>fingerprint</th>
     <th>username</th>
     <th class="item_right">autoconnect</th>
   </tr>
@@ -88,6 +89,7 @@
     </td>
     <td>{{device.name}}</td>
     <td>{{device.hostname}} : {{device.port}}</td>
+    <td>{{device.fingerprint}}</td>
     <td>{{device.username}}</td>
     <td class="item_right"><input type="checkbox" name="autoconnect" disabled [checked]="device.autoconnect"
       title="Automatically connect the device on user login."/></td>
