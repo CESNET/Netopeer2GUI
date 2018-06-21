@@ -74,7 +74,7 @@ def hostkey_check(hostname, state, keytype, hexa, priv):
 
 @auth.required()
 def connect():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 	path = os.path.join(INVENTORY, user.username)
 
@@ -113,7 +113,7 @@ def connect():
 
 @auth.required()
 def session_get_capabilities():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 	req = request.args.to_dict()
 
@@ -122,7 +122,7 @@ def session_get_capabilities():
 
 	if not user.username in sessions:
 		sessions[user.username] = {}
-		
+
 	key = req['key']
 	if not key in sessions[user.username]:
 		return(json.dumps({'success': False, 'error-msg': 'Invalid session key.'}))
@@ -135,7 +135,7 @@ def session_get_capabilities():
 
 @auth.required()
 def session_get():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 	req = request.args.to_dict()
 
@@ -208,7 +208,7 @@ def _checkvalue(session, req, schema):
 
 @auth.required()
 def data_checkvalue():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	req = request.args.to_dict()
 
 	return _checkvalue(session, req, False)
@@ -216,7 +216,7 @@ def data_checkvalue():
 
 @auth.required()
 def schema_checkvalue():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	req = request.args.to_dict()
 
 	return _checkvalue(session, req, True)
@@ -224,7 +224,7 @@ def schema_checkvalue():
 
 @auth.required()
 def schema_values():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 	req = request.args.to_dict()
 
@@ -251,7 +251,7 @@ def schema_values():
 
 @auth.required()
 def schema_info():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 	req = request.args.to_dict()
 
@@ -328,7 +328,7 @@ def _create_child(ctx, parent, child_def):
 
 @auth.required()
 def session_commit():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 
 	req = request.get_json(keep_order = True)
@@ -432,7 +432,7 @@ def session_commit():
 
 @auth.required()
 def session_close():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 	req = request.args.to_dict()
 
@@ -451,7 +451,7 @@ def session_close():
 
 @auth.required()
 def session_alive():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 	req = request.args.to_dict()
 
@@ -460,7 +460,7 @@ def session_alive():
 
 	if not user.username in sessions:
 		sessions[user.username] = {}
-		
+
 	key = req['key']
 	if not key in sessions[user.username]:
 		return(json.dumps({'success': False, 'error-msg': 'Invalid session key.'}))

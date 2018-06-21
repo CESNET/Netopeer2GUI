@@ -26,7 +26,7 @@ def __schema_parse(path, format = yang.LYS_IN_UNKNOWN):
 		ctx = yang.Context(os.path.dirname(path))
 	except Exception as e:
 		raise NetopeerException(str(e))
-	
+
 	try:
 		module = ctx.parse_module_path(path, yang.LYS_IN_YANG if format == yang.LYS_IN_UNKNOWN else format)
 	except Exception as e:
@@ -46,7 +46,7 @@ def __schemas_init(path):
 		ctx = yang.Context()
 	except Exception as e:
 		raise NetopeerException(str(e))
-	
+
 	# initialize the list with libyang's internal modules
 	modules = ctx.get_module_iter()
 	for module in modules:
@@ -109,10 +109,10 @@ def __schemas_inv_save(path, schemas):
 def __schemas_update(path):
 	# get schemas database
 	schemas = __schemas_inv_load(path)
-	
+
 	# get the previous timestamp
 	timestamp = schemas['timestamp']
-	
+
 	# check the current content of the storage
 	for file in os.listdir(path):
 		if file[-5:] == '.yang':
@@ -121,7 +121,7 @@ def __schemas_update(path):
 			format = yang.LYS_IN_YIN
 		else:
 			continue
-		
+
 		schemapath = os.path.join(path, file);
 		if os.path.getmtime(schemapath) > timestamp:
 			# update the list
@@ -149,26 +149,26 @@ def __schemas_update(path):
 
 	#store the list
 	__schemas_inv_save(path, schemas)
-	
-	# return the up-to-date list 
+
+	# return the up-to-date list
 	return schemas['schemas']
 
 
 @auth.required()
 def schemas_list():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 	path = os.path.join(INVENTORY, user.username)
-	
+
 	inventory_check(path)
 	schemas = __schemas_update(path)
-	
+
 	return(json.dumps(schemas, sort_keys = True))
 
 
 @auth.required()
 def schema_get():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 	req = request.args.to_dict()
 	path = os.path.join(INVENTORY, user.username)
@@ -192,15 +192,15 @@ def schema_get():
 def schemas_add():
 	if 'schema' not in request.files:
 		raise NetopeerException('Missing schema file in upload request.')
-	
-	session = auth.lookup(request.headers.get('Authorization', None))
+
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 	file = request.files['schema']
-	
+
 	# store the file
 	path = os.path.join(INVENTORY, user.username, file.filename)
 	file.save(path)
-	
+
 	# parse file
 	try:
 		if file.filename[-5:] == '.yang':
@@ -229,13 +229,13 @@ def schemas_add():
 		except:
 			pass
 		return(json.dumps({'success': False}))
-			
+
 	return(json.dumps({'success': True}))
 
 
 @auth.required()
 def schemas_rm():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 	path = os.path.join(INVENTORY, user.username)
 
