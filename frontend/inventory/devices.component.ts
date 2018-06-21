@@ -158,7 +158,7 @@ export class InventoryDevicesComponent implements OnInit {
 
     openModal() {
         if(!this.opened) {
-            const modalRef = this.modalService.open(NgbdModalContent, {centered: true});
+            const modalRef = this.modalService.open(NgbdModalContent, {centered: true, backdrop: 'static', keyboard: false});
             this.opened = true;
             modalRef.componentInstance.hostcheck = this.hostcheck;
             modalRef.result.then((result) => {
@@ -177,11 +177,9 @@ export class InventoryDevicesComponent implements OnInit {
 
 @Component({
     selector: 'ngbd-modal-content',
+    styleUrls: ['../netopeer.scss'],
     template: `<div class="modal-header">
         <h4 *ngIf="hostcheck.msg" class="modal-title">{{hostcheck.msg}}</h4>
-        <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
-            <span aria-hidden="true">&times;</span>
-        </button>
     </div>
     <div class="modal-body">
         <div>The authenticity of the host <span class="keyword">{{hostcheck.hostname}}</span> cannot be established.<br/>

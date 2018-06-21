@@ -1,14 +1,5 @@
 @import 'netopeer-common';
 
-.keyword {
-    font-weight: bold;
-}
-
-.modal-header, .modal-footer {
-    background-color: $colorMain;
-    color: $colorTextInverse;
-}
-
 #netopeer-header {
     position: fixed;
     width: 100%;
