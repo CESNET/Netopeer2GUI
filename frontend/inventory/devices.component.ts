@@ -77,11 +77,11 @@ export class InventoryDevicesComponent implements OnInit {
         if (action == 'store' || action == 'store_connect') {
             this.devicesService.addDevice(this.newDevice).subscribe(
                 result => {this.addingResult = result['success'] ? 1 : 0;
-                    this.getDevices();
-                    if (action == 'store_connect') {
-                        this.connect(this.newDevice);
-                    }
-                });
+                this.getDevices();
+                if (action == 'store_connect') {
+                    this.connect(this.newDevice);
+                }
+            });
         } else { /* connect only */
             this.newDevice.id = 0;
             this.connect(this.newDevice);
