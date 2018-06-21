@@ -44,7 +44,7 @@ a:not([href]) {
 
 .msg-failure {
     background-color: $colorFailure;
-    color: colorFailureBorder;
+    color: $colorFailureBorder;
 	padding: 5px 1em 5px 0em;
 
 	.msg-close {
@@ -78,6 +78,24 @@ a:not([href]) {
     &:hover {
         color: $green;
     }
+}
+
+.keyword {
+  font-weight: bold;
+}
+
+.modal-header, .modal-footer {
+  background-color: $colorMain;
+  color: $colorTextInverse;
+}
+.modal-header {
+  border-radius: 3px 3px 0 0;
+}
+.modal-footer {
+  border-radius: 0 0 3px 3px;
+}
+.modal-title {
+  color: $colorTextInverse;
 }
 
 .tab-close:hover {
