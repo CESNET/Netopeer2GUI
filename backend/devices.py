@@ -49,7 +49,7 @@ def __devices_inv_save(path, devices):
 
 @auth.required()
 def devices_list():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 	path = os.path.join(INVENTORY, user.username)
 
@@ -63,7 +63,7 @@ def devices_list():
 
 @auth.required()
 def devices_add():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 	path = os.path.join(INVENTORY, user.username)
 
@@ -94,7 +94,7 @@ def devices_add():
 
 @auth.required()
 def devices_rm():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 	path = os.path.join(INVENTORY, user.username)
 
