@@ -1,8 +1,10 @@
 /*
  * NETCONF servers Inventory
  */
-import {Component, OnInit} from '@angular/core';
+import {Component, OnInit, Input} from '@angular/core';
 import {Router} from '@angular/router';
+import { NgbModal, NgbModalRef, ModalDismissReasons, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { ViewChild } from '@angular/core';
 
 import {Device} from './device';
 import {DevicesService} from './devices.service'
@@ -34,11 +36,12 @@ export class InventoryDevicesComponent implements OnInit {
     id: number;
     err_msg = "";
     hostcheck = null;
-
+    opened: boolean = false;
     constructor(
         private devicesService: DevicesService,
         private sessionsService: SessionsService,
         public socketService: SocketService,
+        public modalService: NgbModal,
         private router: Router) {}
 
     getDevices(): void {
@@ -123,6 +126,7 @@ export class InventoryDevicesComponent implements OnInit {
     hostcheckAnswer(result: boolean) {
         this.socketService.send('hostcheck_result', {'id': this.hostcheck.id, 'result': result});
         delete this.hostcheck;
+        this.opened = false;
     }
 
     connect(device: Device) {
@@ -140,6 +144,7 @@ export class InventoryDevicesComponent implements OnInit {
                 this.hostcheck['msg'] = "Server not known.";
                 break;
             }
+            this.openModal();
         });
         this.sessionsService.connect(device).subscribe(result => {
             if (result['success']) {
@@ -151,7 +156,44 @@ export class InventoryDevicesComponent implements OnInit {
         });
     }
 
+    openModal() {
+        if(!this.opened) {
+            const modalRef = this.modalService.open(NgbdModalContent, {centered: true});
+            this.opened = true;
+            modalRef.componentInstance.hostcheck = this.hostcheck;
+            modalRef.result.then((result) => {
+                this.hostcheckAnswer(result);
+            }, (reason) => {
+                this.hostcheckAnswer(false);
+            });
+        }
+
+    }
+
     ngOnInit(): void {
         this.getDevices();
     }
+}
+
+@Component({
+    selector: 'ngbd-modal-content',
+    template: `<div class="modal-header">
+        <h4 *ngIf="hostcheck.msg" class="modal-title">{{hostcheck.msg}}</h4>
+        <button type="button" class="close" aria-label="Close" (click)="activeModal.dismiss('Cross click')">
+            <span aria-hidden="true">&times;</span>
+        </button>
+    </div>
+    <div class="modal-body">
+        <div>The authenticity of the host <span class="keyword">{{hostcheck.hostname}}</span> cannot be established.<br/>
+            <span class="keyword">{{hostcheck.keytype}}</span> key fingerprint is <span class="keyword">{{hostcheck.hexa}}</span>.</div>
+        <div>Are you sure you want to continue connecting?</div>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-light" (click)="activeModal.close(true)">yes</button> /
+        <button class="btn btn-light" (click)="activeModal.close(false)">no</button>
+    </div>`
+})
+export class NgbdModalContent {
+    @Input() hostcheck;
+    constructor(public activeModal: NgbActiveModal) { }
 }

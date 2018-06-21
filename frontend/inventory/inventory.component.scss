@@ -43,7 +43,6 @@ nav {
     &:hover,
     &.selected {
         td {
-            display: inherited;
             background-color: $colorMain;
         }
         color: $colorTextInverse;
@@ -56,7 +55,6 @@ nav {
 .item_header {
     color: $colorTextInverse;
     th {
-       display: inherited;
        background-color: $colorMain;
     }
 }
@@ -138,4 +136,13 @@ form {
     display: inline-block;
     text-align: center;
     margin-right: 1.5em;
+}
+
+.keyword {
+  font-weight: bold;
+}
+
+.modal-header, .modal-footer {
+  background-color: $colorMain;
+  color: $colorTextInverse;
 }
