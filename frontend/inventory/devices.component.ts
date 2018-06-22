@@ -36,7 +36,7 @@ export class InventoryDevicesComponent implements OnInit {
     id: number;
     err_msg = "";
     hostcheck = null;
-    opened: boolean = false;
+
     constructor(
         private devicesService: DevicesService,
         private sessionsService: SessionsService,
@@ -126,7 +126,6 @@ export class InventoryDevicesComponent implements OnInit {
     hostcheckAnswer(result: boolean) {
         this.socketService.send('hostcheck_result', {'id': this.hostcheck.id, 'result': result});
         delete this.hostcheck;
-        this.opened = false;
     }
 
     connect(device: Device) {
@@ -134,7 +133,7 @@ export class InventoryDevicesComponent implements OnInit {
         if (!device.name) {
             device.name = device.hostname + ":" + device.port;
         }
-        this.socketService.listen('hostcheck').subscribe((message: any) => {
+        this.socketService.subscribe('hostcheck').subscribe((message: any) => {
             this.hostcheck = message;
             switch(message['state']) {
             case ssh_hostcheck_status.SSH_SERVER_KNOWN_CHANGED:
@@ -153,21 +152,18 @@ export class InventoryDevicesComponent implements OnInit {
                 delete this.hostcheck;
                 this.err_msg = result['error-msg']
             }
+            this.socketService.unsubscribe('hostcheck');
         });
     }
 
     openModal() {
-        if(!this.opened) {
-            const modalRef = this.modalService.open(NgbdModalContent, {centered: true, backdrop: 'static', keyboard: false});
-            this.opened = true;
-            modalRef.componentInstance.hostcheck = this.hostcheck;
-            modalRef.result.then((result) => {
-                this.hostcheckAnswer(result);
-            }, (reason) => {
-                this.hostcheckAnswer(false);
-            });
-        }
-
+        const modalRef = this.modalService.open(NgbdModalContent, {centered: true, backdrop: 'static', keyboard: false});
+        modalRef.componentInstance.hostcheck = this.hostcheck;
+        modalRef.result.then((result) => {
+            this.hostcheckAnswer(result);
+        }, (reason) => {
+            this.hostcheckAnswer(false);
+        });
     }
 
     ngOnInit(): void {
