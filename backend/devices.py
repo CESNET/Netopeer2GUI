@@ -57,7 +57,8 @@ def devices_list():
 	devices = __devices_inv_load(path)
 
 	for dev in devices['device']:
-		del dev['password']
+		if 'password' in dev:
+			del dev['password']
 
 	return(json.dumps(devices['device']))
 
@@ -80,11 +81,10 @@ def devices_add():
 		'name':device['name'],
 		'hostname':device['hostname'],
 		'port':device['port'],
-		'autoconnect':device['autoconnect']}
-	if 'username' in device:
-		device_json['username'] = device['username']
-		if 'password' in device:
-			device_json['password'] = device['password']
+		'autoconnect':device['autoconnect'],
+		'username':device['username']}
+	if 'password' in device and device['password']:
+		device_json['password'] = device['password']
 	devices['device'].append(device_json)
 
 	#store the list

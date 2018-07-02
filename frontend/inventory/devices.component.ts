@@ -28,6 +28,7 @@ enum ssh_hostcheck_status {
 
 export class InventoryDevicesComponent implements OnInit {
     devices: Device[];
+    addingDeviceLabel = "Add";
     addingDevice = false;
     addingResult = -1;
     validAddForm = 1; /* 1 - port (has default value), 2 - password, 4 - username, 8 - hostname */
@@ -35,7 +36,6 @@ export class InventoryDevicesComponent implements OnInit {
     namePlaceholder: string = "";
     id: number;
     err_msg = "";
-    hostcheck = null;
 
     constructor(
         private devicesService: DevicesService,
@@ -62,8 +62,10 @@ export class InventoryDevicesComponent implements OnInit {
             this.checkString(this.newDevice.username, 4);
             this.checkString(this.newDevice.password, 2);
             this.checkPort(this.newDevice.port);
+            this.addingDeviceLabel = "Cancel";
         } else {
             this.newDevice = null;
+            this.addingDeviceLabel = "Add";
         }
 
         this.addingDevice = !this.addingDevice;
@@ -123,9 +125,10 @@ export class InventoryDevicesComponent implements OnInit {
         }
     }
 
-    hostcheckAnswer(result: boolean) {
-        this.socketService.send('hostcheck_result', {'id': this.hostcheck.id, 'result': result});
-        delete this.hostcheck;
+    socketAnswer(event: string, id:string, item: string, value: any) {
+        let data = {'id': id};
+        data[item] = value;
+        this.socketService.send(event, data);
     }
 
     connect(device: Device) {
@@ -133,36 +136,43 @@ export class InventoryDevicesComponent implements OnInit {
         if (!device.name) {
             device.name = device.hostname + ":" + device.port;
         }
+
         this.socketService.subscribe('hostcheck').subscribe((message: any) => {
-            this.hostcheck = message;
             switch(message['state']) {
             case ssh_hostcheck_status.SSH_SERVER_KNOWN_CHANGED:
-                this.hostcheck['msg'] = "Server has changed.";
+                message['msg'] = "Server has changed.";
                 break;
             case ssh_hostcheck_status.SSH_SERVER_NOT_KNOWN:
-                this.hostcheck['msg'] = "Server not known.";
+                message['msg'] = "Server not known.";
                 break;
             }
-            this.openModal();
+            let modalRef = this.modalService.open(DialogueHostcheck, {centered: true, backdrop: 'static', keyboard: false});
+            modalRef.componentInstance.hostcheck = message;
+            modalRef.result.then((result) => {
+                this.socketAnswer('hostcheck_result', message['id'], 'result', result);
+            }, (reason) => {
+                this.socketAnswer('hostcheck_result', message['id'], 'result', false);
+            });
         });
+
+        this.socketService.subscribe('device_auth').subscribe((message: any) => {
+            let modalRef = this.modalService.open(DialoguePassword, {centered: true, backdrop: 'static', keyboard: false});
+            modalRef.componentInstance.info = message;
+            modalRef.result.then((result) => {
+                this.socketAnswer('device_auth_password', message['id'], 'password', result);
+            }, (reason) => {
+                this.socketAnswer('device_auth_password', message['id'], 'password', '');
+            });
+        });
+
         this.sessionsService.connect(device).subscribe(result => {
             if (result['success']) {
                 this.router.navigateByUrl('/netopeer/config');
             } else {
-                delete this.hostcheck;
                 this.err_msg = result['error-msg']
             }
             this.socketService.unsubscribe('hostcheck');
-        });
-    }
-
-    openModal() {
-        const modalRef = this.modalService.open(NgbdModalContent, {centered: true, backdrop: 'static', keyboard: false});
-        modalRef.componentInstance.hostcheck = this.hostcheck;
-        modalRef.result.then((result) => {
-            this.hostcheckAnswer(result);
-        }, (reason) => {
-            this.hostcheckAnswer(false);
+            this.socketService.unsubscribe('device_auth');
         });
     }
 
@@ -187,7 +197,33 @@ export class InventoryDevicesComponent implements OnInit {
         <button class="btn btn-light" (click)="activeModal.close(false)">no</button>
     </div>`
 })
-export class NgbdModalContent {
+export class DialogueHostcheck {
     @Input() hostcheck;
     constructor(public activeModal: NgbActiveModal) { }
+}
+
+@Component({
+    selector: 'ngbd-modal-content',
+    styleUrls: ['../netopeer.scss'],
+    template: `<div class="modal-header">
+        <h4 class="modal-title">{{info.type}}</h4>
+    </div>
+    <div class="modal-body">
+        <label for="device_password">{{info.msg}}</label><br/>
+        <input id="device_password" type="password" [(ngModel)]="password"  (keyup.enter)="activeModal.close(password)"/>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-light" [disabled]="!password" (click)="activeModal.close(password)">ok</button> /
+        <button class="btn btn-light" (click)="activeModal.close('')">cancel</button>
+    </div>`
+})
+export class DialoguePassword implements OnInit {
+    @Input() info;
+    password = '';
+
+    constructor(public activeModal: NgbActiveModal) { }
+
+    ngOnInit(): void {
+        document.getElementById('device_password').focus();
+    }
 }

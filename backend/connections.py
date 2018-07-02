@@ -6,6 +6,7 @@ Author: Radek Krejci <rkrejci@cesnet.cz>
 
 import json
 import os
+import logging
 
 from liberouterapi import socketio, auth
 from flask import request
@@ -20,22 +21,24 @@ from .devices import devices_get, devices_replace
 from .error import NetopeerException
 from .data import *
 
+log = logging.getLogger(__name__)
+
 sessions = {}
-hostcheck = {}
+connect_sio_data = {}
 
 
-def hostkey_check_send(data):
-	print(json.dumps(data))
+def connect_sio_send(data):
 	try:
-		e = hostcheck[data['id']]
-		e.send(data['result'])
+		e = connect_sio_data[data['id']]
+		e.send(data)
 	except KeyError:
 		pass
 
 
+@socketio.on('device_auth_password')
 @socketio.on('hostcheck_result')
 def hostkey_check_answer(data):
-	hostkey_check_send(data)
+	connect_sio_send(data)
 
 
 def hostkey_check(hostname, state, keytype, hexa, priv):
@@ -44,24 +47,29 @@ def hostkey_check(hostname, state, keytype, hexa, priv):
 		if hexa == priv['device']['fingerprint']:
 			return True
 		elif state != 2:
-			print("Incorrect host key state")
+			log.error("Incorrect host key state")
 			state = 2
 
 	# ask frontend/user for hostkey check
 	params = {'id': priv['session']['session_id'], 'hostname' : hostname, 'state' : state, 'keytype' : keytype, 'hexa' : hexa}
-	socketio.emit('hostcheck', params, callback = hostkey_check_send)
+	socketio.emit('hostcheck', params, callback = connect_sio_send)
 
+	result = False
 	timeout = Timeout(30)
 	try:
 		# wait for response from the frontend
-		e = hostcheck[priv['session']['session_id']] = event.Event()
-		result = e.wait()
+		e = connect_sio_data[priv['session']['session_id']] = event.Event()
+		data = e.wait()
+		result = data['result']
 	except Timeout:
 		# no response received within the timeout
-		return False;
+		log.info("socketio: hostcheck timeout.")
+	except KeyError:
+		# invalid response
+		log.error("socketio: invalid hostcheck_result received.")
 	finally:
 		# we have the response
-		hostcheck.pop(priv['session']['session_id'], None)
+		connect_sio_data.pop(priv['session']['session_id'], None)
 		timeout.cancel()
 
 	if result:
@@ -70,6 +78,41 @@ def hostkey_check(hostname, state, keytype, hexa, priv):
 		devices_replace(priv['device']['id'], priv['session']['user'].username, priv['device'])
 
 	return result
+
+
+def auth_common(session_id):
+	result = None
+	timeout = Timeout(60)
+	try:
+		# wait for response from the frontend
+		e = connect_sio_data[session_id] = event.Event()
+		data = e.wait()
+		print(data)
+		result = data['password']
+	except Timeout:
+		# no response received within the timeout
+		log.info("socketio: auth request timeout.")
+	except KeyError:
+		# no password
+		log.info("socketio: invalid credential data received.")
+	finally:
+		# we have the response
+		connect_sio_data.pop(session_id, None)
+		timeout.cancel()
+
+	return result
+
+
+def auth_password(username, hostname, priv):
+	print("auth_password callback")
+	socketio.emit('device_auth', {'id': priv, 'type': 'Password Authentication', 'msg': username + '@' + hostname}, callback = connect_sio_send)
+	return auth_common(priv)
+
+
+def auth_interactive(name, instruction, prompt, priv):
+	print("auth_interactive callback")
+	socketio.emit('device_auth', {'id': priv, 'type': name, 'msg': instruction, 'prompt': prompt}, callback = connect_sio_send)
+	return auth_common(priv)
 
 
 @auth.required()
@@ -93,7 +136,13 @@ def connect():
 
 	nc.setSearchpath(path)
 
-	ssh = nc.SSH(device['username'], password=device['password'])
+	if 'password' in device:
+		ssh = nc.SSH(device['username'], password = device['password'])
+	else:
+		ssh = nc.SSH(device['username'])
+		ssh.setAuthPasswordClb(auth_password, session['session_id'])
+		ssh.setAuthInteractiveClb(auth_interactive, session['session_id'])
+
 	ssh.setAuthHostkeyCheckClb(hostkey_check, {'session': session, 'device' : device})
 	try:
 		ncs = nc.Session(device['hostname'], device['port'], ssh)
