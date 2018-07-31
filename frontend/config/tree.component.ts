@@ -330,7 +330,7 @@ export class TreeNode {
     }
 
     showSchema(node) {
-        let schema = new Schema;
+        let schema = new Schema(node['info']['module'] + '.yang');
         let at = node['info']['module'].indexOf('@');
         if (at == -1) {
             schema.name = node['info']['module'];
@@ -338,11 +338,10 @@ export class TreeNode {
             schema.name = node['info']['module'].substring(0, at);
             schema.revision = node['info']['module'].substring(at + 1);
         }
-        let key = node['info']['module'] + '.yang';
 
         schema.name = this.treeService.moduleName(node);
-        this.schemasService.show(key, schema);
-        this.schemasService.changeActiveSchemaKey(key);
+        this.schemasService.show(schema.key, schema);
+        this.schemasService.changeActiveSchemaKey(schema.key);
         this.router.navigateByUrl( '/netopeer/yang' );
     }
 

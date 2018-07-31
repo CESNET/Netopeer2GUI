@@ -163,7 +163,14 @@ def schemas_list():
 	inventory_check(path)
 	schemas = __schemas_update(path)
 
-	return(json.dumps(schemas, sort_keys = True))
+	result = []
+	for key in schemas:
+		if 'revision' in schemas[key]:
+			result.append({'key':key, 'name':schemas[key]['name'], 'revision':schemas[key]['revision']})
+		else:
+			result.append({'key':key, 'name':schemas[key]['name']})
+
+	return(json.dumps(result, sort_keys = True))
 
 
 @auth.required()
@@ -180,9 +187,18 @@ def schema_get():
 	schemas = __schemas_inv_load(path)
 	if key in schemas['schemas']:
 		try:
-			with open(os.path.join(path, key), 'r') as schema_file:
-				data = schema_file.read()
-			return(json.dumps({'success': True, 'data': data}))
+			if 'type' in req and req['type'] == 'tree':
+				# build tree representation for frontend
+				data = {}
+			else:
+				# default (text) representation
+				with open(os.path.join(path, key), 'r') as schema_file:
+					data = schema_file.read()
+			if 'revision' in schemas['schemas'][key]:
+				return(json.dumps({'success': True, 'data': data, 'name':schemas['schemas'][key]['name'],
+								 'revision':schemas['schemas'][key]['revision']}))
+			else:
+				return(json.dumps({'success': True, 'data': data, 'name':schemas['schemas'][key]['name']}))
 		except:
 			pass;
 	return(json.dumps({'success': False, 'error-msg':'Schema ' + key + ' not found.'}))

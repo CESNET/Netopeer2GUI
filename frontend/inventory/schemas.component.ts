@@ -17,7 +17,9 @@ export class InventorySchemasComponent implements OnInit {
     addingSchema = false;
     addingResult = -1;
     constructor( private schemasService: SchemasService,
-        private router: Router ) { }
+        private router: Router ) {
+        this.schemas = [];
+    }
 
     getSchemas(): void {
         this.schemasService.getSchemas().subscribe( result => {this.schemas = result;});
@@ -48,15 +50,8 @@ export class InventorySchemasComponent implements OnInit {
         this.getSchemas();
     }
 
-    schemasKeys() {
-        if (this.schemas) {
-            return Object.keys(this.schemas);
-        }
-        else return [];
-    }
-
     onSelect(key: string): void {
-        this.schemasService.show(key, this.schemas[key]);
+        this.schemasService.show(key);
         this.schemasService.changeActiveSchemaKey(key);
         this.router.navigateByUrl( '/netopeer/yang' );
     }
