@@ -89,7 +89,7 @@ export class SchemasService {
             schema = new Schema(key);
         }
 
-        if (!schema.data || schema.type != type) {
+        if (!schema.data || schema.type != type || type != 'text') {
             let params = new HttpParams()
                 .set('key', key)
                 .set('type', type);

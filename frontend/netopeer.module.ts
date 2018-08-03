@@ -22,7 +22,7 @@ import { InventorySchemasComponent } from './inventory/schemas.component';
 import {InventoryDevicesComponent, DialogueHostcheck, DialoguePassword} from './inventory/devices.component';
 import { ConfigComponent } from './config/config.component';
 import { TreeView, TreeNode, TreeLeaflistValue, TreeIndent, TreeCreate, TreeEdit, TreeScrollTo, CheckLeafValue } from './config/tree.component';
-import { YANGComponent, YANGModule } from './yang/yang.component';
+import { YANGComponent, YANGModule, YANGIdentity, YANGTypedef, YANGType, YANGRestriction } from './yang/yang.component';
 import { MonitoringComponent } from './monitoring/monitoring.component';
 import { PluginsComponent } from './plugins/plugins.component';
 
@@ -30,6 +30,8 @@ import { SessionsService } from './config/sessions.service';
 import { SchemasService } from './yang/schemas.service';
 import { DevicesService } from './inventory/devices.service';
 import { TreeService } from './config/tree.service';
+
+import { NoPrefixPipe, PrefixOnlyPipe } from './common/pipes';
 
 const routes: Routes = [
   { path : 'netopeer', component : NetopeerComponent, canActivate : [AuthGuard],
@@ -113,10 +115,16 @@ const routes: Routes = [
     TreeView,
     YANGComponent,
     YANGModule,
+    YANGIdentity,
+    YANGTypedef,
+    YANGType,
+    YANGRestriction,
     MonitoringComponent,
     PluginsComponent,
     DialogueHostcheck,
-    DialoguePassword
+    DialoguePassword,
+    NoPrefixPipe,
+    PrefixOnlyPipe
   ],
   providers: [
     SessionsService,

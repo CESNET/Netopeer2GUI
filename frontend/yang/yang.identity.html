@@ -1,0 +1,30 @@
+
+<div class="yang-infobox">
+    <div class="yang-info-label">Identity {{name}}</div>
+    <div class="yang-info-section" *ngIf="data['if-features']">
+        <div class="yang-info" *ngFor="let value of data['if-features']">
+            <span class="yang-info-label">if-feature</span><span class="yang-info-value">{{value}}</span>
+        </div>
+    </div>
+
+    <div class="yang-info-section" *ngIf="data['bases']">
+        <div class="yang-info" *ngFor="let value of data['bases']">
+            <span class="yang-info-label">base</span><a class="yang-info-value" (click)="base(value)" title="from {{value | prefixOnly}}">{{value | noPrefix}}</a>
+        </div>
+    </div>
+
+    <div class="yang-info-section">
+        <div class="yang-info" *ngIf="data.status">
+            <span class="yang-info-label">status</span><span class="yang-info-value">{{data.status.value}}</span>
+        </div>
+        <div class="yang-info" *ngIf="data.description">
+            <span class="yang-info-label">description</span><pre class="yang-info-value">{{data.description.text}}</pre>
+        </div>
+        <div class="yang-info" *ngIf="data.reference">
+            <span class="yang-info-label">reference</span><pre class="yang-info-value">{{data.reference.text}}</pre>
+        </div>
+    </div>
+
+</div>
+
+<!-- <pre>{{schema | json}}</pre> -->

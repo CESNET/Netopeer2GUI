@@ -25,6 +25,8 @@
     <ng-container [ngSwitch]="activeSchema.type">
         <pre *ngSwitchCase="'text'">{{activeSchema.data}}</pre>
         <yang-module *ngSwitchCase="'tree'" [schema]="activeSchema" (refresh)="refreshActiveSchema()"></yang-module>
+        <yang-identity *ngSwitchCase="'tree-identity'" [schema]="activeSchema" (refresh)="refreshActiveSchema()"></yang-identity>
+        <yang-typedef *ngSwitchCase="'tree-typedef'" [schema]="activeSchema" [data]="schemaData(activeSchema)" (refresh)="refreshActiveSchema()"></yang-typedef>
         <pre *ngSwitchDefault>{{activeSchema.data | json}}</pre>
     </ng-container>
 </div>

@@ -196,26 +196,34 @@ def schema_get():
 	schemas = __schemas_inv_load(path)
 	if key in schemas['schemas']:
 		try:
-			if 'type' in req and req['type'] == 'tree':
-				# build tree representation for frontendtry:
-				try:
-					ctx = yang.Context(path)
-					module = ctx.parse_module_path(os.path.join(path, key), yang.LYS_IN_YANG)
-					data = json.loads(module.print_mem(yang.LYS_OUT_JSON, 0))
-				except Exception as e:
-					log.error(module.print_mem(yang.LYS_OUT_JSON, 0))
-					return(json.dumps({'success': False, 'error-msg':str(e)}))
-			elif 'type' in req and 'path' in req and req['type'] == 'tree-identity':
-				try:
-					ctx = yang.Context(path)
-					module = ctx.parse_module_path(os.path.join(path, key), yang.LYS_IN_YANG)
-					data = json.loads(module.print_mem(yang.LYS_OUT_JSON, 'identity/' + req['path'], 0))
-				except Exception as e:
-					return(json.dumps({'success': False, 'error-msg':str(e)}))
-			else:
+			if (not 'type' in req) or req['type'] == 'text':
 				# default (text) representation
 				with open(os.path.join(path, key), 'r') as schema_file:
 					data = schema_file.read()
+			else:
+				if req['type'] == 'tree':
+					# build tree representation for frontend
+					target = None
+				elif req['type'] == 'tree-identity':
+					target = 'identity/' + req['path']
+				elif req['type'] == 'tree-typedef':
+					target = 'typedef/' + req['path']
+				elif req['type'] == 'tree-grouping':
+					target = 'grouping/' + req['path']
+				elif req['type'] == 'tree-node':
+					target = req['path']
+				elif req['type'] == 'tree-type':
+					target = 'type/' + req['path']
+				else:
+					return(json.dumps({'success': False, 'error-msg': 'Unsupported schema format ' + req['type']}))
+
+				try:
+					ctx = yang.Context(path)
+					module = ctx.parse_module_path(os.path.join(path, key), yang.LYS_IN_YANG)
+					data = json.loads(module.print_mem(yang.LYS_OUT_JSON, target, 0))
+				except Exception as e:
+					return(json.dumps({'success': False, 'error-msg':str(e)}))
+
 			if 'revision' in schemas['schemas'][key]:
 				return(json.dumps({'success': True, 'data': data, 'name':schemas['schemas'][key]['name'],
 								 'revision':schemas['schemas'][key]['revision']}, ensure_ascii = False))
