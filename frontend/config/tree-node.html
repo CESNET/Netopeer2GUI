@@ -54,6 +54,8 @@
         <ng-container *ngIf="node['info']['type'] == 4">
             <span *ngIf="!node['edit']" class="value_inline" [class.keys]="!isEditable(node)" [class.editable]="isEditable(node)"
                 (click)="startEditing(node, $event.target);">{{node['value']}}</span>
+            <a *ngIf="node['info']['datatypebase'] == 'identityref'" class="value_inline"
+                (click)="showIdentity(node)" title="open identity information in YANG Explorer">info</a>
             <span *ngIf="node['edit']" class="value_inline">{{node['info']['datatype']}}
                 <span *ngIf="node['info']['datatype'] != node['info']['datatypebase']">({{node['info']['datatypebase']}})</span>
             </span>

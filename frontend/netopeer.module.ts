@@ -22,7 +22,7 @@ import { InventorySchemasComponent } from './inventory/schemas.component';
 import {InventoryDevicesComponent, DialogueHostcheck, DialoguePassword} from './inventory/devices.component';
 import { ConfigComponent } from './config/config.component';
 import { TreeView, TreeNode, TreeLeaflistValue, TreeIndent, TreeCreate, TreeEdit, TreeScrollTo, CheckLeafValue } from './config/tree.component';
-import { YANGComponent } from './yang/yang.component';
+import { YANGComponent, YANGModule } from './yang/yang.component';
 import { MonitoringComponent } from './monitoring/monitoring.component';
 import { PluginsComponent } from './plugins/plugins.component';
 
@@ -112,6 +112,7 @@ const routes: Routes = [
     TreeNode,
     TreeView,
     YANGComponent,
+    YANGModule,
     MonitoringComponent,
     PluginsComponent,
     DialogueHostcheck,

@@ -1,9 +1,9 @@
 <nav #subnav id="subnav">
     <a *ngFor="let schema of schemasService.schemas" [class.active]="schema.key == schemasService.activeSchema"
-        (click)="schemasService.changeActiveSchemaKey(schema.key)">{{schema.key}}
+        (click)="schemasService.changeActiveSchemaKey(schema.key);refreshActiveSchema()">{{schema.key}}
         <img class="tab-icon tab-close tab-action-last" src="assets/netopeer/icons/close.svg"  alt="x" title="close"
             onmouseover="this.src='assets/netopeer/icons/close_active.svg'"
-            onmouseout="this.src='assets/netopeer/icons/close.svg'" (click)="schemasService.close(schema.key)"/>
+            onmouseout="this.src='assets/netopeer/icons/close.svg'" (click)="schemasService.close(schema.key);refreshActiveSchema()"/>
     </a><a (click)="addSchema()" onmouseout="getElementById('tabadd').style.filter='invert(100%)'" onmouseover="getElementById('tabadd').style.filter='invert(0%)'">
         <img id="tabadd" class="tab-icon tab-add tab-action-last" src="assets/netopeer/icons/add.svg" alt="+" title="open schema"
             onmouseover="this.src='assets/netopeer/icons/add_active.svg'"
@@ -11,6 +11,22 @@
     </a>
 </nav>
 <div class="netopeer-content" [style.padding-top]="'calc(' + subnav.offsetHeight + 'px - -0.7em)'">
-<img *ngIf="!schemasService.activeSchema" (click)="addSchema()" src="assets/netopeer/starthere.svg" alt="Start here with that + sign."/>
-<pre *ngIf="schemasService.activeSchema">{{schemasService.getSchema(schemasService.activeSchema).data}}</pre>
+<img *ngIf="!activeSchema" (click)="addSchema()" src="assets/netopeer/starthere.svg" alt="Start here with that + sign."/>
+<div *ngIf="activeSchema">
+    <span>Switch to
+        <ng-container [ngSwitch]="activeSchema.type">
+            <a *ngSwitchCase="'text'" (click)="schemasService.show(activeSchema.key,null,'tree')">interactive</a>
+            <ng-container *ngSwitchDefault><a (click)="schemasService.show(activeSchema.key,null,'text')">text</a>
+              format<ng-container *ngIf="activeSchema.type!='tree'"> or show <a (click)="schemasService.show(activeSchema.key,null,'tree')">module root</a></ng-container>.
+            </ng-container>
+        </ng-container>
+    </span>
+    <hr/>
+    <ng-container [ngSwitch]="activeSchema.type">
+        <pre *ngSwitchCase="'text'">{{activeSchema.data}}</pre>
+        <yang-module *ngSwitchCase="'tree'" [schema]="activeSchema" (refresh)="refreshActiveSchema()"></yang-module>
+        <pre *ngSwitchDefault>{{activeSchema.data | json}}</pre>
+    </ng-container>
+</div>
+
 </div>

@@ -1,6 +1,8 @@
 @import '../netopeer-common';
 @import '../inventory/inventory.component';
 
+$colorLineHover: #e1e1e1;
+
 .loading {
     text-align: center;
     margin: auto;
@@ -9,4 +11,51 @@
         margin: auto;
         width: 50px;
     }
+}
+
+.yang-infobox {
+    display: block;
+    cursor: default;
+}
+
+.yang-info-section-label,
+.yang-info-subsection-label,
+.yang-info-label {
+    color: $colorMain;
+}
+
+.yang-info-section {
+    display: flex;
+    flex-direction: column;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.yang-info-subsection {
+    padding-left: 2em;
+}
+
+.yang-info,
+.yang-info-label,
+.yang-info-value {
+    border: 0px solid black;
+}
+
+.yang-info {
+    display: flex;
+    .yang-info-label {
+        margin-left: 2em;
+    }
+}
+.yang-info:hover {
+    background-color: $colorLineHover;
+}
+
+.yang-info-value {
+}
+
+.yang-info-label {
+    min-width: 10em;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }

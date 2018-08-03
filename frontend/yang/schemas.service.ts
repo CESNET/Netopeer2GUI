@@ -20,7 +20,7 @@ export class SchemasService {
         }
         if (!this.activeSchema) {
             this.activeSchema = "";
-        } else if (!(this.activeSchema in this.schemas)) {
+        } else if (!this.getSchema(this.activeSchema)) {
             if (this.schemas.length) {
                 this.activeSchema = this.schemas[0]['name'];
             } else {
@@ -79,7 +79,7 @@ export class SchemasService {
         return this.http.get( '/netopeer/inventory/schemas' );
     }
 
-    show(key: string, schema: Schema = null, type: string = 'text') {
+    show(key: string, schema: Schema = null, type: string = 'text', path: string = null) {
         let newSchema = true;
         let present = this.getSchema(key);
         if (present) {
@@ -89,12 +89,16 @@ export class SchemasService {
             schema = new Schema(key);
         }
 
-        if (!schema || !schema.data) {
+        if (!schema.data || schema.type != type) {
             let params = new HttpParams()
                 .set('key', key)
                 .set('type', type);
+            if (path) {
+                params = params.set('path', path);
+            }
             this.http.get<object>('/netopeer/inventory/schema', {params: params})
                 .subscribe((result: object) => {
+                    console.log(result)
                     if (result['success']) {
                         schema.name = result['name'];
                         if ('revision' in result) {

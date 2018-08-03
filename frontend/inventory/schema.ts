@@ -4,6 +4,7 @@ export class Schema {
     public name: string = '',
     public revision: string = '',
     public type: string = '',
-    public data: any = null
+    public data: any = null,
+    public sections: string[] = []
   ) {}
 }

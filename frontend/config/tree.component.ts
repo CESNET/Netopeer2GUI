@@ -310,7 +310,7 @@ export class TreeNode {
     }
 
     isEditable(node) {
-        if ((node['info']['key'] && !node['new']) || node['deleted']) {
+        if (!node['info']['config'] || (node['info']['key'] && !node['new']) || node['deleted']) {
             return false;
         }
         return true;
@@ -340,8 +340,15 @@ export class TreeNode {
         }
 
         schema.name = this.treeService.moduleName(node);
-        this.schemasService.show(schema.key, schema);
+        this.schemasService.show(schema.key, schema, 'tree');
         this.schemasService.changeActiveSchemaKey(schema.key);
+        this.router.navigateByUrl( '/netopeer/yang' );
+    }
+
+    showIdentity(node) {
+        let name = node['value'].slice(node['value'].lastIndexOf(':') + 1)
+        this.schemasService.show(node['info']['refmodule'], null, 'tree-identity', name);
+        this.schemasService.changeActiveSchemaKey(node['info']['refmodule']);
         this.router.navigateByUrl( '/netopeer/yang' );
     }
 
@@ -352,6 +359,7 @@ export class TreeNode {
             return [];
         }
     }
+
 }
 
 @Component({

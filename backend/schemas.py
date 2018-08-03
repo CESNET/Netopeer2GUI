@@ -6,6 +6,7 @@ Author: Radek Krejci <rkrejci@cesnet.cz>
 
 import json
 import os
+import logging
 import errno
 import time
 from subprocess import check_output
@@ -18,7 +19,15 @@ import yang
 from .inventory import INVENTORY, inventory_check
 from .error import NetopeerException
 
+log = logging.getLogger(__name__)
+
 __SCHEMAS_EMPTY = '{"timestamp":0, "schemas":{}}'
+
+def make_schema_key(module):
+	result = module.name()
+	if module.rev_size():
+		result = result + '@' + module.rev().date() + '.yang'
+	return result
 
 
 def __schema_parse(path, format = yang.LYS_IN_UNKNOWN):
@@ -188,17 +197,30 @@ def schema_get():
 	if key in schemas['schemas']:
 		try:
 			if 'type' in req and req['type'] == 'tree':
-				# build tree representation for frontend
-				data = {}
+				# build tree representation for frontendtry:
+				try:
+					ctx = yang.Context(path)
+					module = ctx.parse_module_path(os.path.join(path, key), yang.LYS_IN_YANG)
+					data = json.loads(module.print_mem(yang.LYS_OUT_JSON, 0))
+				except Exception as e:
+					log.error(module.print_mem(yang.LYS_OUT_JSON, 0))
+					return(json.dumps({'success': False, 'error-msg':str(e)}))
+			elif 'type' in req and 'path' in req and req['type'] == 'tree-identity':
+				try:
+					ctx = yang.Context(path)
+					module = ctx.parse_module_path(os.path.join(path, key), yang.LYS_IN_YANG)
+					data = json.loads(module.print_mem(yang.LYS_OUT_JSON, 'identity/' + req['path'], 0))
+				except Exception as e:
+					return(json.dumps({'success': False, 'error-msg':str(e)}))
 			else:
 				# default (text) representation
 				with open(os.path.join(path, key), 'r') as schema_file:
 					data = schema_file.read()
 			if 'revision' in schemas['schemas'][key]:
 				return(json.dumps({'success': True, 'data': data, 'name':schemas['schemas'][key]['name'],
-								 'revision':schemas['schemas'][key]['revision']}))
+								 'revision':schemas['schemas'][key]['revision']}, ensure_ascii = False))
 			else:
-				return(json.dumps({'success': True, 'data': data, 'name':schemas['schemas'][key]['name']}))
+				return(json.dumps({'success': True, 'data': data, 'name':schemas['schemas'][key]['name']}, ensure_ascii = False))
 		except:
 			pass;
 	return(json.dumps({'success': False, 'error-msg':'Schema ' + key + ' not found.'}))

@@ -9,6 +9,8 @@ import os
 
 import yang
 import netconf2 as nc
+from .schemas import make_schema_key
+
 
 def infoBuiltInType(base):
 	return {
@@ -149,6 +151,8 @@ def dataInfoNode(node, parent=None, recursion=False):
 	result = {}
 	if info["type"] == yang.LYS_LEAF or info["type"] == yang.LYS_LEAFLIST:
 		result["value"] = casted.value_str()
+		if info["datatypebase"] == "identityref":
+			info["refmodule"] = make_schema_key(casted.value().ident().module())
 	elif recursion:
 		result["children"] = []
 		if node.child():
