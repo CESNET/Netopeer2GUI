@@ -10,35 +10,39 @@
     </div>
 
     <!-- linkage-stmts -->
-    <div class="yang-info-section" *ngIf="!section('imports')"><a class="yang-info-section-label" (click)="section('imports', true)">imports</a></div>
-    <div class="yang-info-section" *ngIf="section('imports') && data['import']"><a class="yang-info-section-label" (click)="section('imports', false)">imports</a>
-        <span class="yang-info-subsection" *ngFor="let key of getKeys(data['import'])">
-            <span class="yang-info-subsection-label">
-                <a (click)="link(data['import'][key]['resolves-to'].module+'.yang')">{{key}}</a>
+    <ng-container *ngIf="data['import']">
+        <div class="yang-info-section" *ngIf="!section('imports')"><a class="yang-info-section-label" (click)="section('imports', true)">imports</a></div>
+        <div class="yang-info-section" *ngIf="section('imports') && data['import']"><a class="yang-info-section-label" (click)="section('imports', false)">imports</a>
+            <span class="yang-info-subsection" *ngFor="let key of getKeys(data['import'])">
+                <span class="yang-info-subsection-label">
+                    <a (click)="link(data['import'][key]['resolves-to'].module+'.yang')">{{key}}</a>
+                </span>
+                <div class="yang-info">
+                    <span class="yang-info-label">prefix</span><span class="yang-info-value">{{data['import'][key].prefix.value}}</span>
+                </div>
+                <div class="yang-info" *ngIf="data['import'][key].description">
+                    <span class="yang-info-label">description</span><pre class="yang-info-value">{{data['import'][key].description.text}}</pre>
+                </div>
+                <div class="yang-info" *ngIf="data['import'][key].reference">
+                    <span class="yang-info-label">reference</span><pre class="yang-info-value">{{data['import'][key].reference.text}}</pre>
+                </div>
             </span>
-            <div class="yang-info">
-                <span class="yang-info-label">prefix</span><span class="yang-info-value">{{data['import'][key].prefix.value}}</span>
-            </div>
-            <div class="yang-info" *ngIf="data['import'][key].description">
-                <span class="yang-info-label">description</span><pre class="yang-info-value">{{data['import'][key].description.text}}</pre>
-            </div>
-            <div class="yang-info" *ngIf="data['import'][key].reference">
-                <span class="yang-info-label">reference</span><pre class="yang-info-value">{{data['import'][key].reference.text}}</pre>
-            </div>
-        </span>
-    </div>
-    <div class="yang-info-section" *ngIf="!section('includes')"><a class="yang-info-section-label" (click)="section('includes', true)">includes</a></div>
-    <div class="yang-info-section" *ngIf="section('includes') && data['include']"><a class="yang-info-section-label" (click)="section('includes', false)">includes</a>
-        <div class="yang-info-subsection" *ngFor="let key of getKeys(data['include'])">
-            <span class="yang-info-subsection-label">{{key}}</span>
-            <div class="yang-info" *ngIf="data['include'][key].description">
-                <span class="yang-info-label">description</span><pre class="yang-info-value">{{data['include'][key].description.text}}</pre>
-            </div>
-            <div class="yang-info" *ngIf="data['include'][key].reference">
-                <span class="yang-info-label">reference</span><pre class="yang-info-value">{{data['include'][key].reference.text}}</pre>
+        </div>
+    </ng-container>
+    <ng-container *ngIf="data['include']">
+        <div class="yang-info-section" *ngIf="!section('includes')"><a class="yang-info-section-label" (click)="section('includes', true)">includes</a></div>
+        <div class="yang-info-section" *ngIf="section('includes') && data['include']"><a class="yang-info-section-label" (click)="section('includes', false)">includes</a>
+            <div class="yang-info-subsection" *ngFor="let key of getKeys(data['include'])">
+                <span class="yang-info-subsection-label">{{key}}</span>
+                <div class="yang-info" *ngIf="data['include'][key].description">
+                    <span class="yang-info-label">description</span><pre class="yang-info-value">{{data['include'][key].description.text}}</pre>
+                </div>
+                <div class="yang-info" *ngIf="data['include'][key].reference">
+                    <span class="yang-info-label">reference</span><pre class="yang-info-value">{{data['include'][key].reference.text}}</pre>
+                </div>
             </div>
         </div>
-    </div>
+    </ng-container>
 
     <!-- meta-stmts -->
     <div class="yang-info-section" *ngIf="!section('meta')"><a class="yang-info-section-label" (click)="section('meta', true)">meta information</a></div>

@@ -105,12 +105,11 @@ export class YANGTypedef implements OnInit, OnChanges {
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        console.log("change detected")
         this.ngOnInit();
     }
 
     ngOnInit(): void {
-        this.name = Object.keys(this.data)[0]
+        this.name = Object.keys(this.schema.data)[0]
     }
 }
 
@@ -192,6 +191,23 @@ export class YANGComponent {
 
     refreshActiveSchema() {
         this.activeSchema = this.schemasService.getSchema(this.schemasService.activeSchema);
+    }
+
+    back() {
+        this.schemasService.history.pop(); /* the currently displayed element, forget it */
+        let prev = this.schemasService.history.pop(); /* the previous one we want to display, it will be stored again by show() */
+        this.schemasService.show(prev.key, null, prev.type, prev.path);
+        this.schemasService.changeActiveSchemaKey(prev.key);
+        this.refreshActiveSchema();
+    }
+
+    changeView(key: string) {
+        this.schemasService.changeActiveSchemaKey(key);
+        this.refreshActiveSchema();
+        let type = this.activeSchema.type;
+        let path = this.activeSchema.path;
+        this.schemasService.history.push({key, type, path});
+        localStorage.setItem('YEHistory', JSON.stringify(this.schemasService.history));
     }
 
     schemaData(schema: Schema) {

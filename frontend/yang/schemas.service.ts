@@ -11,6 +11,7 @@ import { Schema } from '../inventory/schema';
 export class SchemasService {
     public schemas: Schema[];
     public activeSchema: string;
+    public history;
 
     constructor( private http: HttpClient ) {
         this.loadSchemas();
@@ -35,10 +36,13 @@ export class SchemasService {
         } else {
             localStorage.removeItem('schemas');
         }
+
+        localStorage.setItem('YEHistory', JSON.stringify(this.history));
     }
 
     loadSchemas(): void {
         this.schemas = JSON.parse(localStorage.getItem('schemas'));
+        this.history = JSON.parse(localStorage.getItem('YEHistory'));
     }
 /*
     getSchemaKey(schema: Schema) {
@@ -98,7 +102,6 @@ export class SchemasService {
             }
             this.http.get<object>('/netopeer/inventory/schema', {params: params})
                 .subscribe((result: object) => {
-                    console.log(result)
                     if (result['success']) {
                         schema.name = result['name'];
                         if ('revision' in result) {
@@ -106,6 +109,7 @@ export class SchemasService {
                         }
                         schema.type = type;
                         schema.data = result['data'];
+                        this.history.push({key, type, path});
                         this.storeSchemas();
                     }
                 });
