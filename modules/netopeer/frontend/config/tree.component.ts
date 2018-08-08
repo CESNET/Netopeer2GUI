@@ -244,11 +244,8 @@ export class TreeIndent implements OnInit {
     }
 
     cancelModification(node, value = false) {
-        console.log(node['path'])
-        console.log(value)
         if (node['info']['type'] == 8 && !value) {
             for (let item of this.treeService.nodesToShow(this.activeSession, node)) {
-                console.log(item['path'])
                 this.modsService.cancelModification(this.activeSession, item, false, true);
             }
         } else if (value) {

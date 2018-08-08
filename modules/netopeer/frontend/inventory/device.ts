@@ -1,8 +1,10 @@
 export class Device {
   constructor (
     public id: number,
+    public name:string = '',
     public hostname: string = '',
     public port: number = 830,
+    public autoconnect: boolean = false,
     public username: string = '',
     public password: string = ''
   ) {}

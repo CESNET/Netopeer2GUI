@@ -35,7 +35,8 @@ cp /home/vagrant/shared/netopeer-config.ini /var/www/html/ncgui/backend/liberout
 service apache2 restart
 SCRIPT
 
-Vagrant::DEFAULT_SERVER_URL.replace('https://vagrantcloud.com')
+# uncomment the following line for vagrant < 2.0.0
+# Vagrant::DEFAULT_SERVER_URL.replace('https://vagrantcloud.com')
 Vagrant.configure("2") do |config|
   config.vm.provider :virtualbox do |vb|
     vb.customize ["modifyvm", :id, "--memory", "1024"]

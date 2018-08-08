@@ -6,43 +6,49 @@
   <div *ngIf="addingDevice">
     <hr/>
     <form (submit)="addDevice(action.value)" #newDeviceForm>
-      <div class="input_block">
-        <label for="hostname" class="input_line">Hostname / IP</label>
-        <label for="port" class="input_line">Port</label>
-        <label for="username" class="input_line">Username</label>
-        <label for="password" class="input_line">Password</label>
-        <label for="action" class="input_line">What next</label>
+      <div class="input_line">
+        <label for="name" class="input_line">Device Name</label>
+        <input type="text" name="name" #name placeholder="{{namePlaceholder}}" [class.invalid]="false" [(ngModel)]="newDevice.name"/>
       </div>
-      <div class="input_block">
-        <div class="input_line">
-          <input type="text" name="hostname" required
-            #host [class.invalid]="!bitStatus(8)" [(ngModel)]="newDevice.hostname" (keyup)="checkString(host.value, 8)"/>
-          <div [hidden]="bitStatus(8)" class="input_line_alert">Hostname or IP address is required</div>
-        </div>
-        <div class="input_line">
-          <input type="number" name="port" required
-            #port [class.invalid]="!bitStatus(1)" [(ngModel)]="newDevice.port" (keyup)="checkPort(port.value)" (change)="checkPort(port.value)"/>
-          <div [hidden]="bitStatus(1)" class="input_line_alert">Port must be in range 1 - 65535</div>
-        </div>
-        <div class="input_line">
+      <div class="input_line">
+        <label for="hostname" class="input_line">Hostname / IP</label>
+        <input type="text" name="hostname" required
+          #host [class.invalid]="!bitStatus(8)" [(ngModel)]="newDevice.hostname" (keyup)="checkString(host.value, 8);namePlaceholderUpdate()"/>
+        <div [hidden]="bitStatus(8)" class="input_line_alert">Hostname or IP address is required</div>
+      </div>
+      <div class="input_line">
+        <label for="port" class="input_line">Port</label>
+        <input type="number" name="port" required
+          #port [class.invalid]="!bitStatus(1)" [(ngModel)]="newDevice.port" (keyup)="checkPort(port.value)" (change)="checkPort(port.value)"/>
+        <div [hidden]="bitStatus(1)" class="input_line_alert">Port must be in range 1 - 65535</div>
+      </div>
+      <div class="input_line">
+        <label for="username" class="input_line">Username</label>
           <input type="text" name="username"
             #user [class.invalid]="!bitStatus(4)" [(ngModel)]="newDevice.username" (keyup)="checkString(user.value, 4)"/>
           <div [hidden]="bitStatus(4)" class="input_line_alert">User login is required to connect to the device.</div>
-        </div>
-        <div class="input_line">
+      </div>
+      <div class="input_line">
+        <label for="password" class="input_line">Password</label>
           <input type="password" name="password"
             #pass [class.invalid]="!bitStatus(2)" [(ngModel)]="newDevice.password" (keyup)="checkString(pass.value, 2)"/>
           <div [hidden]="bitStatus(2)" class="input_line_alert">User password must be specified to connect to the device.</div>
-        </div>
-        <div class="input_line">
-          <select name="action" required #action>
-            <option [value]="'store'">store</option>
-            <option [value]="'connect'">connect</option>
-            <option [value]="'store_connect'" selected="selected">store & connect</option>
-          </select>
-        </div>
       </div>
-      <div>
+      <div class="input_line">
+        <label for="autoconnect" class="input_line">Auto Connect</label>
+        <input type="checkbox" name="autoconnect"
+          #autoconnect [(ngModel)]="newDevice.autoconnect" title="Automatically connect the device on user login."/>
+      </div>
+      <div class="input_line">
+        <label for="action" class="input_line">What next</label>
+        <select name="action" required #action>
+          <option [value]="'store'">store</option>
+          <option [value]="'connect'">connect</option>
+          <option [value]="'store_connect'" selected="selected">store & connect</option>
+        </select>
+      </div>
+
+      <div class="input_control">
         <button type="submit" [disabled]="validAddForm != 15">Done</button>
         <span [ngSwitch]="addingResult">
           <span *ngSwitchCase="0" class="msg-rounded msg-failure"><span class="msg-close" (click)="addingResult=-1">x</span>failed.</span>
@@ -58,18 +64,23 @@
 <table class="items">
   <tr class="item_header">
     <th class="item_left">&nbsp;</th>
+    <th>name</th>
     <th>hostname : port</th>
-    <th class="item_right">username</th>
+    <th>username</th>
+    <th class="item_right">autoconnect</th>
   </tr>
-  <tr class="item" *ngFor="let device of devices">
+  <tr class="item" *ngFor="let device of devices" (click)="connect(device)">
     <td class="item_left item_actions">
-        <img class="item_action_delete" (click)="rmDevice(device)"
+        <img class="item_action_delete" (click)="rmDevice(device); $event.stopPropagation()"
             src="assets/netopeer/icons/close.svg" alt="x" title="delete"
             onmouseover="this.src='assets/netopeer/icons/close_active.svg'"
             onmouseout="this.src='assets/netopeer/icons/close.svg'"/>
-      </td>
-    <td class="device" (click)="connect(device)">{{device.hostname}} : {{device.port}}</td>
-    <td class="item_right device-login" (click)="connect(device)">{{device.username}}</td>
+    </td>
+    <td>{{device.name}}</td>
+    <td>{{device.hostname}} : {{device.port}}</td>
+    <td>{{device.username}}</td>
+    <td class="item_right"><input type="checkbox" name="autoconnect" disabled [checked]="device.autoconnect"
+      title="Automatically connect the device on user login."/></td>
   </tr>
 </table>
 

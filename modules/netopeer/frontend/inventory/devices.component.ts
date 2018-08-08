@@ -21,6 +21,7 @@ export class InventoryDevicesComponent implements OnInit {
     addingResult = -1;
     validAddForm = 1; /* 1 - port (has default value), 2 - password, 4 - username, 8 - hostname */
     newDevice: Device;
+    namePlaceholder: string = "";
     id: number;
     err_msg = "";
 
@@ -56,12 +57,14 @@ export class InventoryDevicesComponent implements OnInit {
     }
 
     addDevice(action: string) {
+        if (!this.newDevice.name) {
+            this.newDevice.name = this.namePlaceholder;
+        }
         if (action == 'store' || action == 'store_connect') {
             this.devicesService.addDevice(this.newDevice).subscribe(
                 result => {this.addingResult = result['success'] ? 1 : 0;
-                if (action == 'store') {
-                    this.getDevices();
-                } else { /* store & connect */
+                this.getDevices();
+                if (action == 'store_connect') {
                     this.connect(this.newDevice);
                 }
             });
@@ -75,6 +78,10 @@ export class InventoryDevicesComponent implements OnInit {
     rmDevice(device: Device) {
         this.devicesService.rmDevice(device.id).subscribe(
             result => {if (result['success']) {this.getDevices()} });
+    }
+
+    namePlaceholderUpdate() {
+        this.namePlaceholder = this.newDevice.hostname + ':' + this.newDevice.port;
     }
 
     checkString(host: string, item: number) {
@@ -91,6 +98,7 @@ export class InventoryDevicesComponent implements OnInit {
         } else {
             this.validAddForm |= 1;
         }
+        this.namePlaceholderUpdate();
     }
 
     bitStatus(bit: number): boolean {
@@ -102,6 +110,10 @@ export class InventoryDevicesComponent implements OnInit {
     }
 
     connect(device: Device) {
+        /* for backward compatibility */
+        if (!device.name) {
+            device.name = device.hostname + ":" + device.port;
+        }
         this.sessionsService.connect(device).subscribe(result => {
             if (result['success']) {
                 this.router.navigateByUrl('/netopeer/config');
