@@ -30,8 +30,7 @@ framework, so to install it, follow the [liberouter-gui instructions](https://gi
 
 The backend is a Flask server written in Python 3 and utilizing [libyang](https://github.com/CESNET/libyang)
 and [libnetconf2](https://github.com/CESNET/libnetconf2) Python bindings.
-Unfortunatelly, the code of the bindings is not yet finished, so please use
-the devel branches of the mentioned libraries:
+Unfortunatelly, the code of the bindings is not yet finished, so please use the devel branches of the mentioned libraries:
 
 ```bash
 git clone -b devel https://github.com/CESNET/libyang
@@ -70,7 +69,8 @@ docker inspect --format='{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}
 
 Connect to web client [localhost:4200](localhost:4200)
 Login, then add device:
-  - IP of sysrepo container: netconf/netconf
+
+- IP of sysrepo container: netconf/netconf
 
 ## Docker-compose
 
@@ -82,7 +82,8 @@ docker-compose up
 
 Connect to web client [localhost:4200](localhost:4200)
 Login, then add device:
-  - sysrepo:netconf/netconf
+
+- sysrepo:netconf/netconf
 
 ```bash
 docker-compose down

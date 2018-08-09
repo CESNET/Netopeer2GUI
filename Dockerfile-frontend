@@ -10,14 +10,15 @@ RUN \
 RUN mkdir /opt/dev
 WORKDIR /opt/dev
 
-RUN git clone -b devel https://github.com/CESNET/liberouter-gui.git
+RUN git clone https://github.com/CESNET/liberouter-gui.git && \
+    ln -s /home/vagrant/Netopeer2GUI liberouter-gui/modules/netopeer
 
 COPY modules/ /opt/dev/liberouter-gui/modules/
 COPY liberouter-gui/frontend/proxy.json /opt/dev/liberouter-gui/frontend/
 
 RUN \
     cd liberouter-gui && \
-    python3 ./bootstrap.py && \    
+    python3 ./bootstrap.py && \
     cd frontend && \
     npm install --unsafe-perm -g @angular/cli && \
     npm install --unsafe-perm
