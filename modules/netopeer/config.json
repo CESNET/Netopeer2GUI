@@ -9,6 +9,6 @@
         "hooks" : "NetopeerModuleHooks",
         "frontend" : "frontend",
         "backend" : "backend",
-        "assets" : "frontend-assets"
+        "assets" : "assets"
     }
 }
