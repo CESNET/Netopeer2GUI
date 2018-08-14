@@ -1,15 +1,8 @@
-
 <div class="yang-infobox">
-    <div class="yang-info-label">Identity {{name}}</div>
+    <div class="yang-info-label">Feature {{name}}</div>
     <div class="yang-info-section" *ngIf="data['if-features']">
         <div class="yang-info" *ngFor="let value of data['if-features']">
             <yang-iffeature (refresh)="onRefresh()" [schema]="schema" [data]="value"></yang-iffeature>
-        </div>
-    </div>
-
-    <div class="yang-info-section" *ngIf="data['bases']">
-        <div class="yang-info" *ngFor="let value of data['bases']">
-            <span class="yang-info-label">base</span><a class="yang-info-value" (click)="base(value)" title="from {{value | prefixOnly}}">{{value | noPrefix}}</a>
         </div>
     </div>
 

@@ -16,19 +16,22 @@
     <img [style.visibility]="schemasService.history.length > 1 ? 'visible' : 'hidden'" (click)="back()"
         class="nav-button" src="assets/netopeer/icons/back.svg" alt="back" title="back"/>
     <ng-container [ngSwitch]="activeSchema.type">
-        <img *ngSwitchCase="'text'" (click)="schemasService.show(activeSchema.key,null,'tree')"
+        <img *ngSwitchCase="'text'" (click)="show(activeSchema.key, 'tree')"
             class="nav-button" src="assets/netopeer/icons/module.svg" alt="interactive" title="show YANG interactive view"/>
-        <img *ngSwitchDefault (click)="schemasService.show(activeSchema.key,null,'text')"
+        <img *ngSwitchDefault (click)="show(activeSchema.key, 'text')"
             class="nav-button" src="assets/netopeer/icons/yangfile.svg" alt="text" title="show YANG text view"/>
     </ng-container>
-    <img [style.visibility]="(activeSchema.type != 'tree' && activeSchema.type != 'text') ? 'visible' : 'hidden'" (click)="schemasService.show(activeSchema.key,null,'tree')"
+    <img [style.visibility]="(activeSchema.type != 'tree' && activeSchema.type != 'text') ? 'visible' : 'hidden'" (click)="show(activeSchema.key, 'tree')"
         class="nav-button" src="assets/netopeer/icons/module.svg" alt="module" title="show module information"/>
     <hr/>
     <ng-container [ngSwitch]="activeSchema.type">
         <pre *ngSwitchCase="'text'">{{activeSchema.data}}</pre>
         <yang-module *ngSwitchCase="'tree'" [schema]="activeSchema" (refresh)="refreshActiveSchema()"></yang-module>
         <yang-identity *ngSwitchCase="'tree-identity'" [schema]="activeSchema" (refresh)="refreshActiveSchema()"></yang-identity>
+        <yang-feature *ngSwitchCase="'tree-feature'" [schema]="activeSchema" (refresh)="refreshActiveSchema()"></yang-feature>
         <yang-typedef *ngSwitchCase="'tree-typedef'" [schema]="activeSchema" [data]="schemaData(activeSchema)" (refresh)="refreshActiveSchema()"></yang-typedef>
+        <yang-node *ngSwitchCase="'tree-node'" [schema]="activeSchema" [data]="schemaData(activeSchema)" (refresh)="refreshActiveSchema()"></yang-node>
+        <yang-node *ngSwitchCase="'tree-grouping'" [schema]="activeSchema" [data]="schemaData(activeSchema)" (refresh)="refreshActiveSchema()"></yang-node>
         <pre *ngSwitchDefault>{{activeSchema.data | json}}</pre>
     </ng-container>
 </div>

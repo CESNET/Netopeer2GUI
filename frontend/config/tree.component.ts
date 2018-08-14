@@ -329,27 +329,23 @@ export class TreeNode {
         container.nextElementSibling.lastElementChild.focus();
     }
 
-    showSchema(node) {
-        let schema = new Schema(node['info']['module'] + '.yang');
-        let at = node['info']['module'].indexOf('@');
-        if (at == -1) {
-            schema.name = node['info']['module'];
-        } else {
-            schema.name = node['info']['module'].substring(0, at);
-            schema.revision = node['info']['module'].substring(at + 1);
-        }
+    show(key:string, type:string, path:string = null) {
+        this.schemasService.show(key, type, path)
+            .subscribe((result: object) => {
+                if (result['success']) {
+                    this.router.navigateByUrl( '/netopeer/yang' );
+                }
+            });
+    }
 
-        schema.name = this.treeService.moduleName(node);
-        this.schemasService.show(schema.key, schema, 'tree');
-        this.schemasService.changeActiveSchemaKey(schema.key);
-        this.router.navigateByUrl( '/netopeer/yang' );
+    showSchema(node) {
+        this.show(node['info']['module'] + '.yang', 'tree');
     }
 
     showIdentity(node) {
-        let name = node['value'].slice(node['value'].lastIndexOf(':') + 1)
-        this.schemasService.show(node['info']['refmodule'], null, 'tree-identity', name);
-        this.schemasService.changeActiveSchemaKey(node['info']['refmodule']);
-        this.router.navigateByUrl( '/netopeer/yang' );
+        let name = node['value'].slice(node['value'].lastIndexOf(':') + 1);
+
+        this.show(node['info']['refmodule'], 'tree-identity', name);
     }
 
     newChildrenToShow(node) {

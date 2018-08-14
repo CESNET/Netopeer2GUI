@@ -1,6 +1,6 @@
 <div class="yang-infobox">
     <div class="yang-info-section">
-        <div class="yang-info">
+        <div class="yang-info" *ngIf="typdef">
             <span class="yang-info-label">based on</span>
             <ng-container *ngIf="data['derived-from'] != data['basetype']">
                 <a class="yang-info-value" (click)="derivedFrom(data['derived-from'])">{{data['derived-from'] | noPrefix}}</a>&nbsp;<span>({{data['basetype']}})</span>
@@ -9,8 +9,11 @@
                 <span class="yang-info-value">{{data['derived-from'] | noPrefix}}</span>
             </ng-container>
         </div>
+        <div class="yang-info" *ngIf="!typdef && data['derived-from'] != data['basetype']">
+            <span class="yang-info-label">based on</span><span>{{data['basetype']}}</span>
+        </div>
     </div>
-    
+
     <!-- restrictions -->
     <div class="yang-info-section">
         <div class="yang-info" *ngIf="data['fraction-difgits']">
@@ -38,7 +41,7 @@
         <div class="yang-info-subsection">
             <ng-container *ngIf="bit['if-features']">
                 <div class="yang-info" *ngFor="let value of bit['if-features']">
-                    <span class="yang-info-label">if-feature</span><span class="yang-info-value">{{value}}</span>
+                    <yang-iffeature (refresh)="onRefresh()" [schema]="schema" [data]="value"></yang-iffeature>
                 </div>
             </ng-container>
             <div class="yang-info" *ngIf="bit.status">
@@ -63,7 +66,7 @@
         <div class="yang-info-subsection">
             <ng-container *ngIf="enum['if-features']">
                 <div class="yang-info" *ngFor="let value of enum['if-features']">
-                    <span class="yang-info-label">if-feature</span><span class="yang-info-value">{{value}}</span>
+                    <yang-iffeature (refresh)="onRefresh()" [schema]="schema" [data]="value"></yang-iffeature>
                 </div>
             </ng-container>
 	        <div class="yang-info" *ngIf="enum.status">

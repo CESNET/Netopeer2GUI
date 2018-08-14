@@ -51,8 +51,11 @@ export class InventorySchemasComponent implements OnInit {
     }
 
     onSelect(key: string): void {
-        this.schemasService.show(key);
-        this.schemasService.changeActiveSchemaKey(key);
-        this.router.navigateByUrl( '/netopeer/yang' );
+        this.schemasService.show(key)
+            .subscribe((result: object) => {
+                if (result['success']) {
+                    this.router.navigateByUrl( '/netopeer/yang' );
+                }
+            });
     }
 }

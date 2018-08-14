@@ -56,11 +56,14 @@ $colorLineHover: #e1e1e1;
 }
 
 .yang-info-value {
+    display: inline-block;
 }
 
+.yang-info-section-label,
 .yang-info-subsection-label,
 .yang-info-label {
     min-width: 10em;
     overflow: hidden;
     text-overflow: ellipsis;
+    display: inline-block;
 }

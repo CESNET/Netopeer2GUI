@@ -6,6 +6,15 @@ import { Schema } from '../inventory/schema';
 
 import { NoPrefixPipe, PrefixOnlyPipe } from '../common/pipes';
 
+class iffItem {
+    constructor(
+        public type:string,
+        public content:string,
+        public key:string = null,
+        public path: string = null
+    ) {}
+}
+
 @Component( {
     selector: 'yang-module',
     templateUrl: './yang.module.html',
@@ -40,13 +49,20 @@ export class YANGModule implements OnInit, OnChanges {
     }
 
     link(key: string, type: string = 'tree', path: string = null) {
-        this.schemasService.show(key, null, type, path);
-        this.schemasService.changeActiveSchemaKey(key);
+        this.schemasService.show(key, type, path)
+            .subscribe((result: object) => {
+                if (result['success']) {
+                    this.refresh.emit();
+                }
+            });
+    }
+
+    onRefresh() {
         this.refresh.emit();
     }
 
     ngOnChanges(changes: SimpleChanges) {
-        this.data = this.schema.data[Object.keys(this.schema.data)[0]];
+        this.ngOnInit();
     }
 
     ngOnInit(): void {
@@ -71,9 +87,45 @@ export class YANGIdentity implements OnInit, OnChanges {
     base(id: string) {
         let i = id.indexOf(':');
         let key = id.slice(0,  i) + '.yang';
-        let path = id.slice(i + 1);
-        this.schemasService.show(key, null, 'tree-identity', path);
-        this.schemasService.changeActiveSchemaKey(key);
+        let path = '/' + id.slice(i + 1);
+        this.schemasService.show(key, 'tree-identity', path)
+            .subscribe((result: object) => {
+                if (result['success']) {
+                    this.refresh.emit();
+                    this.ngOnInit();
+                }
+            });
+    }
+
+    onRefresh() {
+        this.refresh.emit();
+    }
+
+    ngOnChanges(changes: SimpleChanges) {
+        this.ngOnInit();
+    }
+
+    ngOnInit(): void {
+        this.name = Object.keys(this.schema.data)[0]
+        this.data = this.schema.data[this.name];
+    }
+}
+
+@Component( {
+    selector: 'yang-feature',
+    templateUrl: './yang.feature.html',
+    styleUrls: ['./yang.component.scss']
+} )
+
+export class YANGFeature implements OnInit, OnChanges {
+    @Input() schema: Schema;
+    @Output() refresh = new EventEmitter();
+    data: any;
+    name: string;
+
+    constructor(public schemasService: SchemasService) {}
+
+    onRefresh() {
         this.refresh.emit();
     }
 
@@ -120,6 +172,7 @@ export class YANGTypedef implements OnInit, OnChanges {
 } )
 export class YANGType {
     @Input() data: any;
+    @Input() typedef: boolean = true;
     @Output() refresh = new EventEmitter();
 
     constructor(public schemasService: SchemasService) {}
@@ -127,10 +180,13 @@ export class YANGType {
     derivedFrom(id: string) {
         let i = id.indexOf(':');
         let key = id.slice(0,  i) + '.yang';
-        let path = id.slice(i + 1);
-        this.schemasService.show(key, null, 'tree-typedef', path);
-        this.schemasService.changeActiveSchemaKey(key);
-        this.refresh.emit();
+        let path = '/' + id.slice(i + 1);
+        this.schemasService.show(key, 'tree-typedef', path)
+            .subscribe((result: object) => {
+                if (result['success']) {
+                    this.refresh.emit();
+                }
+            });
     }
 
     onRefresh() {
@@ -140,10 +196,13 @@ export class YANGType {
     base(id: string) {
         let i = id.indexOf(':');
         let key = id.slice(0,  i) + '.yang';
-        let path = id.slice(i + 1);
-        this.schemasService.show(key, null, 'tree-identity', path);
-        this.schemasService.changeActiveSchemaKey(key);
-        this.refresh.emit();
+        let path = '/' + id.slice(i + 1);
+        this.schemasService.show(key, 'tree-identity', path)
+            .subscribe((result: object) => {
+                if (result['success']) {
+                    this.refresh.emit();
+                }
+            });
     }
 }
 
@@ -176,6 +235,129 @@ export class YANGRestriction {
 }
 
 @Component( {
+    selector: 'yang-node',
+    templateUrl: './yang.node.html',
+    styleUrls: ['./yang.component.scss']
+} )
+export class YANGNode implements OnInit, OnChanges {
+    @Input() schema: Schema;
+    @Input() data: any;
+    @Output() refresh = new EventEmitter();
+    name: string;
+
+    constructor(public schemasService: SchemasService) {}
+
+    getKeys(object: Object) {
+        return Object.keys(object);
+    }
+
+    link(key: string, type: string = 'tree', path: string = null) {
+        if (path) {
+            path = this.schema.path + '/' + path;
+        }
+        this.schemasService.show(key, type, path)
+            .subscribe((result: object) => {
+                if (result['success']) {
+                    this.refresh.emit();
+                    this.ngOnInit();
+                }
+            });
+    }
+
+    derivedFrom(id: string) {
+        let i = id.indexOf(':');
+        let key = id.slice(0,  i) + '.yang';
+        let path = '/' + id.slice(i + 1);
+        this.schemasService.show(key, 'tree-typedef', path)
+            .subscribe((result: object) => {
+                if (result['success']) {
+                    this.refresh.emit();
+                    this.ngOnInit();
+                }
+            });
+    }
+
+    onRefresh() {
+        this.refresh.emit();
+    }
+
+    ngOnChanges(changes: SimpleChanges) {
+        this.ngOnInit();
+    }
+
+    ngOnInit(): void {
+        this.name = Object.keys(this.schema.data)[0]
+    }
+}
+
+@Component( {
+    selector: 'yang-iffeature',
+    template: `
+        <span class="yang-info-label">if-feature</span>
+        <span class="yang-info-value">
+            <ng-container *ngFor="let item of iffeatureParse(data)">
+                <a *ngIf="item.type == 'link'" (click)="link(item.key, 'tree-feature', item.path)">{{item.content | noPrefix}}</a>
+                <span *ngIf="item.type == 'string'">{{item.content}}</span>
+            </ng-container>
+        </span>`,
+    styleUrls: ['./yang.component.scss']
+} )
+export class YANGIffeature {
+    @Input() schema: Schema;
+    @Input() data: string;
+    @Output() refresh = new EventEmitter();
+
+    constructor(public schemasService: SchemasService) {}
+
+    link(key: string, type: string = 'tree', path: string = null) {
+        this.schemasService.show(key, type, path)
+            .subscribe((result: object) => {
+                if (result['success']) {
+                    this.refresh.emit();
+                }
+            });
+    }
+
+    iffeatureParse(expression: string) {
+        let index: number;
+        let length = expression.length;
+        let result = [];
+
+        for ( index = 0; index < length; index++ ) {
+            if ( expression[index].match( "[ ()]" ) ) {
+                result.push(new iffItem('string', expression[index]));
+                continue;
+            } else if ( expression.slice( index, index + 3 ).match( "or " ) ) {
+                result.push(new iffItem('string', "or "));
+                index += 2;
+                continue;
+            } else if ( expression.slice( index, index + 4 ).match( "and " ) ) {
+                result.push(new iffItem('string', "and "));
+                index += 3;
+                continue;
+            }
+
+            let argstop: number = index;
+            while ( expression[argstop] && expression[argstop].match( "[a-zA-Z0-9:@_\\-.]" ) ) {
+                argstop++;
+            }
+            let item = new iffItem('link', expression.slice( index, argstop ));
+            let c = item.content.indexOf(':');
+            if (c != -1) {
+                item.key = item.content.slice(0, c) + '.yang';
+            } else {
+                item.key = this.schema.key;
+            }
+            item.path = '/' + item.content.slice(c + 1);
+
+            result.push(item);
+            index = argstop - 1;
+        }
+        return result;
+    }
+}
+
+@Component( {
     selector: 'netopeer-yang',
     templateUrl: './yang.component.html',
     styleUrls: ['./yang.component.scss']
@@ -196,9 +378,21 @@ export class YANGComponent {
     back() {
         this.schemasService.history.pop(); /* the currently displayed element, forget it */
         let prev = this.schemasService.history.pop(); /* the previous one we want to display, it will be stored again by show() */
-        this.schemasService.show(prev.key, null, prev.type, prev.path);
-        this.schemasService.changeActiveSchemaKey(prev.key);
-        this.refreshActiveSchema();
+        this.schemasService.show(prev.key, prev.type, prev.path)
+            .subscribe((result: object) => {
+                if (result['success']) {
+                    this.refreshActiveSchema();
+                }
+            });
+    }
+
+    show(key:string, type:string) {
+        this.schemasService.show(key, type, null)
+            .subscribe((result: object) => {
+                if (result['success']) {
+                    this.refreshActiveSchema();
+                }
+            });
     }
 
     changeView(key: string) {

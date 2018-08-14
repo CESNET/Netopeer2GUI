@@ -205,15 +205,17 @@ def schema_get():
 					# build tree representation for frontend
 					target = None
 				elif req['type'] == 'tree-identity':
-					target = 'identity/' + req['path']
+					target = 'identity' + req['path']
 				elif req['type'] == 'tree-typedef':
-					target = 'typedef/' + req['path']
+					target = 'typedef' + req['path']
 				elif req['type'] == 'tree-grouping':
-					target = 'grouping/' + req['path']
+					target = 'grouping' + req['path']
 				elif req['type'] == 'tree-node':
 					target = req['path']
 				elif req['type'] == 'tree-type':
-					target = 'type/' + req['path']
+					target = 'type' + req['path']
+				elif req['type'] == 'tree-feature':
+					target = 'feature' + req['path']
 				else:
 					return(json.dumps({'success': False, 'error-msg': 'Unsupported schema format ' + req['type']}))
 

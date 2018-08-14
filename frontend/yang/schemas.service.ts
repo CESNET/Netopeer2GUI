@@ -43,6 +43,9 @@ export class SchemasService {
     loadSchemas(): void {
         this.schemas = JSON.parse(localStorage.getItem('schemas'));
         this.history = JSON.parse(localStorage.getItem('YEHistory'));
+        if (!this.history) {
+            this.history = [];
+        }
     }
 /*
     getSchemaKey(schema: Schema) {
@@ -83,41 +86,64 @@ export class SchemasService {
         return this.http.get( '/netopeer/inventory/schemas' );
     }
 
-    show(key: string, schema: Schema = null, type: string = 'text', path: string = null) {
-        let newSchema = true;
-        let present = this.getSchema(key);
-        if (present) {
-            schema = present;
-            newSchema = false;
-        } else {
-            schema = new Schema(key);
-        }
-
-        if (!schema.data || schema.type != type || type != 'text') {
-            let params = new HttpParams()
-                .set('key', key)
-                .set('type', type);
-            if (path) {
-                params = params.set('path', path);
+    show(key: string, type: string = 'text', path: string = null): Observable<object> {
+        let schema = new Schema(key);
+        let i:number;
+        for (i = this.schemas.length; i > 0; i--) {
+            if (this.schemas[i - 1].key == key) {
+                break;
             }
-            this.http.get<object>('/netopeer/inventory/schema', {params: params})
-                .subscribe((result: object) => {
-                    if (result['success']) {
-                        schema.name = result['name'];
-                        if ('revision' in result) {
-                            schema.revision = result['revision'];
-                        }
-                        schema.type = type;
-                        schema.data = result['data'];
-                        this.history.push({key, type, path});
-                        this.storeSchemas();
-                    }
-                });
         }
 
-        if (newSchema) {
-            this.schemas.push(schema);
-            this.storeSchemas();
+        let params = new HttpParams()
+            .set('key', key)
+            .set('type', type);
+        if (path) {
+            params = params.set('path', path);
+        }
+
+        return this.http.get<object>('/netopeer/inventory/schema', {params: params})
+            .map((result: object) => {
+                if ( result['success'] ) {
+                    schema.name = result['name'];
+                    if ( 'revision' in result ) {
+                        schema.revision = result['revision'];
+                    }
+                    schema.type = type;
+                    if ( path ) {
+                        switch (type) {
+                        case 'tree-grouping':
+                            schema.path = 'grouping' + path;
+                            break;
+                        default:
+                            schema.path = path;
+                            break;
+                        }
+                    } else {
+                        schema.path = '';
+                    }
+                    schema.data = result['data'];
+                    this.history.push( { key, type, path } );
+
+                    if (i > 0) {
+                        /* replacing already present schema */
+                        this.schemas.splice(i - 1, 1, schema);
+                    } else {
+                        /* adding new schema to the end of the list */
+                        this.schemas.push(schema);
+                    }
+                    this.storeSchemas();
+                    this.changeActiveSchemaKey(key);
+                }
+                return result;
+            });
+    }
+
+    cleanHistory( key:string ) {
+        for (let i = this.history.length; i > 0; i--) {
+            if (this.history[i - 1].key == key) {
+                this.history.splice(i - 1, 1);
+            }
         }
     }
 
@@ -134,6 +160,7 @@ export class SchemasService {
             }
         }
         this.schemas.splice(index, 1);
+        this.cleanHistory(key);
         this.storeSchemas();
     }
 
