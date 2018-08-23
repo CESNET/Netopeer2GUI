@@ -123,7 +123,10 @@ export class SchemasService {
                         schema.path = '';
                     }
                     schema.data = result['data'];
-                    this.history.push( { key, type, path } );
+                    let last = this.history[this.history.length - 1];
+                    if (!last || last.key != key || last.type != type || last.path != path) {
+                        this.history.push( { key, type, path } );
+                    }
 
                     if (i > 0) {
                         /* replacing already present schema */
