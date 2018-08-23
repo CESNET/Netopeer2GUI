@@ -43,7 +43,7 @@
             onmouseout="this.src='assets/netopeer/icons/collapse.svg'"/>
     </ng-container>
 
-    <div class="node_info"><span class="node_name">{{node['info']['name']}}</span>
+    <div class="node_info"><a class="node_name" (click)=linkNode(node) title="open schema node information in YANG Explorer">{{node['info']['name']}}</a>
         <!-- list's keys -->
         <span *ngIf="node['info']['type'] == 16" class="keys">* [{{node['keys']}}]</span>
 
@@ -55,7 +55,7 @@
             <span *ngIf="!node['edit']" class="value_inline" [class.keys]="!isEditable(node)" [class.editable]="isEditable(node)"
                 (click)="startEditing(node, $event.target);">{{node['value']}}</span>
             <a *ngIf="node['info']['datatypebase'] == 'identityref'" class="value_inline"
-                (click)="showIdentity(node)" title="open identity information in YANG Explorer">info</a>
+                (click)="linkIdentity(node)" title="open identity information in YANG Explorer">info</a>
             <span *ngIf="node['edit']" class="value_inline">{{node['info']['datatype']}}
                 <span *ngIf="node['info']['datatype'] != node['info']['datatypebase']">({{node['info']['datatypebase']}})</span>
             </span>
@@ -68,7 +68,7 @@
     </div>
     <!-- END nodetype-specific code -->
 
-    <div class="module_name" (click)="showSchema(node)" title="open schema {{node['info']['module']}} in YANG Explorer">{{treeService.moduleName(node)}}</div>
+    <div class="module_name" (click)="linkSchema(node)" title="open schema {{node['info']['module']}} in YANG Explorer">{{treeService.moduleName(node)}}</div>
 </div>
 
 <!-- leaf/leaf-list's edit value -->

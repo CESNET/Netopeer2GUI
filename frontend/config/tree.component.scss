@@ -108,11 +108,17 @@ $colorLineHover: #e1e1e1;
     padding-left: 0;
 }
 
-.node_info{
+.node_info {
     display: inline-block;
     word-wrap: break-word;
     margin-left: 3px;
     flex-grow: 1;
+
+    .node_name {
+        cursor: pointer;
+        text-decoration: none;
+        font-weight: normal;
+    }
 }
 
 .value_inline {

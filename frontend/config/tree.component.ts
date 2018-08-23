@@ -329,23 +329,29 @@ export class TreeNode {
         container.nextElementSibling.lastElementChild.focus();
     }
 
-    show(key:string, type:string, path:string = null) {
+    link(key:string, type:string, path:string = null) {
         this.schemasService.show(key, type, path)
             .subscribe((result: object) => {
+                console.log(result);
                 if (result['success']) {
                     this.router.navigateByUrl( '/netopeer/yang' );
                 }
             });
     }
 
-    showSchema(node) {
-        this.show(node['info']['module'] + '.yang', 'tree');
+    linkSchema(node) {
+        this.link(node['info']['module'] + '.yang', 'tree');
     }
 
-    showIdentity(node) {
+    linkNode(node) {
+        console.log(node);
+        this.link(node['info']['module'] + '.yang', 'tree-node', node['info']['path']);
+    }
+
+    linkIdentity(node) {
         let name = node['value'].slice(node['value'].lastIndexOf(':') + 1);
 
-        this.show(node['info']['refmodule'], 'tree-identity', name);
+        this.link(node['info']['refmodule'], 'tree-identity', name);
     }
 
     newChildrenToShow(node) {
