@@ -184,4 +184,33 @@ export class SchemasService {
                 catchError((err: any) => Observable.throwError(err))
             )
     }
+
+    cutPath(path: string, refpath: string) {
+        let result = [];
+        let delim = 0;
+        while(path.substr(delim, 3) === '../') {
+            delim += 3;
+            refpath = refpath.slice(0, refpath.lastIndexOf('/'));
+            result.push({id:'..', path:refpath});
+        }
+        if (delim == 0) {
+            refpath = '';
+        } else {
+            delim = delim - 1;
+        }
+        while (delim != -1) {
+            let end = path.indexOf('/', delim + 1);
+            let id;
+            if (end == -1) {
+                id = path.slice(delim + 1);
+            } else {
+                id = path.slice(delim + 1, end)
+            }
+            refpath = refpath + '/' + id;
+            result.push({id:id, path:refpath});
+            delim = end;
+        }
+        //console.log(result)
+        return result;
+    }
 }

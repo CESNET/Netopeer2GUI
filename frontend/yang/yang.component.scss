@@ -46,6 +46,9 @@ $colorLineHover: #e1e1e1;
 .yang-info-label,
 .yang-info-value {
     border: 0px solid black;
+    a {
+        font-weight: normal;
+    }
 }
 
 .yang-info {

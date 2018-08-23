@@ -171,6 +171,7 @@ export class YANGTypedef implements OnInit, OnChanges {
     styleUrls: ['./yang.component.scss']
 } )
 export class YANGType {
+    @Input() schema: Schema;
     @Input() data: any;
     @Input() typedef: boolean = true;
     @Output() refresh = new EventEmitter();
@@ -203,6 +204,15 @@ export class YANGType {
                     this.refresh.emit();
                 }
             });
+    }
+
+    linkNode( key: string, path: string ) {
+        this.schemasService.show(key + '.yang', 'tree-node', path)
+            .subscribe(( result: object ) => {
+                if ( result['success'] ) {
+                    this.refresh.emit();
+                }
+            } );
     }
 }
 
@@ -255,6 +265,10 @@ export class YANGNode implements OnInit, OnChanges {
         if (path) {
             path = this.schema.path + '/' + path;
         }
+        this.linkNode(key, type, path);
+    }
+
+    linkNode(key: string, type: string = 'tree', path: string = null) {
         this.schemasService.show(key, type, path)
             .subscribe((result: object) => {
                 if (result['success']) {

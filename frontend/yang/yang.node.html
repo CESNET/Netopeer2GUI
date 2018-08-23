@@ -3,7 +3,11 @@
     <div class="yang-info-label">{{data.nodetype | titlecase }} <b>{{name}}</b></div>
 
     <div class="yang-info-section">
-        <div class="yang-info"><span class="yang-info-label">path</span><span class="yang-info-value">{{schema.path}}</span></div>
+        <div class="yang-info"><span class="yang-info-label">path</span>
+            <span class="yang-info-value">
+                <span *ngFor="let parent of schemasService.cutPath(schema.path, schema.path)">/<a (click)="linkNode(schema.key, 'tree-node', parent.path)">{{parent.id}}</a></span>
+            </span>
+        </div>
 
         <ng-container *ngIf="data.when">
             <div class="yang-info">
@@ -36,7 +40,7 @@
                 <span class="yang-info-value">{{data.type['derived-from'] | noPrefix}}</span>
             </ng-container>
         </div>
-        <yang-type [data]="data.type" [typedef]="false" (refresh)="onRefresh()"></yang-type>
+        <yang-type [schema]="schema" [data]="data.type" [typedef]="false" (refresh)="onRefresh()"></yang-type>
 
         <div class="yang-info" *ngIf="data.units">
             <span class="yang-info-label">units</span><span class="yang-info-value">{{data.units.name}}</span>

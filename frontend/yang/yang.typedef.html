@@ -1,8 +1,8 @@
 
 <div class="yang-infobox">
     <div class="yang-info-label">Typedef {{name}}</div>
-    
-    <yang-type [data]="data.type" (refresh)="onRefresh()"></yang-type>
+
+    <yang-type [schema]="schema" [data]="data.type" (refresh)="onRefresh()"></yang-type>
 
     <div class="yang-info-section">
         <div class="yang-info" *ngIf="data.units">

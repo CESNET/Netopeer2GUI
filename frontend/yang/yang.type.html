@@ -25,7 +25,13 @@
             <yang-restriction *ngFor="let pattern of data.patterns" [data]="pattern" [name]="'pattern'"></yang-restriction>
         </ng-container>
         <div class="yang-info" *ngIf="data['path']">
-            <span class="yang-info-label">path</span><span class="yang-info-value">{{data.path.value}}</span>
+            <span class="yang-info-label">path</span>
+            <span *ngIf="data.path['target-schema']" class="yang-info-value">
+                <span *ngFor="let parent of schemasService.cutPath(data.path.value, schema.path); let i = index">
+                    <ng-container *ngIf="i || parent.id != '..'">/</ng-container><a (click)="linkNode(data.path['target-schema'],parent.path)">{{parent.id}}</a>
+                </span>
+            </span>
+            <span *ngIf="!data.path['target-schema']" class="yang-info-value">{{data.path.value}}</span>
         </div>
         <div class="yang-info" *ngIf="data['require-instance']">
             <span class="yang-info-label">require-instance</span><span class="yang-info-value">{{data['require-instance'].value}}</span>
@@ -96,10 +102,11 @@
             <span class="yang-info-subsection-label">type</span>
         </div>
         <div class="yang-info-subsection">
-            <yang-type [data]="type" (refresh)="onRefresh()"></yang-type>
+            <yang-type [schema]="schema" [data]="type" (refresh)="onRefresh()"></yang-type>
         </div>
         </ng-container>
     </div>
 </div>
 
-<!-- <pre>{{data | json}}</pre> -->
+ <!-- <pre>{{schema | json}}</pre> -->
+ <!-- <pre>{{data | json}}</pre> -->
