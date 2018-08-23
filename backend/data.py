@@ -78,7 +78,7 @@ def schemaInfoNode(schema):
 
 	if info["type"] == yang.LYS_LEAF:
 		schemaInfoType(schema.subtype(), info)
-		info["key"] = False if schema.subtype().is_key() == -1 else True
+		info["key"] = False if schema.subtype().is_key() == None else True
 		dflt = schema.subtype().dflt()
 		if dflt:
 			info["default"] = dflt
