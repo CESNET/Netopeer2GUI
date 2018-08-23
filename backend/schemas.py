@@ -115,7 +115,7 @@ def __schemas_inv_save(path, schemas):
 	return schemas
 
 
-def __schemas_update(path):
+def schemas_update(path):
 	# get schemas database
 	schemas = __schemas_inv_load(path)
 
@@ -170,7 +170,7 @@ def schemas_list():
 	path = os.path.join(INVENTORY, user.username)
 
 	inventory_check(path)
-	schemas = __schemas_update(path)
+	schemas = schemas_update(path)
 
 	result = []
 	for key in schemas:
@@ -231,8 +231,8 @@ def schema_get():
 								 'revision':schemas['schemas'][key]['revision']}, ensure_ascii = False))
 			else:
 				return(json.dumps({'success': True, 'data': data, 'name':schemas['schemas'][key]['name']}, ensure_ascii = False))
-		except:
-			pass;
+		except Exception as e:
+			return(json.dumps({'success': False, 'error-msg':str(e)}));
 	return(json.dumps({'success': False, 'error-msg':'Schema ' + key + ' not found.'}))
 
 

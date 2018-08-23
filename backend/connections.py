@@ -19,6 +19,7 @@ import netconf2 as nc
 from .inventory import INVENTORY
 from .devices import devices_get, devices_replace
 from .error import NetopeerException
+from .schemas import schemas_update
 from .data import *
 
 log = logging.getLogger(__name__)
@@ -156,6 +157,9 @@ def connect():
 	key = ncs.host + ":" + str(ncs.port) + ":" + ncs.id
 	sessions[user.username][key] = {}
 	sessions[user.username][key]['session'] = ncs
+
+	# update inventory's list of schemas
+	schemas_update(path)
 
 	return(json.dumps({'success': True, 'session-key': key}))
 
