@@ -2,6 +2,7 @@
 @import '../inventory/inventory.component';
 
 $colorLineHover: #e1e1e1;
+$colorLineSelected: #999999;
 
 .nav-button {
     height: 2em;
@@ -70,3 +71,12 @@ $colorLineHover: #e1e1e1;
     text-overflow: ellipsis;
     display: inline-block;
 }
+
+.pattern {
+    .selectedGroup {
+        background-color: $colorLineSelected;
+    }
+    .bracket {
+    }
+}
+

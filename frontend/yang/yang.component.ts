@@ -1,10 +1,10 @@
-import { Component, Input, Output, OnInit, EventEmitter, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, Output, OnInit, EventEmitter, OnChanges, SimpleChanges, ViewEncapsulation } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { SchemasService } from './schemas.service';
 import { Schema } from '../inventory/schema';
 
-import { NoPrefixPipe, PrefixOnlyPipe } from '../common/pipes';
+import { NoPrefixPipe, PrefixOnlyPipe, PatternHighlightPipe } from '../common/pipes';
 
 class iffItem {
     constructor(
@@ -219,7 +219,8 @@ export class YANGType {
 @Component( {
     selector: 'yang-restriction',
     template: `
-        <div class="yang-info"><span class="yang-info-subsection-label">{{name}}</span><span class="yang-info-value">{{data.value}}</span></div>
+        <div class="yang-info" *ngIf="name=='pattern'"><span class="yang-info-subsection-label">{{name}}</span><span class="yang-info-value pattern" [innerHTML]="data.value | patternHighlight"></span></div>
+        <div class="yang-info" *ngIf="name!='pattern'"><span class="yang-info-subsection-label">{{name}}</span><span class="yang-info-value">{{data.value}}</span></div>
         <div class="yang-info-subsection">
             <div class="yang-info" *ngIf="data.modifier">
                 <span class="yang-info-label">modifier</span><span class="yang-info-value">{{data.modifier.value}}</span>
@@ -237,7 +238,8 @@ export class YANGType {
                 <span class="yang-info-label">reference</span><pre class="yang-info-value">{{data.reference.text}}</pre>
             </div>
         </div>`,
-    styleUrls: ['./yang.component.scss']
+    styleUrls: ['./yang.component.scss'],
+    encapsulation: ViewEncapsulation.None,
 } )
 export class YANGRestriction {
     @Input() data: any;

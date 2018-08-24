@@ -31,7 +31,7 @@ import { SchemasService } from './yang/schemas.service';
 import { DevicesService } from './inventory/devices.service';
 import { TreeService } from './config/tree.service';
 
-import { NoPrefixPipe, PrefixOnlyPipe } from './common/pipes';
+import { NoPrefixPipe, PrefixOnlyPipe, PatternHighlightPipe } from './common/pipes';
 
 const routes: Routes = [
   { path : 'netopeer', component : NetopeerComponent, canActivate : [AuthGuard],
@@ -127,7 +127,8 @@ const routes: Routes = [
     DialogueHostcheck,
     DialoguePassword,
     NoPrefixPipe,
-    PrefixOnlyPipe
+    PrefixOnlyPipe,
+    PatternHighlightPipe
   ],
   providers: [
     SessionsService,
