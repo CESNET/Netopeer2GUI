@@ -1,7 +1,7 @@
 <div class="yang-infobox">
     <div class="yang-info-section">
-        <div class="yang-info" *ngIf="typdef">
-            <span class="yang-info-label">based on</span>
+        <div class="yang-info" *ngIf="typedef">
+            <span class="yang-info-label">base</span>
             <ng-container *ngIf="data['derived-from'] != data['basetype']">
                 <a class="yang-info-value" (click)="derivedFrom(data['derived-from'])">{{data['derived-from'] | noPrefix}}</a>&nbsp;<span>({{data['basetype']}})</span>
             </ng-container>
@@ -9,8 +9,8 @@
                 <span class="yang-info-value">{{data['derived-from'] | noPrefix}}</span>
             </ng-container>
         </div>
-        <div class="yang-info" *ngIf="!typdef && data['derived-from'] != data['basetype']">
-            <span class="yang-info-label">based on</span><span>{{data['basetype']}}</span>
+        <div class="yang-info" *ngIf="!typedef && data['derived-from'] != data['basetype']">
+            <span class="yang-info-label">base</span><span>{{data['basetype']}}</span>
         </div>
     </div>
 
@@ -75,15 +75,15 @@
                     <yang-iffeature (refresh)="onRefresh()" [schema]="schema" [data]="value"></yang-iffeature>
                 </div>
             </ng-container>
-	        <div class="yang-info" *ngIf="enum.status">
-	            <span class="yang-info-label">status</span><span class="yang-info-value">{{enum.status.value}}</span>
-	        </div>
-	        <div class="yang-info" *ngIf="enum.description">
-	            <span class="yang-info-label">description</span><pre class="yang-info-value">{{enum.description.text}}</pre>
-	        </div>
-	        <div class="yang-info" *ngIf="enum.reference">
-	            <span class="yang-info-label">reference</span><pre class="yang-info-value">{{enum.reference.text}}</pre>
-	        </div>
+            <div class="yang-info" *ngIf="enum.status">
+                <span class="yang-info-label">status</span><span class="yang-info-value">{{enum.status.value}}</span>
+            </div>
+            <div class="yang-info" *ngIf="enum.description">
+                <span class="yang-info-label">description</span><pre class="yang-info-value">{{enum.description.text}}</pre>
+            </div>
+            <div class="yang-info" *ngIf="enum.reference">
+                <span class="yang-info-label">reference</span><pre class="yang-info-value">{{enum.reference.text}}</pre>
+            </div>
         </div>
         </ng-container>
     </div>
