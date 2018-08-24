@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import {Router} from '@angular/router';
 
 import {SessionsService} from './config/sessions.service';
@@ -9,7 +9,7 @@ import {SessionsService} from './config/sessions.service';
   styleUrls : ['./netopeer.scss', 'inventory/inventory.component.scss']
 })
 
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
 
     constructor(public sessionsService: SessionsService,
                 private router: Router) {}
@@ -17,5 +17,9 @@ export class DashboardComponent {
     gotoConfig(session) {
         this.sessionsService.changeActiveSession(session.key);
         this.router.navigateByUrl('/netopeer/config');
+    }
+
+    ngOnInit(): void {
+        this.sessionsService.checkSessions();
     }
 }
