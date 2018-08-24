@@ -351,7 +351,7 @@ export class TreeNode {
     linkIdentity(node) {
         let name = node['value'].slice(node['value'].lastIndexOf(':') + 1);
 
-        this.link(node['info']['refmodule'], 'tree-identity', name);
+        this.link(node['info']['refmodule'], 'tree-identity', '/' + name);
     }
 
     newChildrenToShow(node) {
