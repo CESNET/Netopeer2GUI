@@ -19,7 +19,7 @@ import { NetopeerComponent } from './netopeer.component';
 import { DashboardComponent } from './dashboard.component';
 import { InventoryComponent } from './inventory/inventory.component';
 import { InventorySchemasComponent } from './inventory/schemas.component';
-import { InventoryDevicesComponent, DialogueHostcheck, DialoguePassword } from './inventory/devices.component';
+import { InventoryDevicesComponent, DialogueHostcheck, DialoguePassword, DialogueSchema } from './inventory/devices.component';
 import { ConfigComponent } from './config/config.component';
 import { TreeView, TreeNode, TreeLeaflistValue, TreeIndent, TreeCreate, TreeEdit, TreeScrollTo, CheckLeafValue } from './config/tree.component';
 import { YANGComponent, YANGModule, YANGIdentity, YANGFeature, YANGTypedef, YANGType, YANGRestriction, YANGNode, YANGIffeature } from './yang/yang.component';
@@ -126,6 +126,7 @@ const routes: Routes = [
     PluginsComponent,
     DialogueHostcheck,
     DialoguePassword,
+    DialogueSchema,
     NoPrefixPipe,
     PrefixOnlyPipe,
     PatternHighlightPipe
@@ -139,7 +140,8 @@ const routes: Routes = [
   entryComponents : [
     NetopeerComponent,
     DialogueHostcheck,
-    DialoguePassword
+    DialoguePassword,
+    DialogueSchema
   ]
 })
 export class NetopeerModule { }

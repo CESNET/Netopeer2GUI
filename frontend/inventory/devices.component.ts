@@ -125,9 +125,12 @@ export class InventoryDevicesComponent implements OnInit {
         }
     }
 
-    socketAnswer(event: string, id:string, item: string, value: any) {
+    socketAnswer(event: string, id:string, item: string, value: any, item2: string = null, value2: any = null) {
         let data = {'id': id};
         data[item] = value;
+        if (item2) {
+            data[item2] = value2
+        }
         this.socketService.send(event, data);
     }
 
@@ -162,6 +165,16 @@ export class InventoryDevicesComponent implements OnInit {
                 this.socketAnswer('device_auth_password', message['id'], 'password', result);
             }, (reason) => {
                 this.socketAnswer('device_auth_password', message['id'], 'password', '');
+            });
+        });
+
+        this.socketService.subscribe('getschema').subscribe((message: any) => {
+            let modalRef = this.modalService.open(DialogueSchema, {centered: true, backdrop: 'static', keyboard: false});
+            modalRef.componentInstance.info = message;
+            modalRef.result.then((result) => {
+                this.socketAnswer('getschema_result', message['id'], 'filename', result['filename'], 'data', result['data']);
+            }, (reason) => {
+                this.socketAnswer('getschema_result', message['id'], 'filename', '', 'data', '');
             });
         });
 
@@ -225,5 +238,44 @@ export class DialoguePassword implements OnInit {
 
     ngOnInit(): void {
         document.getElementById('device_password').focus();
+    }
+}
+
+@Component({
+    selector: 'ngbd-modal-content',
+    styleUrls: ['../netopeer.scss'],
+    template: `<div class="modal-header">
+        <h4 class="modal-title">Missing YANG Schema</h4>
+    </div>
+    <div class="modal-body">
+        <label>The device utilize YANG schema <b>{{info.name}}</b> <ng-container *ngIf="info.revision">in revision <b>{{info.revision}}</b></ng-container>.<br/>
+        <span *ngIf="!info['submod_name']">Please provide this schema.</span>
+        <span *ngIf="info['submod_name']">Please provide submodule <b>{{info['submod_name']}}</b> <ng-container *ngIf="info['submod_revision']">in revision <b>{{info['submod_revision']}}</b></ng-container> for this schema.</span>
+        </label><br/>
+        <input id="uploadSchema" #uploadSchema type="file" (change)="upload(uploadSchema.files[0])" name="schema" placeholder="Upload schema"/>
+    </div>
+    <div class="modal-footer">
+        <button class="btn btn-light" (click)="activeModal.dismiss(null)">cancel</button>
+    </div>`
+})
+export class DialogueSchema implements OnInit {
+    @Input() info;
+    password = '';
+
+    constructor(public activeModal: NgbActiveModal) { }
+
+    upload(schema: File) {
+        let reader = new FileReader();
+
+        console.log(schema);
+        reader.onloadend = () => {
+            //console.log(reader.result);
+            this.activeModal.close({'filename': schema.name, 'data': reader.result});
+        };
+        reader.readAsText(schema);
+    }
+
+    ngOnInit(): void {
+        document.getElementById('uploadSchema').focus();
     }
 }

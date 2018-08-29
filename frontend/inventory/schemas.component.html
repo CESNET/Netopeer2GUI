@@ -6,7 +6,7 @@
   <div *ngIf="addingSchema">
     <hr/>
     <div class="buttons">
-      <input #uploadSchema type="file" (change)="upload(uploadSchema.files[0])" name="schema" placeholder="Upload schema"/>      
+      <input #uploadSchema type="file" (change)="upload(uploadSchema.files[0])" name="schema" placeholder="Upload schema"/>
       <span [ngSwitch]="addingResult">
         <span *ngSwitchCase="0" class="msg-rounded msg-failure"><span class="msg-close" (click)="addingResult=-1">x</span>Parsing {{uploadSchema.value.replace("C:\\fakepath\\","")}} failed.</span>
         <span *ngSwitchCase="1" class="msg-rounded msg-success"><span class="msg-close" (click)="addingResult=-1">x</span>Schema {{uploadSchema.value.replace("C:\\fakepath\\","")}} successfully added.</span>

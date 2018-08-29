@@ -38,7 +38,8 @@ def connect_sio_send(data):
 
 @socketio.on('device_auth_password')
 @socketio.on('hostcheck_result')
-def hostkey_check_answer(data):
+@socketio.on('getschema_result')
+def process_answer(data):
 	connect_sio_send(data)
 
 
@@ -88,7 +89,6 @@ def auth_common(session_id):
 		# wait for response from the frontend
 		e = connect_sio_data[session_id] = event.Event()
 		data = e.wait()
-		print(data)
 		result = data['password']
 	except Timeout:
 		# no response received within the timeout
@@ -105,15 +105,54 @@ def auth_common(session_id):
 
 
 def auth_password(username, hostname, priv):
-	print("auth_password callback")
 	socketio.emit('device_auth', {'id': priv, 'type': 'Password Authentication', 'msg': username + '@' + hostname}, callback = connect_sio_send)
 	return auth_common(priv)
 
 
 def auth_interactive(name, instruction, prompt, priv):
-	print("auth_interactive callback")
 	socketio.emit('device_auth', {'id': priv, 'type': name, 'msg': instruction, 'prompt': prompt}, callback = connect_sio_send)
 	return auth_common(priv)
+
+
+def getschema(name, revision, submod_name, submod_revision, priv):
+	# ask frontend/user for missing schema
+	params = {'id': priv['session_id'], 'name' : name, 'revision' : revision, 'submod_name' : submod_name, 'submod_revision' : submod_revision}
+	socketio.emit('getschema', params, callback = connect_sio_send)
+
+	result = (None, None)
+	timeout = Timeout(300)
+	try:
+		# wait for response from the frontend
+		e = connect_sio_data[priv['session_id']] = event.Event()
+		data = e.wait()
+		if data['filename'].lower()[len(data['filename']) - 5:] == '.yang':
+			format = yang.LYS_IN_YANG
+		elif data['filename'].lower()[len(data['filename']) - 4:] == '.yin':
+			format = yang.LYS_IN_YIN
+		else:
+			return result
+		result = (format, data['data'])
+	except Timeout:
+		# no response received within the timeout
+		log.info("socketio: getschema timeout.")
+	except (KeyError, AttributeError) as e:
+		# invalid response
+		log.error(e)
+		log.error("socketio: invalid getschema_result received.")
+	finally:
+		# we have the response
+		connect_sio_data.pop(priv['session_id'], None)
+		timeout.cancel()
+
+		# store the received file
+		try:
+			with open(os.path.join(INVENTORY, priv['user'].username, data['filename']), 'w') as schema_file:
+				schema_file.write(data['data'])
+		except Exception as e:
+			log.error(e)
+			pass
+
+	return result
 
 
 @auth.required()
@@ -136,6 +175,7 @@ def connect():
 		raise NetopeerException('Unknown device to connect to request.')
 
 	nc.setSearchpath(path)
+	nc.setSchemaCallback(getschema, session)
 
 	if 'password' in device:
 		ssh = nc.SSH(device['username'], password = device['password'])
@@ -148,7 +188,9 @@ def connect():
 	try:
 		ncs = nc.Session(device['hostname'], device['port'], ssh)
 	except Exception as e:
+		nc.setSchemaCallback(None)
 		return(json.dumps({'success': False, 'error-msg': str(e)}))
+	nc.setSchemaCallback(None)
 
 	if not user.username in sessions:
 		sessions[user.username] = {}
