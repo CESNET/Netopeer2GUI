@@ -154,6 +154,7 @@ def schemas_update(path):
 					except:
 						pass
 			except:
+				os.remove(schemapath)
 				continue
 
 	#store the list
