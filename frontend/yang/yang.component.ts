@@ -225,10 +225,10 @@ export class YANGType {
             <div class="yang-info" *ngIf="data.modifier">
                 <span class="yang-info-label">modifier</span><span class="yang-info-value">{{data.modifier.value}}</span>
             </div>
-            <div class="yang-info" *ngIf="data.error-message">
+            <div class="yang-info" *ngIf="data['error-message']">
                 <span class="yang-info-label">error-message</span><span class="yang-info-value">{{data['error-message'].value}}</span>
             </div>
-            <div class="yang-info" *ngIf="data.error-app-tag">
+            <div class="yang-info" *ngIf="data['error-app-tag']">
                 <span class="yang-info-label">error-app-tag</span><span class="yang-info-value">{{data['error-app-tag'].value}}</span>
             </div>
             <div class="yang-info" *ngIf="data.description">
