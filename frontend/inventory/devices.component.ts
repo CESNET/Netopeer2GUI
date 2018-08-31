@@ -3,9 +3,10 @@
  */
 import {Component, OnInit, Input} from '@angular/core';
 import {Router} from '@angular/router';
-import { NgbModal, NgbModalRef, ModalDismissReasons, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
+import { NgbModal, NgbActiveModal } from '@ng-bootstrap/ng-bootstrap';
 import { ViewChild } from '@angular/core';
 
+import {DialogueSchema} from './inventory.component';
 import {Device} from './device';
 import {DevicesService} from './devices.service'
 import {SessionsService} from '../config/sessions.service'
@@ -186,6 +187,7 @@ export class InventoryDevicesComponent implements OnInit {
             }
             this.socketService.unsubscribe('hostcheck');
             this.socketService.unsubscribe('device_auth');
+            this.socketService.unsubscribe('getschema');
         });
     }
 
@@ -241,41 +243,3 @@ export class DialoguePassword implements OnInit {
     }
 }
 
-@Component({
-    selector: 'ngbd-modal-content',
-    styleUrls: ['../netopeer.scss'],
-    template: `<div class="modal-header">
-        <h4 class="modal-title">Missing YANG Schema</h4>
-    </div>
-    <div class="modal-body">
-        <label>The device utilize YANG schema <b>{{info.name}}</b> <ng-container *ngIf="info.revision">in revision <b>{{info.revision}}</b></ng-container>.<br/>
-        <span *ngIf="!info['submod_name']">Please provide this schema.</span>
-        <span *ngIf="info['submod_name']">Please provide submodule <b>{{info['submod_name']}}</b> <ng-container *ngIf="info['submod_revision']">in revision <b>{{info['submod_revision']}}</b></ng-container> for this schema.</span>
-        </label><br/>
-        <input id="uploadSchema" #uploadSchema type="file" (change)="upload(uploadSchema.files[0])" name="schema" placeholder="Upload schema"/>
-    </div>
-    <div class="modal-footer">
-        <button class="btn btn-light" (click)="activeModal.dismiss(null)">cancel</button>
-    </div>`
-})
-export class DialogueSchema implements OnInit {
-    @Input() info;
-    password = '';
-
-    constructor(public activeModal: NgbActiveModal) { }
-
-    upload(schema: File) {
-        let reader = new FileReader();
-
-        console.log(schema);
-        reader.onloadend = () => {
-            //console.log(reader.result);
-            this.activeModal.close({'filename': schema.name, 'data': reader.result});
-        };
-        reader.readAsText(schema);
-    }
-
-    ngOnInit(): void {
-        document.getElementById('uploadSchema').focus();
-    }
-}

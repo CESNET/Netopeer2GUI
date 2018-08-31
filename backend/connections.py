@@ -10,38 +10,20 @@ import logging
 
 from liberouterapi import socketio, auth
 from flask import request
-from flask_socketio import emit
-from eventlet import event
 from eventlet.timeout import Timeout
 import yang
 import netconf2 as nc
 
 from .inventory import INVENTORY
+from .socketio import sio_emit, sio_wait, sio_clean
 from .devices import devices_get, devices_replace
 from .error import NetopeerException
-from .schemas import schemas_update
+from .schemas import getschema, schemas_update
 from .data import *
 
 log = logging.getLogger(__name__)
 
 sessions = {}
-connect_sio_data = {}
-
-
-def connect_sio_send(data):
-	try:
-		e = connect_sio_data[data['id']]
-		e.send(data)
-	except KeyError:
-		pass
-
-
-@socketio.on('device_auth_password')
-@socketio.on('hostcheck_result')
-@socketio.on('getschema_result')
-def process_answer(data):
-	connect_sio_send(data)
-
 
 def hostkey_check(hostname, state, keytype, hexa, priv):
 	if 'fingerprint' in priv['device']:
@@ -54,14 +36,13 @@ def hostkey_check(hostname, state, keytype, hexa, priv):
 
 	# ask frontend/user for hostkey check
 	params = {'id': priv['session']['session_id'], 'hostname' : hostname, 'state' : state, 'keytype' : keytype, 'hexa' : hexa}
-	socketio.emit('hostcheck', params, callback = connect_sio_send)
+	sio_emit('hostcheck', params)
 
 	result = False
 	timeout = Timeout(30)
 	try:
 		# wait for response from the frontend
-		e = connect_sio_data[priv['session']['session_id']] = event.Event()
-		data = e.wait()
+		data = sio_wait(priv['session']['session_id'])
 		result = data['result']
 	except Timeout:
 		# no response received within the timeout
@@ -71,7 +52,7 @@ def hostkey_check(hostname, state, keytype, hexa, priv):
 		log.error("socketio: invalid hostcheck_result received.")
 	finally:
 		# we have the response
-		connect_sio_data.pop(priv['session']['session_id'], None)
+		sio_clean(priv['session']['session_id'])
 		timeout.cancel()
 
 	if result:
@@ -87,8 +68,7 @@ def auth_common(session_id):
 	timeout = Timeout(60)
 	try:
 		# wait for response from the frontend
-		e = connect_sio_data[session_id] = event.Event()
-		data = e.wait()
+		data = sio_wait(session_id)
 		result = data['password']
 	except Timeout:
 		# no response received within the timeout
@@ -98,62 +78,20 @@ def auth_common(session_id):
 		log.info("socketio: invalid credential data received.")
 	finally:
 		# we have the response
-		connect_sio_data.pop(session_id, None)
+		sio_clean(session_id)
 		timeout.cancel()
 
 	return result
 
 
 def auth_password(username, hostname, priv):
-	socketio.emit('device_auth', {'id': priv, 'type': 'Password Authentication', 'msg': username + '@' + hostname}, callback = connect_sio_send)
+	sio_emit('device_auth', {'id': priv, 'type': 'Password Authentication', 'msg': username + '@' + hostname})
 	return auth_common(priv)
 
 
 def auth_interactive(name, instruction, prompt, priv):
-	socketio.emit('device_auth', {'id': priv, 'type': name, 'msg': instruction, 'prompt': prompt}, callback = connect_sio_send)
+	sio_emit('device_auth', {'id': priv, 'type': name, 'msg': instruction, 'prompt': prompt})
 	return auth_common(priv)
-
-
-def getschema(name, revision, submod_name, submod_revision, priv):
-	# ask frontend/user for missing schema
-	params = {'id': priv['session_id'], 'name' : name, 'revision' : revision, 'submod_name' : submod_name, 'submod_revision' : submod_revision}
-	socketio.emit('getschema', params, callback = connect_sio_send)
-
-	result = (None, None)
-	timeout = Timeout(300)
-	try:
-		# wait for response from the frontend
-		e = connect_sio_data[priv['session_id']] = event.Event()
-		data = e.wait()
-		if data['filename'].lower()[len(data['filename']) - 5:] == '.yang':
-			format = yang.LYS_IN_YANG
-		elif data['filename'].lower()[len(data['filename']) - 4:] == '.yin':
-			format = yang.LYS_IN_YIN
-		else:
-			return result
-		result = (format, data['data'])
-	except Timeout:
-		# no response received within the timeout
-		log.info("socketio: getschema timeout.")
-	except (KeyError, AttributeError) as e:
-		# invalid response
-		log.error(e)
-		log.error("socketio: invalid getschema_result received.")
-	finally:
-		# we have the response
-		connect_sio_data.pop(priv['session_id'], None)
-		timeout.cancel()
-
-		# store the received file
-		try:
-			with open(os.path.join(INVENTORY, priv['user'].username, data['filename']), 'w') as schema_file:
-				schema_file.write(data['data'])
-		except Exception as e:
-			log.error(e)
-			pass
-
-	return result
-
 
 @auth.required()
 def connect():
@@ -201,7 +139,7 @@ def connect():
 	sessions[user.username][key]['session'] = ncs
 
 	# update inventory's list of schemas
-	schemas_update(path)
+	schemas_update(session)
 
 	return(json.dumps({'success': True, 'session-key': key}))
 

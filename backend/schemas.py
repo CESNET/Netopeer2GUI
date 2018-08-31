@@ -12,11 +12,13 @@ import time
 from subprocess import check_output
 from shutil import copy
 
-from liberouterapi import auth
+from liberouterapi import socketio, auth
 from flask import request
+from eventlet.timeout import Timeout
 import yang
 
 from .inventory import INVENTORY, inventory_check
+from .socketio import  sio_send, sio_wait, sio_clean
 from .error import NetopeerException
 
 log = logging.getLogger(__name__)
@@ -30,9 +32,49 @@ def make_schema_key(module):
 	return result
 
 
-def __schema_parse(path, format = yang.LYS_IN_UNKNOWN):
+def getschema(name, revision, submod_name, submod_revision, priv):
+	# ask frontend/user for missing schema
+	params = {'id': priv['session_id'], 'name' : name, 'revision' : revision, 'submod_name' : submod_name, 'submod_revision' : submod_revision}
+	socketio.emit('getschema', params, callback = sio_send)
+	result = (None, None)
+	timeout = Timeout(300)
 	try:
-		ctx = yang.Context(os.path.dirname(path))
+		# wait for response from the frontend
+		data = sio_wait(priv['session_id'])
+		if data['filename'].lower()[len(data['filename']) - 5:] == '.yang':
+			format = yang.LYS_IN_YANG
+		elif data['filename'].lower()[len(data['filename']) - 4:] == '.yin':
+			format = yang.LYS_IN_YIN
+		else:
+			return result
+		result = (format, data['data'])
+	except Timeout:
+		# no response received within the timeout
+		log.info("socketio: getschema timeout.")
+	except (KeyError, AttributeError) as e:
+		# invalid response
+		log.error(e)
+		log.error("socketio: invalid getschema_result received.")
+	finally:
+		# we have the response
+		sio_clean(priv['session_id'])
+		timeout.cancel()
+
+		# store the received file
+		try:
+			with open(os.path.join(INVENTORY, priv['user'].username, data['filename']), 'w') as schema_file:
+				schema_file.write(data['data'])
+		except Exception as e:
+			log.error(e)
+			pass
+
+	return result
+
+
+def __schema_parse(path, format, session):
+	try:
+		ctx = yang.Context(os.path.dirname(path), yang.LY_CTX_PREFER_SEARCHDIRS)
+		ctx.set_module_imp_clb(getschema, session)
 	except Exception as e:
 		raise NetopeerException(str(e))
 
@@ -115,7 +157,11 @@ def __schemas_inv_save(path, schemas):
 	return schemas
 
 
-def schemas_update(path):
+def schemas_update(session):
+	user = session['user']
+	path = os.path.join(INVENTORY, user.username)
+	inventory_check(path)
+
 	# get schemas database
 	schemas = __schemas_inv_load(path)
 
@@ -135,7 +181,7 @@ def schemas_update(path):
 		if os.path.getmtime(schemapath) > timestamp:
 			# update the list
 			try:
-				module = __schema_parse(schemapath, format)
+				module = __schema_parse(schemapath, format, session)
 				if module.rev_size():
 					name_norm = module.name() + '@' + module.rev().date() + '.yang'
 					schemas['schemas'][name_norm] = {'name': module.name(), 'revision': module.rev().date()}
@@ -167,11 +213,8 @@ def schemas_update(path):
 @auth.required()
 def schemas_list():
 	session = auth.lookup(request.headers.get('lgui-Authorization', None))
-	user = session['user']
-	path = os.path.join(INVENTORY, user.username)
 
-	inventory_check(path)
-	schemas = schemas_update(path)
+	schemas = schemas_update(session)
 
 	result = []
 	for key in schemas:
@@ -258,7 +301,7 @@ def schemas_add():
 			format = yang.LYS_IN_YIN
 		else:
 			format = yang.LYS_IN_UNKNOWN
-		module = __schema_parse(path, format)
+		module = __schema_parse(path, format, session)
 
 		# normalize file name to allow removing without remembering schema path
 		if module.rev_size():

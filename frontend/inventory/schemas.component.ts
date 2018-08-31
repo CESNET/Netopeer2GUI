@@ -4,7 +4,12 @@
 import { Component, Input, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 import { Schema } from './schema';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+
+import {DialogueSchema} from './inventory.component';
+
 import { SchemasService } from '../yang/schemas.service'
+import {SocketService} from 'app/services/socket.service';
 
 @Component( {
     selector: 'inventorySchemas',
@@ -16,8 +21,10 @@ export class InventorySchemasComponent implements OnInit {
     schemas;
     addingSchema = false;
     addingResult = -1;
-    constructor( private schemasService: SchemasService,
-        private router: Router ) {
+    constructor(private schemasService: SchemasService,
+                private socketService: SocketService,
+                private modalService: NgbModal,
+                private router: Router ) {
         this.schemas = [];
     }
 
@@ -30,15 +37,35 @@ export class InventorySchemasComponent implements OnInit {
         this.addingResult = -1;
     }
 
+    socketAnswer(event: string, id:string, item: string, value: any, item2: string, value2: any) {
+        let data = {'id': id};
+        data[item] = value;
+        data[item2] = value2
+        this.socketService.send(event, data);
+    }
+
     upload(schema: File) {
         if (!schema) {
             /* do nothing */
             return;
         }
 
+        this.socketService.subscribe('getschema').subscribe((message: any) => {
+            let modalRef = this.modalService.open(DialogueSchema, {centered: true, backdrop: 'static', keyboard: false});
+            modalRef.componentInstance.info = message;
+            modalRef.result.then((result) => {
+                this.socketAnswer('getschema_result', message['id'], 'filename', result['filename'], 'data', result['data']);
+            }, (reason) => {
+                this.socketAnswer('getschema_result', message['id'], 'filename', '', 'data', '');
+            });
+        });
+
         /* upload the schema file to the server, if success the schema list is refreshed */
-        this.schemasService.addSchema(schema).subscribe(
-            result => { this.addingResult = result['success'] ? 1 : 0; this.getSchemas() } );
+        this.schemasService.addSchema(schema).subscribe(result => {
+                this.socketService.unsubscribe('getschema');
+                this.addingResult = result['success'] ? 1 : 0;
+                this.getSchemas();
+        });
     }
 
     remove(key: string) {
