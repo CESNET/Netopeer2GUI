@@ -222,9 +222,6 @@ export class YANGType {
                 }
             } );
     }
-
-
-
 }
 
 @Component( {
