@@ -1,6 +1,8 @@
 <nav #subnav id="subnav">
+    <!-- Mouseup event is used instead of click event to enable middle-click detection.
+    Click event only fires when user clicks left mouse button -->
     <a *ngFor="let schema of schemasService.schemas" [class.active]="schema.key == schemasService.activeSchema"
-        (click)="changeView(schema.key)">{{schema.key}}
+        (mouseup)="$event.which == 2 ? schemasService.close(schema.key) : changeView(schema.key)">{{schema.key}}
         <img class="tab-icon tab-close tab-action-last" src="assets/netopeer/icons/close.svg"  alt="x" title="close"
             onmouseover="this.src='assets/netopeer/icons/close_active.svg'"
             onmouseout="this.src='assets/netopeer/icons/close.svg'" (click)="schemasService.close(schema.key);refreshActiveSchema()"/>

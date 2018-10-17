@@ -68,6 +68,7 @@ export class YANGModule implements OnInit, OnChanges {
     ngOnInit(): void {
         this.data = this.schema.data[Object.keys(this.schema.data)[0]];
     }
+    newlineToBr = SchemasService.newlineToBr;
 }
 
 @Component( {
@@ -109,6 +110,8 @@ export class YANGIdentity implements OnInit, OnChanges {
         this.name = Object.keys(this.schema.data)[0]
         this.data = this.schema.data[this.name];
     }
+
+    newlineToBr = SchemasService.newlineToBr;
 }
 
 @Component( {
@@ -137,6 +140,7 @@ export class YANGFeature implements OnInit, OnChanges {
         this.name = Object.keys(this.schema.data)[0]
         this.data = this.schema.data[this.name];
     }
+    newlineToBr = SchemasService.newlineToBr;
 }
 
 @Component( {
@@ -163,6 +167,8 @@ export class YANGTypedef implements OnInit, OnChanges {
     ngOnInit(): void {
         this.name = Object.keys(this.schema.data)[0]
     }
+
+    newlineToBr = SchemasService.newlineToBr;
 }
 
 @Component( {
@@ -177,6 +183,8 @@ export class YANGType {
     @Output() refresh = new EventEmitter();
 
     constructor(public schemasService: SchemasService) {}
+
+    newlineToBr = SchemasService.newlineToBr;
 
     derivedFrom(id: string) {
         let i = id.indexOf(':');
@@ -214,30 +222,14 @@ export class YANGType {
                 }
             } );
     }
+
+
+
 }
 
 @Component( {
     selector: 'yang-restriction',
-    template: `
-        <div class="yang-info" *ngIf="name=='pattern'"><span class="yang-info-subsection-label">{{name}}</span><span class="yang-info-value pattern" [innerHTML]="data.value | patternHighlight"></span></div>
-        <div class="yang-info" *ngIf="name!='pattern'"><span class="yang-info-subsection-label">{{name}}</span><span class="yang-info-value">{{data.value}}</span></div>
-        <div class="yang-info-subsection">
-            <div class="yang-info" *ngIf="data.modifier">
-                <span class="yang-info-label">modifier</span><span class="yang-info-value">{{data.modifier.value}}</span>
-            </div>
-            <div class="yang-info" *ngIf="data['error-message']">
-                <span class="yang-info-label">error-message</span><span class="yang-info-value">{{data['error-message'].value}}</span>
-            </div>
-            <div class="yang-info" *ngIf="data['error-app-tag']">
-                <span class="yang-info-label">error-app-tag</span><span class="yang-info-value">{{data['error-app-tag'].value}}</span>
-            </div>
-            <div class="yang-info" *ngIf="data.description">
-                <span class="yang-info-label">description</span><pre class="yang-info-value">{{data.description.text}}</pre>
-            </div>
-            <div class="yang-info" *ngIf="data.reference">
-                <span class="yang-info-label">reference</span><pre class="yang-info-value">{{data.reference.text}}</pre>
-            </div>
-        </div>`,
+    templateUrl: './yang.restriction.html',
     styleUrls: ['./yang.component.scss'],
     encapsulation: ViewEncapsulation.None,
 } )
@@ -304,6 +296,8 @@ export class YANGNode implements OnInit, OnChanges {
     ngOnInit(): void {
         this.name = Object.keys(this.schema.data)[0]
     }
+
+    newlineToBr = SchemasService.newlineToBr;
 }
 
 @Component( {
