@@ -28,7 +28,9 @@ $colorLineSelected: #999999;
 .yang-info-section-label,
 .yang-info-subsection-label,
 .yang-info-label {
-    color: $colorMain;
+    color: black;
+    font-weight: 100;
+    text-transform: uppercase;
 }
 
 .yang-info-section {
@@ -40,13 +42,15 @@ $colorLineSelected: #999999;
 }
 
 .yang-info-subsection {
-    padding-left: 2em;
+    .yang-info {
+        padding-left: 2em;
+    }
 }
 
 .yang-info,
 .yang-info-label,
 .yang-info-value {
-    border: 0px solid black;
+    border: none;
     a {
         font-weight: normal;
     }
@@ -54,9 +58,14 @@ $colorLineSelected: #999999;
 
 .yang-info {
     display: flex;
+    padding: 5px;
 }
 .yang-info:hover {
     background-color: $colorLineHover;
+}
+
+.yang-info:nth-of-type(even), .yang-info-subsection:nth-of-type(even) {
+    background: lighten($colorLineHover, 5%);
 }
 
 .yang-info-value {
@@ -70,6 +79,13 @@ $colorLineSelected: #999999;
     overflow: hidden;
     text-overflow: ellipsis;
     display: inline-block;
+}
+.yang-revision-label {
+    font-style: italic;
+}
+
+.yang-subsection-container {
+    margin-left: 2em;
 }
 
 .pattern {

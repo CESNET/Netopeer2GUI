@@ -213,4 +213,16 @@ export class SchemasService {
         //console.log(result)
         return result;
     }
+
+    static newlineToBr(message: string) {
+        let entityMap = {
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': '&quot;',
+            "'": '&#39;',
+            "/": '&#x2F;'
+        };
+        return message.replace(/[&<>"'\/]/g, s => entityMap[s]).replace(/\n/g, "<br>");
+    }
 }

@@ -1,5 +1,5 @@
 <div class="yang-infobox">
-    <div class="yang-info-label">Feature {{name}}</div>
+    <div class="yang-info-label"><h2>Feature <b>{{name}}</b></h2></div>
     <div class="yang-info-section" *ngIf="data['if-features']">
         <div class="yang-info" *ngFor="let value of data['if-features']">
             <yang-iffeature (refresh)="onRefresh()" [schema]="schema" [data]="value"></yang-iffeature>
@@ -11,10 +11,10 @@
             <span class="yang-info-label">status</span><span class="yang-info-value">{{data.status.value}}</span>
         </div>
         <div class="yang-info" *ngIf="data.description">
-            <span class="yang-info-label">description</span><pre class="yang-info-value">{{data.description.text}}</pre>
+            <span class="yang-info-label">description</span><span class="yang-info-value" [innerHTML]="newlineToBr(data.description.text)"></span>
         </div>
         <div class="yang-info" *ngIf="data.reference">
-            <span class="yang-info-label">reference</span><pre class="yang-info-value">{{data.reference.text}}</pre>
+            <span class="yang-info-label">reference</span><span class="yang-info-value" [innerHTML]="newlineToBr(data.reference.text)"></span>
         </div>
     </div>
 
