@@ -49,20 +49,22 @@ def __devices_inv_save(path, devices):
 
 @auth.required()
 def devices_list():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 	path = os.path.join(INVENTORY, user.username)
-	
+
 	inventory_check(path)
 	devices = __devices_inv_load(path)
-	
+
 	for dev in devices['device']:
-		del dev['password']
+		if 'password' in dev:
+			del dev['password']
+
 	return(json.dumps(devices['device']))
 
 @auth.required()
 def devices_add():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 	path = os.path.join(INVENTORY, user.username)
 
@@ -79,11 +81,10 @@ def devices_add():
 		'name':device['name'],
 		'hostname':device['hostname'],
 		'port':device['port'],
-		'autoconnect':device['autoconnect']}
-	if 'username' in device:
-		device_json['username'] = device['username']
-		if 'password' in device:
-			device_json['password'] = device['password']
+		'autoconnect':device['autoconnect'],
+		'username':device['username']}
+	if 'password' in device and device['password']:
+		device_json['password'] = device['password']
 	devices['device'].append(device_json)
 
 	#store the list
@@ -93,7 +94,7 @@ def devices_add():
 
 @auth.required()
 def devices_rm():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 	path = os.path.join(INVENTORY, user.username)
 
@@ -107,7 +108,7 @@ def devices_rm():
 		if device['id'] == rm_id:
 			devices['device'].pop(i)
 			device = None
-			break;
+			break
 
 	if device:
 		# device not in inventory
@@ -128,3 +129,16 @@ def devices_get(device_id, username):
 			return device
 
 	return None
+
+
+def devices_replace(device_id, username, device):
+	path = os.path.join(INVENTORY, username)
+	devices = __devices_inv_load(path)
+
+	for i in range(len(devices['device'])):
+		if devices['device'][i]['id'] == device_id:
+			devices['device'][i] = device
+			break
+
+	# update the inventory database
+	__devices_inv_save(path, devices)

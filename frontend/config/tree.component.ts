@@ -229,8 +229,7 @@ export class TreeIndent implements OnInit {
             node = this.treeService.nodeParent(this.activeSession, node);
         }
         if (!('creatingChild' in node)) {
-            this.sessionsService.childrenSchemas(this.activeSession.key, node).then(result => {
-                console.log(node)
+            this.sessionsService.childrenSchemas(this.activeSession.key, node).subscribe(result => {
                 this.modsService.createOpen(this.activeSession, result, node);
             });
         } else if (element){
@@ -311,7 +310,7 @@ export class TreeNode {
     }
 
     isEditable(node) {
-        if ((node['info']['key'] && !node['new']) || node['deleted']) {
+        if (!node['info']['config'] || (node['info']['key'] && !node['new']) || node['deleted']) {
             return false;
         }
         return true;
@@ -330,21 +329,29 @@ export class TreeNode {
         container.nextElementSibling.lastElementChild.focus();
     }
 
-    showSchema(node) {
-        let schema = new Schema;
-        let at = node['info']['module'].indexOf('@');
-        if (at == -1) {
-            schema.name = node['info']['module'];
-        } else {
-            schema.name = node['info']['module'].substring(0, at);
-            schema.revision = node['info']['module'].substring(at + 1);
-        }
-        let key = node['info']['module'] + '.yang';
+    link(key:string, type:string, path:string = null) {
+        this.schemasService.show(key, type, path)
+            .subscribe((result: object) => {
+                console.log(result);
+                if (result['success']) {
+                    this.router.navigateByUrl( '/netopeer/yang' );
+                }
+            });
+    }
 
-        schema.name = this.treeService.moduleName(node);
-        this.schemasService.show(key, schema);
-        this.schemasService.changeActiveSchemaKey(key);
-        this.router.navigateByUrl( '/netopeer/yang' );
+    linkSchema(node) {
+        this.link(node['info']['module'] + '.yang', 'tree');
+    }
+
+    linkNode(node) {
+        console.log(node);
+        this.link(node['info']['module'] + '.yang', 'tree-node', node['info']['path']);
+    }
+
+    linkIdentity(node) {
+        let name = node['value'].slice(node['value'].lastIndexOf(':') + 1);
+
+        this.link(node['info']['refmodule'], 'tree-identity', '/' + name);
     }
 
     newChildrenToShow(node) {
@@ -354,6 +361,7 @@ export class TreeNode {
             return [];
         }
     }
+
 }
 
 @Component({

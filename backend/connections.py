@@ -6,26 +6,96 @@ Author: Radek Krejci <rkrejci@cesnet.cz>
 
 import json
 import os
+import logging
 
-from liberouterapi import auth
+from liberouterapi import socketio, auth
 from flask import request
+from eventlet.timeout import Timeout
 import yang
 import netconf2 as nc
 
 from .inventory import INVENTORY
-from .devices import devices_get
+from .socketio import sio_emit, sio_wait, sio_clean
+from .devices import devices_get, devices_replace
 from .error import NetopeerException
+from .schemas import getschema, schemas_update
 from .data import *
+
+log = logging.getLogger(__name__)
 
 sessions = {}
 
 def hostkey_check(hostname, state, keytype, hexa, priv):
-	# TODO real check
-	return True
+	if 'fingerprint' in priv['device']:
+		# check according to the stored fingerprint from previous connection
+		if hexa == priv['device']['fingerprint']:
+			return True
+		elif state != 2:
+			log.error("Incorrect host key state")
+			state = 2
+
+	# ask frontend/user for hostkey check
+	params = {'id': priv['session']['session_id'], 'hostname' : hostname, 'state' : state, 'keytype' : keytype, 'hexa' : hexa}
+	sio_emit('hostcheck', params)
+
+	result = False
+	timeout = Timeout(30)
+	try:
+		# wait for response from the frontend
+		data = sio_wait(priv['session']['session_id'])
+		result = data['result']
+	except Timeout:
+		# no response received within the timeout
+		log.info("socketio: hostcheck timeout.")
+	except KeyError:
+		# invalid response
+		log.error("socketio: invalid hostcheck_result received.")
+	finally:
+		# we have the response
+		sio_clean(priv['session']['session_id'])
+		timeout.cancel()
+
+	if result:
+		# store confirmed fingerprint for future connections
+		priv['device']['fingerprint'] = hexa;
+		devices_replace(priv['device']['id'], priv['session']['user'].username, priv['device'])
+
+	return result
+
+
+def auth_common(session_id):
+	result = None
+	timeout = Timeout(60)
+	try:
+		# wait for response from the frontend
+		data = sio_wait(session_id)
+		result = data['password']
+	except Timeout:
+		# no response received within the timeout
+		log.info("socketio: auth request timeout.")
+	except KeyError:
+		# no password
+		log.info("socketio: invalid credential data received.")
+	finally:
+		# we have the response
+		sio_clean(session_id)
+		timeout.cancel()
+
+	return result
+
+
+def auth_password(username, hostname, priv):
+	sio_emit('device_auth', {'id': priv, 'type': 'Password Authentication', 'msg': username + '@' + hostname})
+	return auth_common(priv)
+
+
+def auth_interactive(name, instruction, prompt, priv):
+	sio_emit('device_auth', {'id': priv, 'type': name, 'msg': instruction, 'prompt': prompt})
+	return auth_common(priv)
 
 @auth.required()
 def connect():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 	path = os.path.join(INVENTORY, user.username)
 
@@ -43,28 +113,40 @@ def connect():
 		raise NetopeerException('Unknown device to connect to request.')
 
 	nc.setSearchpath(path)
+	nc.setSchemaCallback(getschema, session)
 
-	ssh = nc.SSH(device['username'], password=device['password'])
-	ssh.setAuthHostkeyCheckClb(hostkey_check)
+	if 'password' in device:
+		ssh = nc.SSH(device['username'], password = device['password'])
+	else:
+		ssh = nc.SSH(device['username'])
+		ssh.setAuthPasswordClb(auth_password, session['session_id'])
+		ssh.setAuthInteractiveClb(auth_interactive, session['session_id'])
+
+	ssh.setAuthHostkeyCheckClb(hostkey_check, {'session': session, 'device' : device})
 	try:
-		session = nc.Session(device['hostname'], device['port'], ssh)
+		ncs = nc.Session(device['hostname'], device['port'], ssh)
 	except Exception as e:
+		nc.setSchemaCallback(None)
 		return(json.dumps({'success': False, 'error-msg': str(e)}))
+	nc.setSchemaCallback(None)
 
 	if not user.username in sessions:
 		sessions[user.username] = {}
 
 	# use key (as hostname:port:session-id) to store the created NETCONF session
-	key = session.host + ":" + str(session.port) + ":" + session.id
+	key = ncs.host + ":" + str(ncs.port) + ":" + ncs.id
 	sessions[user.username][key] = {}
-	sessions[user.username][key]['session'] = session
+	sessions[user.username][key]['session'] = ncs
+
+	# update inventory's list of schemas
+	schemas_update(session)
 
 	return(json.dumps({'success': True, 'session-key': key}))
 
 
 @auth.required()
 def session_get_capabilities():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 	req = request.args.to_dict()
 
@@ -73,7 +155,7 @@ def session_get_capabilities():
 
 	if not user.username in sessions:
 		sessions[user.username] = {}
-		
+
 	key = req['key']
 	if not key in sessions[user.username]:
 		return(json.dumps({'success': False, 'error-msg': 'Invalid session key.'}))
@@ -86,7 +168,7 @@ def session_get_capabilities():
 
 @auth.required()
 def session_get():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 	req = request.args.to_dict()
 
@@ -159,7 +241,7 @@ def _checkvalue(session, req, schema):
 
 @auth.required()
 def data_checkvalue():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	req = request.args.to_dict()
 
 	return _checkvalue(session, req, False)
@@ -167,7 +249,7 @@ def data_checkvalue():
 
 @auth.required()
 def schema_checkvalue():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	req = request.args.to_dict()
 
 	return _checkvalue(session, req, True)
@@ -175,7 +257,7 @@ def schema_checkvalue():
 
 @auth.required()
 def schema_values():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 	req = request.args.to_dict()
 
@@ -202,7 +284,7 @@ def schema_values():
 
 @auth.required()
 def schema_info():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 	req = request.args.to_dict()
 
@@ -279,7 +361,7 @@ def _create_child(ctx, parent, child_def):
 
 @auth.required()
 def session_commit():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 
 	req = request.get_json(keep_order = True)
@@ -383,7 +465,7 @@ def session_commit():
 
 @auth.required()
 def session_close():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 	req = request.args.to_dict()
 
@@ -402,7 +484,7 @@ def session_close():
 
 @auth.required()
 def session_alive():
-	session = auth.lookup(request.headers.get('Authorization', None))
+	session = auth.lookup(request.headers.get('lgui-Authorization', None))
 	user = session['user']
 	req = request.args.to_dict()
 
@@ -411,7 +493,7 @@ def session_alive():
 
 	if not user.username in sessions:
 		sessions[user.username] = {}
-		
+
 	key = req['key']
 	if not key in sessions[user.username]:
 		return(json.dumps({'success': False, 'error-msg': 'Invalid session key.'}))

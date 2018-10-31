@@ -1,5 +1,8 @@
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
+import { Observable } from 'rxjs/Observable';
+import { tap } from 'rxjs/operators';
+import { of } from 'rxjs';
 
 import { Session, Node, NodeSchema } from './session';
 import { SessionsService } from './sessions.service';
@@ -135,7 +138,7 @@ export class ModificationsService {
             case 'bits':
             case 'enumeration':
                 waiting = true;
-                this.sessionsService.schemaValues(activeSession.key, node).then(result => {
+                this.sessionsService.schemaValues(activeSession.key, node).subscribe(result => {
                     if (result['success']) {
                         node['info']['values'] = result['data'];
                     }
@@ -330,7 +333,7 @@ export class ModificationsService {
      * @param schemas List of available schema nodes for the node's children.
      * @param node Parent node where a new children is supposed to be created.
      */
-    createOpen(activeSession: Session, schemas: string[], node: Node): void {
+    createOpen(activeSession: Session, schemas: NodeSchema[], node: Node): void {
         //console.trace();
         node['schemaChildren'] = schemas;
         node['creatingChild'] = {};
@@ -340,7 +343,7 @@ export class ModificationsService {
             if (children.length) {
                 let last = children[children.length - 1];
                 if (last['info']['type'] == 16) {
-                    let instances = this.treeService.getInstances(activeSession, last)
+                    let instances = this.treeService.getInstances(activeSession, last);
                     last = instances[instances.length - 1];
                 }
                 delete last['last'];
@@ -371,7 +374,7 @@ export class ModificationsService {
         if (children.length) {
             let last = children[children.length - 1];
             if (last['info']['type'] == 16) {
-                let instances = this.treeService.getInstances(activeSession, last)
+                let instances = this.treeService.getInstances(activeSession, last);
                 last = instances[instances.length - 1];
             }
             last['last'] = true;
@@ -483,7 +486,7 @@ export class ModificationsService {
 
             newNode['children'] = [];
             /* open creation dialog for nodes inside the created container */
-            this.sessionsService.childrenSchemas(activeSession.key, newNode).then(result => {
+            this.sessionsService.childrenSchemas(activeSession.key, newNode).subscribe(result => {
                 this.createOpen(activeSession, result, newNode);
             });
             break;
@@ -493,7 +496,7 @@ export class ModificationsService {
             if ('default' in newNode['info']) {
                 newNode['value'] = newNode['info']['default'];
             }
-            this.setEdit(activeSession, newNode, true)
+            this.setEdit(activeSession, newNode, true);
             break;
         case 8: /* leaf-list */
             /* check number of instances, if first, mark this as the first leaf-list instance */
@@ -533,7 +536,7 @@ export class ModificationsService {
             }
             newNode['children'] = [];
             /* open creation dialog for nodes inside the created list */
-            this.sessionsService.childrenSchemas(activeSession.key, newNode).then(result => {
+            this.sessionsService.childrenSchemas(activeSession.key, newNode).subscribe(result => {
                 if (result && result.length) {
                     this.createOpen(activeSession, result, newNode);
                 }
@@ -808,7 +811,7 @@ export class ModificationsService {
             let err = this.resolveKeys(activeSession.modifications[mod]['data']);
             if (err) {
                 console.log(err);
-                return new Promise((resolve, reject) => {resolve({'success':false,'error': [{'message':err}]})});
+                return of({'success': false, 'error': [{'message': err}]});
             }
         }
 
@@ -834,10 +837,10 @@ export class ModificationsService {
             /* eat distances to generate transactions */
             record['transactions'] = [];
             let pos = this.getHighestDistIndex(nodes);
-            while(pos != -1) {
+            while (pos != -1) {
                 if (nodes[pos]['dist'] < 0) {
                     /* moved to the left */
-                    let offset = 1
+                    let offset = 1;
                     for (; nodes[pos]['dist'] != 0; nodes[pos]['dist']++, offset++) {
                         nodes[pos + offset]['dist']--;
                     }
@@ -894,13 +897,15 @@ export class ModificationsService {
         }
 
         //console.log(JSON.stringify(activeSession.modifications));
-        return this.sessionsService.commit(activeSession).then(result => {
-            if (result['success']) {
-                delete activeSession.modifications;
-            } else {
-                console.log(result);
-            }
-            return result;
-        })
+        return this.sessionsService.commit(activeSession).pipe(
+            tap(result => {
+                if (result['success']) {
+                    delete activeSession.modifications;
+                } else {
+                    console.log(result);
+                }
+                return result;
+            })
+        )
     }
 }

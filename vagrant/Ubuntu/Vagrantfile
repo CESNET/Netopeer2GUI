@@ -7,9 +7,16 @@ apt-get upgrade
 apt-get install -y pkg-config
 apt-get install -y git cmake clang
 apt-get install -y libpcre3-dev python3-dev swig
-apt-get install -y libssl-dev
-apt-get install -y protobuf-c-compiler libavl-dev libev-dev
-apt-get install -y python3-pip virtualenv npm nodejs-legacy
+apt-get install -y libssh-4 libssh-dev libssl-dev libssl-doc zlib1g-dev
+apt-get install -y libprotobuf-c-dev protobuf-c-compiler libavl-dev libev-dev
+SCRIPT
+
+$tools_ssl = <<SCRIPT
+apt-get install -y libssh-4 libssh-dev libssl-dev libssl-doc zlib1g-dev
+SCRIPT
+
+$tools_npm = <<SCRIPT
+apt-get install -y python3-pip virtualenv nodejs npm
 # get the newer version, npm in 16.04 is too old
 npm install -g n
 n stable
@@ -23,18 +30,9 @@ $libyang = <<SCRIPT
 rm -rf libyang
 git clone -b devel https://github.com/CESNET/libyang.git
 cd libyang; mkdir build; cd build
-cmake -DGEN_LANGUAGE_BINDINGS=ON .. && make && make install
+cmake -DGEN_LANGUAGE_BINDINGS=ON -DGEN_JAVA_BINDINGS=OFF .. && make && make install
 cd ../..
 ldconfig
-SCRIPT
-
-$libssh = <<SCRIPT
-rm -rf libssh-0.7.5*
-wget https://git.libssh.org/projects/libssh.git/snapshot/libssh-0.7.5.tar.gz
-tar -xzf libssh-0.7.5.tar.gz
-mkdir libssh-0.7.5/build && cd libssh-0.7.5/build
-cmake -DCMAKE_INSTALL_PREFIX:PATH=/usr .. && make -j2 && sudo make install
-cd ../..
 SCRIPT
 
 $libnetconf2 = <<SCRIPT
@@ -94,7 +92,7 @@ SCRIPT
 
 $frontend = <<SCRIPT
 cd liberouter-gui/frontend
-/usr/local/bin/ng serve --preserve-symlinks --host 0.0.0.0 --proxy proxy.json > ../frontend.log 2>&1 &
+/usr/local/bin/ng serve --host 0.0.0.0 --proxy-config proxy.json > ../frontend.log 2>&1 &
 cd ../..
 SCRIPT
 
@@ -117,18 +115,19 @@ Vagrant.configure("2") do |config|
 
   config.vm.define "Netopeer2GUI" do |gui|
     gui.vm.synced_folder "../../", "/home/vagrant/Netopeer2GUI", create: true
-    gui.vm.box = "ubuntu/xenial64"
+    gui.vm.box = "ubuntu/bionic64"
     gui.vm.network "forwarded_port", host: "4200", guest: "4200", auto_correct: true
     gui.vm.network "forwarded_port", host: "8830", host_ip: "127.0.0.1", guest: "830", auto_correct: true
     gui.ssh.shell = "sh"
 
     gui.vm.provision :shell, inline: $tools
     gui.vm.provision :shell, inline: $libyang
-    gui.vm.provision :shell, inline: $libssh
     gui.vm.provision :shell, inline: $libnetconf2
     gui.vm.provision :shell, inline: $sysrepo
     gui.vm.provision :shell, inline: $netopeer
+    gui.vm.provision :shell, inline: $tools_npm
     gui.vm.provision :shell, inline: $liberoutergui
+    gui.vm.provision :shell, inline: $tools_ssl
     gui.vm.provision :shell, inline: $netconf, run: "always"
     gui.vm.provision :shell, inline: $backend, run: "always"
     gui.vm.provision :shell, inline: $frontend, run: "always"

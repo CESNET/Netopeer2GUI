@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Routes, RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { ReactiveFormsModule } from '@angular/forms';
-import { HttpModule } from '@angular/http';
+import { HttpClientModule } from '@angular/common/http';
 
 import { NgbModule } from '@ng-bootstrap/ng-bootstrap';
 
@@ -17,12 +17,12 @@ import { OrderingDirective } from './config/ordering.directive';
 
 import { NetopeerComponent } from './netopeer.component';
 import { DashboardComponent } from './dashboard.component';
-import { InventoryComponent } from './inventory/inventory.component';
+import { InventoryComponent, DialogueSchema } from './inventory/inventory.component';
 import { InventorySchemasComponent } from './inventory/schemas.component';
-import { InventoryDevicesComponent } from './inventory/devices.component';
+import { InventoryDevicesComponent, DialogueHostcheck, DialoguePassword } from './inventory/devices.component';
 import { ConfigComponent } from './config/config.component';
 import { TreeView, TreeNode, TreeLeaflistValue, TreeIndent, TreeCreate, TreeEdit, TreeScrollTo, CheckLeafValue } from './config/tree.component';
-import { YANGComponent } from './yang/yang.component';
+import { YANGComponent, YANGModule, YANGIdentity, YANGFeature, YANGTypedef, YANGType, YANGRestriction, YANGNode, YANGIffeature } from './yang/yang.component';
 import { MonitoringComponent } from './monitoring/monitoring.component';
 import { PluginsComponent } from './plugins/plugins.component';
 
@@ -30,6 +30,8 @@ import { SessionsService } from './config/sessions.service';
 import { SchemasService } from './yang/schemas.service';
 import { DevicesService } from './inventory/devices.service';
 import { TreeService } from './config/tree.service';
+
+import { NoPrefixPipe, PrefixOnlyPipe, PatternHighlightPipe } from './common/pipes';
 
 const routes: Routes = [
   { path : 'netopeer', component : NetopeerComponent, canActivate : [AuthGuard],
@@ -88,7 +90,7 @@ const routes: Routes = [
     CommonModule,
     FormsModule,
     ReactiveFormsModule,
-    HttpModule,
+    HttpClientModule,
     NgbModule.forRoot(),
     RouterModule.forChild(routes),
     MatProgressSpinnerModule,
@@ -112,8 +114,22 @@ const routes: Routes = [
     TreeNode,
     TreeView,
     YANGComponent,
+    YANGModule,
+    YANGIdentity,
+    YANGFeature,
+    YANGTypedef,
+    YANGType,
+    YANGRestriction,
+    YANGNode,
+    YANGIffeature,
     MonitoringComponent,
-    PluginsComponent
+    PluginsComponent,
+    DialogueHostcheck,
+    DialoguePassword,
+    DialogueSchema,
+    NoPrefixPipe,
+    PrefixOnlyPipe,
+    PatternHighlightPipe
   ],
   providers: [
     SessionsService,
@@ -122,7 +138,10 @@ const routes: Routes = [
     TreeService
   ],
   entryComponents : [
-    NetopeerComponent
+    NetopeerComponent,
+    DialogueHostcheck,
+    DialoguePassword,
+    DialogueSchema
   ]
 })
 export class NetopeerModule { }

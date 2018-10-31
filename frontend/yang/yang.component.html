@@ -1,9 +1,11 @@
 <nav #subnav id="subnav">
-    <a *ngFor="let key of schemasService.schemasKeys()" [class.active]="key == schemasService.activeSchema"
-        (click)="schemasService.changeActiveSchemaKey(key)">{{schemasService.schemas[key].name}}@{{schemasService.schemas[key].revision}}
+    <!-- Mouseup event is used instead of click event to enable middle-click detection.
+    Click event only fires when user clicks left mouse button -->
+    <a *ngFor="let schema of schemasService.schemas" [class.active]="schema.key == schemasService.activeSchema"
+        (mouseup)="$event.which == 2 ? schemasService.close(schema.key) : changeView(schema.key)">{{schema.key}}
         <img class="tab-icon tab-close tab-action-last" src="assets/netopeer/icons/close.svg"  alt="x" title="close"
             onmouseover="this.src='assets/netopeer/icons/close_active.svg'"
-            onmouseout="this.src='assets/netopeer/icons/close.svg'" (click)="schemasService.close(key)"/>
+            onmouseout="this.src='assets/netopeer/icons/close.svg'" (click)="schemasService.close(schema.key);refreshActiveSchema()"/>
     </a><a (click)="addSchema()" onmouseout="getElementById('tabadd').style.filter='invert(100%)'" onmouseover="getElementById('tabadd').style.filter='invert(0%)'">
         <img id="tabadd" class="tab-icon tab-add tab-action-last" src="assets/netopeer/icons/add.svg" alt="+" title="open schema"
             onmouseover="this.src='assets/netopeer/icons/add_active.svg'"
@@ -11,6 +13,29 @@
     </a>
 </nav>
 <div class="netopeer-content" [style.padding-top]="'calc(' + subnav.offsetHeight + 'px - -0.7em)'">
-<img *ngIf="!schemasService.activeSchema" (click)="addSchema()" src="assets/netopeer/starthere.svg" alt="Start here with that + sign."/>
-<pre *ngIf="schemasService.activeSchema">{{schemasService.schemas[schemasService.activeSchema].data}}</pre>
+<img *ngIf="!activeSchema" (click)="addSchema()" src="assets/netopeer/starthere.svg" alt="Start here with that + sign."/>
+<div *ngIf="activeSchema">
+    <img [style.visibility]="schemasService.history.length > 1 ? 'visible' : 'hidden'" (click)="back()"
+        class="nav-button" src="assets/netopeer/icons/back.svg" alt="back" title="back"/>
+    <ng-container [ngSwitch]="activeSchema.type">
+        <img *ngSwitchCase="'text'" (click)="show(activeSchema.key, 'tree')"
+            class="nav-button" src="assets/netopeer/icons/module.svg" alt="interactive" title="show YANG interactive view"/>
+        <img *ngSwitchDefault (click)="show(activeSchema.key, 'text')"
+            class="nav-button" src="assets/netopeer/icons/yangfile.svg" alt="text" title="show YANG text view"/>
+    </ng-container>
+    <img [style.visibility]="(activeSchema.type != 'tree' && activeSchema.type != 'text') ? 'visible' : 'hidden'" (click)="show(activeSchema.key, 'tree')"
+        class="nav-button" src="assets/netopeer/icons/module.svg" alt="module" title="show module information"/>
+    <hr/>
+    <ng-container [ngSwitch]="activeSchema.type">
+        <pre *ngSwitchCase="'text'">{{activeSchema.data}}</pre>
+        <yang-module *ngSwitchCase="'tree'" [schema]="activeSchema" (refresh)="refreshActiveSchema()"></yang-module>
+        <yang-identity *ngSwitchCase="'tree-identity'" [schema]="activeSchema" (refresh)="refreshActiveSchema()"></yang-identity>
+        <yang-feature *ngSwitchCase="'tree-feature'" [schema]="activeSchema" (refresh)="refreshActiveSchema()"></yang-feature>
+        <yang-typedef *ngSwitchCase="'tree-typedef'" [schema]="activeSchema" [data]="schemaData(activeSchema)" (refresh)="refreshActiveSchema()"></yang-typedef>
+        <yang-node *ngSwitchCase="'tree-node'" [schema]="activeSchema" [data]="schemaData(activeSchema)" (refresh)="refreshActiveSchema()"></yang-node>
+        <yang-node *ngSwitchCase="'tree-grouping'" [schema]="activeSchema" [data]="schemaData(activeSchema)" (refresh)="refreshActiveSchema()"></yang-node>
+        <pre *ngSwitchDefault>{{activeSchema.data | json}}</pre>
+    </ng-container>
+</div>
+
 </div>

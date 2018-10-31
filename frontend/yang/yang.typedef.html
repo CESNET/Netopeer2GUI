@@ -1,0 +1,28 @@
+
+<div class="yang-infobox">
+    <div class="yang-info-label"><h2>Typedef {{name}}</h2></div>
+
+    <yang-type [schema]="schema" [data]="data.type" (refresh)="onRefresh()"></yang-type>
+
+    <div class="yang-info-section">
+        <div class="yang-info" *ngIf="data.units">
+            <span class="yang-info-label">units</span><span class="yang-info-value">{{data.units.name}}</span>
+        </div>
+        <div class="yang-info" *ngIf="data.default">
+            <span class="yang-info-label">default</span><span class="yang-info-value">{{data.default.value}}</span>
+        </div>
+        <div class="yang-info" *ngIf="data.status">
+            <span class="yang-info-label">status</span><span class="yang-info-value">{{data.status.value}}</span>
+        </div>
+        <div class="yang-info" *ngIf="data.description">
+            <span class="yang-info-label">description</span><span class="yang-info-value" [innerHTML]="newlineToBr(data.description.text)"></span>
+        </div>
+        <div class="yang-info" *ngIf="data.reference">
+            <span class="yang-info-label">reference</span><span class="yang-info-value" [innerHTML]="newlineToBr(data.reference.text)"></span>
+        </div>
+    </div>
+
+</div>
+
+<!-- <pre>{{data | json}}</pre> -->
+<!-- <pre>{{schema | json}}</pre> -->

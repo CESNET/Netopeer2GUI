@@ -6,7 +6,8 @@ export class Device {
     public port: number = 830,
     public autoconnect: boolean = false,
     public username: string = '',
-    public password: string = ''
+    public password: string = '',
+    public fingerprint: string = '',
   ) {}
 }
 /*

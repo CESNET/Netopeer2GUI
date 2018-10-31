@@ -1,8 +1,7 @@
 <div class="netopeer-content">
-
 <div class="items_manipulation">
   <button (click)="getDevices()">Refresh</button>
-  <button (click)="showAddDevice()">Add</button>
+  <button (click)="showAddDevice()">{{addingDeviceLabel}}</button>
   <div *ngIf="addingDevice">
     <hr/>
     <form (submit)="addDevice(action.value)" #newDeviceForm>
@@ -31,8 +30,8 @@
       <div class="input_line">
         <label for="password" class="input_line">Password</label>
           <input type="password" name="password"
-            #pass [class.invalid]="!bitStatus(2)" [(ngModel)]="newDevice.password" (keyup)="checkString(pass.value, 2)"/>
-          <div [hidden]="bitStatus(2)" class="input_line_alert">User password must be specified to connect to the device.</div>
+            #pass [class.invalid]="true" [(ngModel)]="newDevice.password" />
+          <div [hidden]="true" class="input_line_alert">User password must be specified to connect to the device.</div>
       </div>
       <div class="input_line">
         <label for="autoconnect" class="input_line">Auto Connect</label>
@@ -49,7 +48,7 @@
       </div>
 
       <div class="input_control">
-        <button type="submit" [disabled]="validAddForm != 15">Done</button>
+        <button type="submit" [disabled]="validAddForm != 13">Done</button>
         <span [ngSwitch]="addingResult">
           <span *ngSwitchCase="0" class="msg-rounded msg-failure"><span class="msg-close" (click)="addingResult=-1">x</span>failed.</span>
           <span *ngSwitchCase="1" class="msg-rounded msg-success"><span class="msg-close" (click)="addingResult=-1">x</span>successfully added.</span>
@@ -66,6 +65,7 @@
     <th class="item_left">&nbsp;</th>
     <th>name</th>
     <th>hostname : port</th>
+    <th>fingerprint</th>
     <th>username</th>
     <th class="item_right">autoconnect</th>
   </tr>
@@ -78,6 +78,7 @@
     </td>
     <td>{{device.name}}</td>
     <td>{{device.hostname}} : {{device.port}}</td>
+    <td>{{device.fingerprint}}</td>
     <td>{{device.username}}</td>
     <td class="item_right"><input type="checkbox" name="autoconnect" disabled [checked]="device.autoconnect"
       title="Automatically connect the device on user login."/></td>
