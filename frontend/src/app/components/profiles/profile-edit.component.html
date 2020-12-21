@@ -1,0 +1,62 @@
+<lib-content-box [title]="'Edit devices in profile ' + selectedProfile" [limitWidth]="true">
+    <div class="row mb-5" *ngIf="!error">
+        <div class="col-12 text-center">
+            <label for="search" class="nc-label nc-label-center">Search in saved devices</label>
+            <input class="nc-input nc-input-wide" type="text" name="search" id="search" [(ngModel)]="searchedText"
+                   placeholder="Search for name, hostname, port, username..." (input)="setPage(1)">
+        </div>
+    </div>
+    <div class="row" *ngIf="!loading">
+        <div *ngIf="error" class="col-sm-12">
+            <h1 class="text-danger">Could not load profiles!</h1>
+            <p><span class="text-bold">Error details:</span> {{error}}</p>
+        </div>
+        <div *ngIf="saveError" class="col-sm-12 text-center">
+            <h1 class="text-danger">Could not save changes!</h1>
+            <p><span class="text-bold">Error details:</span> {{saveError}}</p>
+        </div>
+        <div class="col-sm-12 col-md-4 pl-3 pr-3 p-2"
+             *ngFor="let device of savedDevices | deviceFilter: searchedText | pagination: paginationOptions">
+            <lib-device-selection-item [device]="device.device" [(selected)]="device.inProfile">
+            </lib-device-selection-item>
+            <div class="subscriptions"
+                 *ngIf="device.inProfile && device.subscriptions && device.subscriptions.length !== 0">
+                Notification subscriptions
+                <p>
+                    <span class="channel" *ngFor="let channel of device.subscriptions">{{channel}} <i
+                            class="fa fa-times-circle remove"></i></span>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="row" *ngIf="loading">
+        <div class="col-sm-12 centered">
+            <h1 class="text-center">Loading devices... <i class="fa fa-spinner fa-pulse fa-fw"></i></h1>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <nc-pagination [page]="paginationOptions.page"
+                           [itemCount]="(savedDevices | deviceFilter : searchedText).length"
+                           [itemsPerPage]="paginationOptions.perPage"
+                           [loading]="loading"
+                           (goPrev)="prevPage()"
+                           (goNext)="nextPage()"
+                           (goPage)="setPage($event)"
+            ></nc-pagination>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-12">
+            <a routerLink="/netconf/profiles" class="btn btn-danger">Cancel</a>
+            <button class="btn btn-primary float-right" *ngIf="!error"
+                    (click)="saveChanges()"
+                    [disabled]="saving">Save changes <i class="fa fa-spinner fa-pulse fa-fw" *ngIf="saving"></i></button>
+        </div>
+    </div>
+</lib-content-box>
+<!--
+<lib-nc-popup title="Add a new device" [toolbox]="false">
+    <nc-add-device></nc-add-device>
+</lib-nc-popup>
+-->

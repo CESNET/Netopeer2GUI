@@ -1,14 +1,18 @@
 {
     "dependencies": {
-        "npm" : "frontend/package.json"
+        "ngc": "frontend/angular-shared.json",
+        "npm": "frontend/package-shared.json",
+        "pip": "backend/requirements.txt"
     },
     "module": {
-        "name" : "netopeer",
-        "file" : "netopeer.module.ts",
-        "class" : "NetopeerModule",
-        "hooks" : "NetopeerModuleHooks",
-        "frontend" : "frontend",
-        "backend" : "backend",
-        "assets" : "frontend-assets"
+        "class": "NetconfModule",
+        "file": "netconf.module.ts",
+        "frontend": "frontend/src/app/",
+        "backend": "backend/",
+        "name" : "netconf"
+    },
+    "assets": {
+        "input": "assets",
+        "output": "libnetconf"
     }
 }

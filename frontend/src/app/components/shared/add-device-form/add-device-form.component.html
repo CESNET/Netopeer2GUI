@@ -1,0 +1,61 @@
+<div class="container">
+    <h5>Connect to a new device</h5>
+    <p class="text-danger">{{error}}</p>
+    <form [formGroup]="deviceForm" (ngSubmit)="onSubmit()">
+        <div class="row">
+            <div class="col-sm-12 col-md-6 col-lg-5">
+                <div class="nc-form-group">
+                    <label class="nc-label" for="device-name">Device name</label>
+                    <input class="nc-input" type="text" name="name" id="device-name" placeholder="Choose a name"
+                           formControlName="deviceName">
+                </div>
+
+                <div class="nc-form-group">
+                    <label class="nc-label" for="hostname">Hostname or IP*</label>
+                    <input class="nc-input" type="text" name="hostname" id="hostname" required formControlName="hostname">
+                </div>
+
+                <div class="nc-form-group">
+                    <label class="nc-label" for="port">Port*</label>
+                    <input class="nc-input" pattern="[0-9]*" type="text" inputmode="numeric" name="port" id="port"
+                           required formControlName="port">
+                </div>
+            </div>
+
+            <div class="col-sm-12 col-md-6 col-lg-5">
+                <div class="nc-form-group">
+                    <label class="nc-label" for="username">Username*</label>
+                    <input class="nc-input" type="text" name="username" id="username" required formControlName="username">
+                </div>
+
+                <div class="nc-form-group">
+                    <label class="nc-label" for="password">Password</label>
+                    <input class="nc-input" type="password" name="password" id="password" formControlName="password">
+                </div>
+            </div>
+
+            <div class="col-sm-12">
+                <div class="nc-form-group-inline">
+                    <label class="nc-label" for="connect">Connect now</label>
+                    <input type="checkbox" name="connect" id="connect" checked formControlName="connectToDevice">
+                </div>
+
+                <div class="nc-form-group-inline">
+                    <label class="nc-label" for="save">Save to device list</label>
+                    <input type="checkbox" name="save" id="save" checked formControlName="saveDevice">
+                </div>
+
+                <div class="nc-form-group-inline">
+                    <label class="nc-label" for="add-to-profile">Add to active profile</label>
+                    <input type="checkbox" name="add-to-profile" id="add-to-profile" formControlName="addToActiveProfile">
+                </div>
+
+            </div>
+            <div class="col-sm-12">
+                <input type="submit" value="Done" class="btn btn-primary float-right"
+                        [disabled]="!deviceForm.valid">
+            </div>
+
+        </div>
+    </form>
+</div>

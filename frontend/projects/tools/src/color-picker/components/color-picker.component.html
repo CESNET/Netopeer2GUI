@@ -1,0 +1,16 @@
+<div class="tool-wrapper">
+  <lib-device-selection (devicesSelected)="onDevicesSelected($event)" *ngIf="sessions.length === 0"></lib-device-selection>
+  <div class="row" *ngIf="sessions.length !== 0">
+    <div class="col-sm-12 col-md-8">
+      <h1>Hello</h1>
+    </div>
+    <div class="col-sm-12 col-md-4">
+      <lib-device-quickswitch [sessions]="sessions"
+                              (selectionChanged)="onDeviceSelectionChanged($event)"
+                              [vertical]="true"
+      ></lib-device-quickswitch>
+    </div>
+  </div>
+</div>
+
+

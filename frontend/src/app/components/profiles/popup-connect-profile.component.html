@@ -1,0 +1,12 @@
+<lib-nc-popup title="Warning"
+              submitBtnText="No"
+              cancelBtnText="Yes"
+              [toolbox]="true"
+              (submitted)="connectProfile(false)"
+              (canceled)="connectProfile(true)">
+  <div class="text-center">
+    <h2>Do you want to disconnect from currently active sessions?</h2>
+    <p>You will no longer be able to view and modify configuration of devices,
+      that are not in this profile, until you connect them again</p>
+  </div>
+</lib-nc-popup>

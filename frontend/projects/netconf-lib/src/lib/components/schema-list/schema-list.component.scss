@@ -1,0 +1,27 @@
+@import "../../../../../shared-styles/colors";
+
+.schema-list {
+  list-style-type: none;
+}
+
+.schema-link {
+  font-family: "JetBrains Mono", "Source Code Pro", Consolas, monospace;
+  color: $colorText;
+  text-decoration: none;
+  &:hover {
+    text-decoration: underline;
+    color: $colorLink;
+  }
+  &.selected {
+    color: $colorLink;
+    font-weight: bolder;
+  }
+}
+
+.remove-schema {
+  cursor: pointer;
+  margin-left: 20px;
+  &:hover {
+    color: red;
+  }
+}

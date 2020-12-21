@@ -1,0 +1,18 @@
+<div class="container-fluid device-item clickable" (click)="changeSelection()">
+  <div class="row p-2">
+    <div class="col-sm-9 col-md-10">
+      <p class="device-selection-title">
+        <span class="device-name"> {{device.hostname}}:{{device.port}}</span>
+        <span class="hostname" *ngIf="device.name">{{device.name}}</span>
+      </p>
+      <p class="mb-0">{{device.username}}</p>
+    </div>
+    <div class="col-sm-3 col-md-2">
+      <label class="checkbox-container">
+        <input type="checkbox" [checked]="selected" (change)="changeSelection(); $event.stopPropagation()">
+        <span class="checkmark"></span>
+      </label>
+    </div>
+  </div>
+</div>
+

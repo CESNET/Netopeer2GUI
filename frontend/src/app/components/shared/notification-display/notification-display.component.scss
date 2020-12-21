@@ -1,0 +1,36 @@
+@import "../../../colors";
+
+.notification-display-wrapper {
+  position: fixed;
+  bottom: 0;
+  right: 0;
+  z-index: 999;
+  overflow-x: hidden;
+  overflow-y: scroll;
+  max-height: 140px;
+  width: 100vw;
+  max-width: 450px;
+
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+  &::-webkit-scrollbar-track {
+    border-radius: 5px;
+    background: rgba(0,0,0,0.3);
+  }
+  &::-webkit-scrollbar-thumb {
+    border-radius: 5px;
+    background: $black;
+  }
+}
+
+.clear-btn-wrapper {
+  width: 100%;
+  text-align: right;
+  a {
+    background: $colorItemBackground;
+    border-radius: 5px;
+    padding: 5px;
+  }
+}
+

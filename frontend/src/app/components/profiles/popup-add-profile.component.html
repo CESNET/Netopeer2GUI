@@ -1,0 +1,17 @@
+<lib-nc-popup title="Add new profile"
+              submitBtnText="Save"
+              [toolbox]="!loading"
+              (submitted)="saveProfile()"
+              (canceled)="canceled.emit(true)">
+    <div class="text-center">
+        <label for="newProfileName" class="nc-big-input-label">Choose a name
+            <i *ngIf="loading" class="fa fa-spinner fa-pulse fa-fw"></i></label>
+        <input [(ngModel)]="inputVal"
+               type="text"
+               class="nc-big-input"
+               name="profileName"
+               id="newProfileName"
+               placeholder="Profile name">
+        <p class="text-danger">{{error}}</p>
+    </div>
+</lib-nc-popup>

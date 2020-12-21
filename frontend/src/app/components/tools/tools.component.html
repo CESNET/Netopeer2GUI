@@ -1,0 +1,31 @@
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-sm-12">
+      <h1 class="text-error">{{error}}</h1>
+    </div>
+  </div>
+  <div class="row" *ngIf="!activeTool">
+    <div class="col-sm-12 col-md-4 col-lg-3" *ngFor="let tool of config | keyvalue">
+      <div class="tool-wrapper">
+        <img *ngIf="tool.value.image" alt="icon" class="tool-icon" [src]="tool.value.image">
+        <div class="tool-text-wrapper">
+          <h1>{{tool.value.name}}</h1>
+          <p *ngIf="tool.value.description">{{tool.value.description}}</p>
+        </div>
+        <a class="tool-btn btn btn-primary" [routerLink]="['/netconf/tool/',tool.key]">Use ></a>
+      </div>
+
+
+    </div>
+    <div class="attribution">
+      Icons made by <a href="https://www.flaticon.com/authors/eucalyp" title="Eucalyp">Eucalyp</a> and
+      <a href="https://www.flaticon.com/authors/freepik" title="Freepik">Freepik</a>
+      from <a href="https://www.flaticon.com/" title="Flaticon">www.flaticon.com</a>
+
+    </div>
+  </div>
+  <div class="row" *ngIf="activeTool">
+    <ng-template #targetRef></ng-template>
+  </div>
+
+</div>

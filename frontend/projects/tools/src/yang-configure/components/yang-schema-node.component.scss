@@ -1,0 +1,57 @@
+@import "../../../../shared-styles/colors";
+
+.node {
+  font-weight: bold;
+}
+
+.hidden {
+  display: none;
+}
+
+.value {
+  margin-left: 10px;
+}
+
+.disabled {
+  color: transparentize($colorText, 0.3);
+}
+
+.key {
+  padding: 0 5px;
+}
+
+.action-icon {
+  padding-left: 5px;
+  padding-right: 5px;
+  cursor: pointer;
+  &:first-child {
+    padding-left: 10px;
+  }
+  &:hover {
+    color: $colorMain;
+  }
+}
+
+.description {
+  font-weight: normal;
+  margin-left: 5px;
+  color: transparentize($colorText, 0.3);
+  font-size: 12px;
+  font-family: "JetBrains Mono", "Source Code Pro", Consolas, monospace;
+}
+
+.child-container {
+  padding-left: 5px;
+  border-left: 1px solid transparentize($colorText, 0.5);
+}
+
+.schema-link {
+  color: transparentize($colorText, 0.2);
+  font-size: 11px;
+  font-weight: normal;
+  font-family: "JetBrains Mono", "Source Code Pro", Consolas, monospace;
+  &:hover {
+    color: $colorLinkHover;
+    text-decoration: underline;
+  }
+}

@@ -1,0 +1,8 @@
+<div class="quickswitch-container" *ngIf="sessions">
+  <div *ngFor="let session of sessions" class="quickswitch-item" (click)="sessionSelected(session)"
+       [class.selected]="selected.indexOf(session) !== -1"
+      [class.vertical]="vertical">
+    <span class="device-name" *ngIf="session.device.name">{{session.device.name}}</span><br>
+    <span [class.device-name]="!session.device.name">{{session.device.hostname}}:{{session.device.port}}</span>
+  </div>
+</div>

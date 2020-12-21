@@ -1,20 +1,64 @@
 {
-  "name": "Netopeer2GUI",
-  "version": "0.1.0",
-  "description": "NETCONF management center",
-  "main": "index.html",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/CESNET/Netopeer2GUI.git"
+  "name": "netconf-tool-devkit",
+  "version": "1.0.0",
+  "scripts": {
+    "ng": "ng",
+    "start": "ng serve",
+    "build": "ng build",
+    "test": "ng test",
+    "lint": "ng lint",
+    "e2e": "ng e2e",
+    "postinstall": "tsc -p builders/tsconfig.builders.json",
+    "build:tools": "npm run build:lib && npm run build:example && npm run build:yang-explorer && npm run build:yang-configure && npm run build:color-picker",
+    "build:lib": "ng build netconf-lib && rm -rf src/app/netconf-lib && cp -rf dist/netconf-lib src/app/netconf-lib && ng build --project tools --prod --modulePath=netconf-lib#NetconfLibModule --pluginName=netconf-lib  --outputPath=../assets/tools",
+    "build:example": "ng build --project tools --prod --modulePath=./example/example.module#ExampleModule --pluginName=example --sharedLibs=netconf-lib --outputPath=../assets/tools",
+    "build:yang-explorer": "ng build --project tools --prod --modulePath=./yang-explorer/yang-explorer.module#YangExplorerModule --pluginName=yang-explorer --sharedLibs=netconf-lib --outputPath=../assets/tools",
+    "build:yang-configure": "ng build --project tools --prod --modulePath=./yang-configure/yang-configure.module#YangConfigureModule --pluginName=yang-configure --sharedLibs=netconf-lib --outputPath=../assets/tools",
+    "build:color-picker": "ng build --project tools --prod --modulePath=./color-picker/color-picker.module#ColorPickerModule --pluginName=color-picker --sharedLibs=netconf-lib --outputPath=../assets/tools"
   },
-  "author": "",
-  "license": "BSD",
-  "bugs": {
-    "url": "https://github.com/CESNET/Netopeer2GUI/issues"
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "^6.0.0",
+    "@angular/common": "^6.0.0",
+    "@angular/compiler": "^6.0.0",
+    "@angular/core": "^6.0.0",
+    "@angular/forms": "^6.0.0",
+    "@angular/platform-browser": "^6.0.0",
+    "@angular/platform-browser-dynamic": "^6.0.0",
+    "@angular/router": "^6.0.0",
+    "core-js": "^2.5.4",
+    "rxjs": "~6.2.0",
+    "systemjs": "^6.2.5",
+    "zone.js": "~0.8.26",
+    "socket.io-client": "^2.0.0",
+    "acorn": ">=5.7.4",
+    "minimist": ">=1.2.2",
+    "serialize-javascript": ">=3.1.0"
   },
-  "homepage": "https://github.com/CESNET/Netopeer2GUI",
-  "dependencies" : {
-    "@angular/material": "^6.0.0",
-    "@angular/cdk": "^6.0.0"
+  "devDependencies": {
+    "@angular-devkit/build-angular": "~0.8.0",
+    "@angular-devkit/build-ng-packagr": "~0.8.0",
+    "@angular/cli": "~6.2.9",
+    "@angular/compiler-cli": "^6.0.0",
+    "@angular/language-service": "^6.0.0",
+    "@types/jasmine": "~2.8.8",
+    "@types/jasminewd2": "~2.0.3",
+    "@types/node": "~8.10.61",
+    "@types/socket.io-client": "^1.4.33",
+    "codelyzer": "~4.3.0",
+    "jasmine-core": "~2.99.1",
+    "jasmine-spec-reporter": "~4.2.1",
+    "karma": "~3.0.0",
+    "karma-chrome-launcher": "~2.2.0",
+    "karma-coverage-istanbul-reporter": "~2.0.1",
+    "karma-jasmine": "~1.1.2",
+    "karma-jasmine-html-reporter": "^0.2.2",
+    "ng-packagr": "^4.1.0",
+    "protractor": "~5.4.0",
+    "ts-node": "~7.0.0",
+    "tsickle": "~0.37.0",
+    "tslib": "^1.9.0",
+    "tslint": "~5.11.0",
+    "typescript": "~2.9.2"
   }
 }

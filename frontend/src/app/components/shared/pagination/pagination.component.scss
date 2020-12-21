@@ -1,0 +1,61 @@
+@import "../../../colors";
+
+.align-center {
+  text-align: center;
+}
+.pagination {
+  width: 100%;
+  position: relative;
+  flex: 1;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  overflow: auto;
+  .pagination-content {
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .page-btn {
+    padding: 5px 10px;
+    margin-left: 0.2em;
+    margin-right: 0.2em;
+    border-radius: 5px;
+    min-width: 4em;
+    border: 2px solid $colorItemBackground;
+    color: $colorText;
+    background: $colorItemBackground;
+    cursor: pointer;
+    transition: all ease-in-out 250ms;
+    &:hover {
+      color: $colorTextInverse;
+      background: $colorMain;
+    }
+    &:focus, &:active {
+      outline: none;
+    }
+    &.active {
+      color: $colorTextInverse;
+      background: $colorMain;
+    }
+    &.disabled {
+      cursor: not-allowed;
+      color: transparentize($colorText, 0.5);
+      background: transparentize($colorItemBackground, 0.5);
+    }
+  }
+  .set-page-input {
+    border: none;
+    border-bottom: 1px solid $colorText;
+    color: $colorText;
+    width: 5em;
+    background: $colorItemBackground;
+    margin-left: 1em;
+    text-align:right;
+  }
+}
+
+.no-mobile {
+  @media (max-width: 767px) {
+    display: none;
+  }
+}

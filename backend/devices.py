@@ -1,144 +1,59 @@
 """
-Manipulation with the devices to connect.
+Device database manipulation
 File: devices.py
-Author: Radek Krejci <rkrejci@cesnet.cz>
+Author: Jakub Man <xmanja00@stud.fit.vutbr.cz>
 """
 
 import json
-import os
-import errno
-
-from liberouterapi import auth
 from flask import request
-
-from .inventory import INVENTORY, inventory_check
-from .error import NetopeerException
-
-__DEVICES_EMPTY = '{"device":[]}'
+from bson.objectid import ObjectId
+# import netconf2 as nc
 
 
-def __devices_init():
-	return json.loads(__DEVICES_EMPTY)
-
-def __devices_inv_load(path):
-	devicesinv_path = os.path.join(path, 'devices.json')
-	try:
-		with open(devicesinv_path, 'r') as devices_file:
-			devices = json.load(devices_file)
-	except OSError as e:
-		if e.errno == errno.ENOENT:
-			devices = __devices_init()
-		else:
-			raise NetopeerException('Unable to use user\'s devices inventory ' + devicesinv_path + ' (' + str(e) + ').')
-	except ValueError:
-		devices = __devices_init()
-
-	return devices
-
-def __devices_inv_save(path, devices):
-	devicesinv_path = os.path.join(path, 'devices.json')
-
-	#store the list
-	try:
-		with open(devicesinv_path, 'w') as devices_file:
-			json.dump(devices, devices_file)
-	except Exception:
-		pass
-
-	return devices
-
-@auth.required()
-def devices_list():
-	session = auth.lookup(request.headers.get('lgui-Authorization', None))
-	user = session['user']
-	path = os.path.join(INVENTORY, user.username)
-
-	inventory_check(path)
-	devices = __devices_inv_load(path)
-
-	for dev in devices['device']:
-		if 'password' in dev:
-			del dev['password']
-
-	return(json.dumps(devices['device']))
-
-@auth.required()
-def devices_add():
-	session = auth.lookup(request.headers.get('lgui-Authorization', None))
-	user = session['user']
-	path = os.path.join(INVENTORY, user.username)
-
-	device = request.get_json()
-	if not device or not device['id']:
-		raise NetopeerException('Invalid device remove request.')
-
-	devices = __devices_inv_load(path)
-	for dev in devices['device']:
-		if dev['id'] == device['id']:
-			return (json.dumps({'success': False}))
-
-	device_json = {'id':device['id'],
-		'name':device['name'],
-		'hostname':device['hostname'],
-		'port':device['port'],
-		'autoconnect':device['autoconnect'],
-		'username':device['username']}
-	if 'password' in device and device['password']:
-		device_json['password'] = device['password']
-	devices['device'].append(device_json)
-
-	#store the list
-	__devices_inv_save(path, devices)
-
-	return(json.dumps({'success': True}))
-
-@auth.required()
-def devices_rm():
-	session = auth.lookup(request.headers.get('lgui-Authorization', None))
-	user = session['user']
-	path = os.path.join(INVENTORY, user.username)
-
-	rm_id = request.get_json()['id']
-	if not rm_id:
-		raise NetopeerException('Invalid device remove request.')
-
-	devices = __devices_inv_load(path)
-	for i in range(len(devices['device'])):
-		device = devices['device'][i]
-		if device['id'] == rm_id:
-			devices['device'].pop(i)
-			device = None
-			break
-
-	if device:
-		# device not in inventory
-		return (json.dumps({'success': False}))
-
-	# update the inventory database
-	__devices_inv_save(path, devices)
-
-	return(json.dumps({'success': True}))
-
-def devices_get(device_id, username):
-	path = os.path.join(INVENTORY, username)
-	devices = __devices_inv_load(path)
-
-	for i in range(len(devices['device'])):
-		device = devices['device'][i]
-		if device['id'] == device_id:
-			return device
-
-	return None
+def get_saved_devices(username, db_coll):
+    list = []
+    for item in db_coll.find({'owner': username}):
+        item['_id'] = str(item['_id'])
+        item['id'] = str(item['_id'])
+        list.append(item)
+    return list
 
 
-def devices_replace(device_id, username, device):
-	path = os.path.join(INVENTORY, username)
-	devices = __devices_inv_load(path)
+def add_device(username, device, db_coll):
+    device['owner'] = username
+    # Check if device parameter has all required keys
+    if all (k in device for k in ('hostname', 'port', 'username')):
+        return str(db_coll.insert_one(device).inserted_id)
+    return False
 
-	for i in range(len(devices['device'])):
-		if devices['device'][i]['id'] == device_id:
-			devices['device'][i] = device
-			break
 
-	# update the inventory database
-	__devices_inv_save(path, devices)
+def get_device_by_id(device_id: str, db_coll):
+    device = db_coll.find_one({'_id': ObjectId(device_id)})
+    if device is not None:
+        device['_id'] = str(device['_id'])
+        device['id'] = str(device['_id'])
+    return device
+
+
+def update_device(device_id, update_dict, db_coll):
+    db_coll.update_one({'_id': ObjectId(device_id)}, {'$set': update_dict})
+
+
+def update_hexa(device_id, new_hexa, db_coll):
+    db_coll.update_one({'_id': ObjectId(device_id)}, {'$set': {'fingerprint': new_hexa}})
+
+
+def update_hexa_by_device(device, new_hexa, db_coll):
+    db_coll.update_one({'hostname': device['hostname'], 'port': device['port'], 'username': device['username']},
+                       {'$set': {'fingerprint': new_hexa}})
+
+
+def get_device_from_session_data(host, port, owner, username, db_coll):
+    print(host)
+    device = db_coll.find_one({'hostname': host, 'port': port, 'owner': owner, 'username': username})
+    if device is None and host == '127.0.0.1':
+        device = db_coll.find_one({'hostname': 'localhost', 'port': port, 'owner': owner, 'username': username})
+    if device is not None:
+        device['_id'] = str(device['_id'])
+        device['id'] = str(device['_id'])
+    return device

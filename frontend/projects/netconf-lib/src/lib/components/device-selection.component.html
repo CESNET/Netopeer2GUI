@@ -1,0 +1,32 @@
+<lib-content-box [title]="'Select devices to configure'" [limitWidth]="true">
+  <div class="toolbox mb-3">
+    <button class="btn btn-secondary" (click)="setAllSelectionsTo(true)">Select all</button>
+    <button class="btn btn-secondary" (click)="setAllSelectionsTo(false)">Unselect all</button>
+    <button class="btn btn-secondary" (click)="reload()">Reload device list</button>
+    <button class="btn btn-primary right">Connect a new device</button>
+  </div>
+  <div *ngIf="compatibleDevices.length > 0" class="row">
+    <div class="col-sm-12 col-md-4 pl-3 pr-3 p-2" *ngFor="let session of compatibleDevices">
+      <lib-device-selection-item [device]="session.session.device"
+                                 [(selected)]="session.selected"
+      ></lib-device-selection-item>
+    </div>
+  </div>
+  <div *ngIf="compatibleDevices.length === 0">
+    <h2 class="text-center">No compatible devices connected.</h2>
+  </div>
+  <div class="toolbox mt-3">
+    <a routerLink="/netconf/tools" class="btn btn-danger">Cancel</a>
+    <button class="btn btn-primary right" (click)="submit()">Configure</button>
+  </div>
+  <p class="error-text text-right">{{errorMessage}}</p>
+</lib-content-box>
+<!--<div class="box">
+  <div class="box-header">
+    Select devices to configure
+  </div>
+  <div class="box-content box-content-limited">
+
+  </div>
+</div>
+-->

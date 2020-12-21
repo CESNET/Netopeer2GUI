@@ -1,0 +1,20 @@
+<table class="table table-hover table-responsive">
+    <thead>
+    <tr>
+        <th>Device name</th>
+        <th>Address:port</th>
+        <th>Username</th>
+        <th>Status</th>
+        <th>Disconnect</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let session of sessions">
+        <td>{{session.device.name ? session.device.name : ""}}</td>
+        <td>{{session.device.hostname}}:{{session.device.port}}</td>
+        <td>{{session.device.username}}</td>
+        <td></td>
+        <td><button (click)="disconnect(session.key)">Disconnect</button></td>
+    </tr>
+    </tbody>
+</table>

@@ -1,0 +1,63 @@
+<!-- Node -->
+<div class="node">
+  <!-- Icon controls -->
+  <i class="fa fa-info-circle action-icon"
+     (click)="showHelp = !showHelp"
+     *ngIf="node['info'] && node['info']['dsc']"
+     [title]="node['info']['dsc']"></i>
+  <i class="fa action-icon" [class.fa-sort-desc]="!showChildren" [class.fa-sort-up]="showChildren"
+     (click)="toggleChildren()" *ngIf="node['children']"></i>
+  <i class="fa fa-angle-double-down action-icon" [class.fa-rotate-180]="showAllChildrenOnOpen"
+     (click)="toggleAllChildren()" *ngIf="node['children']"></i>
+
+
+  <ng-container
+    *ngIf="(node['info']['type'] == 4 || (node['new'] && node['info']['type'] == 8)) && node['info']['key']">
+    <i class="fa fa-key key" aria-hidden="true" title="This node is a key value"></i>
+  </ng-container>
+
+  <!-- Node info -->
+  <span *ngIf="node['info']" [class.disabled]="!node['info']['config']">{{node['info']['name']}}</span>
+
+  <!-- Node is a leaf -->
+
+
+  <!-- Node has a value -->
+  <span *ngIf="node['value']">:</span>
+  <span class="value" *ngIf="node['value']">{{node['value']}}</span>
+  <ng-container *ngIf="node['info']['type'] == 4 || (node['new'] && node['info']['type'] == 8)">
+    <ng-container
+      *ngIf="node['info']['config'] &&
+            !node['deleted'] &&
+            (!node['info']['key'] || node['new'])
+            && node['info']['datatypebase'] != 'empty'">
+      <i class="fa fa-pencil action-icon" aria-hidden="true" [class.hidden]="editing"
+         (click)="toggleEdit()"
+         title="Edit value"></i>
+
+      <input [class.hidden]="!editing" type="text" [(ngModel)]="editingValue">
+      <i class="fa fa-times action-icon text-danger" aria-hidden="true" [class.hidden]="!editing" (click)="toggleEdit()"></i>
+      <i class="fa fa-check action-icon text-success" aria-hidden="true" [class.hidden]="!editing" (click)="confirmEdit()"></i>
+      <span title="Current value" class="disabled" [class.hidden]="!editing || editingValue == originalValue"></span>
+    </ng-container>
+  </ng-container>
+
+  <!-- Node description -->
+
+  <span *ngIf="showHelp" class="description">{{node['info']['dsc']}}</span>
+
+  <span class="float-right">
+    <a [routerLink]="['/netconf', 'tool','yang-explorer',{'schema': node['info']['module'] + '.yang'}]"
+       class="schema-link">
+      {{node['info']['module'].split('@')[0]}}
+    </a>
+  </span>
+</div>
+<!-- /Node -->
+
+<!-- Children -->
+<div class="ml-3 child-container" *ngIf="showChildren && node['children']">
+  <nct-yang-schema-node *ngFor="let child of node['children']" [node]="child"
+                        [showChildren]="showAllChildrenOnOpen" [activeSession]="activeSession"></nct-yang-schema-node>
+</div>
+<!-- /Children -->

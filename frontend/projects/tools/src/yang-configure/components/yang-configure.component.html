@@ -1,0 +1,18 @@
+<div class="tool-wrapper">
+  <lib-device-selection (devicesSelected)="onDevicesSelected($event)"
+                        *ngIf="sessions.length === 0"></lib-device-selection>
+  <p class="error-text" *ngIf="error">{{error}}</p>
+  <lib-device-quickswitch *ngIf="sessions.length > 0" [sessions]="sessions" [multiSelect]="false"
+                          (selectionChanged)="changeSelectedSession($event[0])"></lib-device-quickswitch>
+  <h1 class="text-center" *ngIf="loading">Loading data... <i class="fa fa-spinner fa-pulse fa-fw"></i></h1>
+  <div *ngIf="selected_data.length !== 0" class="tree-wrapper">
+    <!--<button class="btn btn-primary" (click)="toggleHelp()">Toggle description</button>-->
+    <nct-yang-schema-node *ngFor="let node of selected_data"
+                          [node]="node" [activeSession]="selectedSession"></nct-yang-schema-node>
+
+  </div>
+
+</div>
+<nct-confirm-commit *ngIf="commitChangesShown"
+                    [session]="selectedSession"
+                    (shouldClose)="this.commitChangesShown = false"></nct-confirm-commit>

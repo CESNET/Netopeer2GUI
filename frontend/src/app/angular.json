@@ -1,0 +1,18 @@
+{
+  "projects": {
+    "liberouter-gui": {
+      "architect": {
+        "build": {
+          "options": {
+            "scripts": [
+
+              "node_modules/systemjs/dist/s.js",
+              "node_modules/systemjs/dist/extras/named-register.js",
+              "node_modules/systemjs/dist/extras/amd.js"
+            ]
+          }
+        }
+      }
+    }
+  }
+}

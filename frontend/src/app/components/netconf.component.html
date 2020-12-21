@@ -1,0 +1,24 @@
+<nav class="nc-nav-container">
+    <ul class="nc-nav">
+        <li class="nc-nav-item">
+            <a routerLink="/netconf/devices" routerLinkActive="active" class="nc-nav-link">Devices</a>
+        </li>
+        <li class="nc-nav-item">
+            <a routerLink="/netconf/tools" routerLinkActive="active" class="nc-nav-link">Tools</a>
+        </li>
+        <li class="nc-nav-item">
+            <a routerLink="/netconf/profiles" routerLinkActive="active" class="nc-nav-link">Profiles</a>
+        </li>
+        <li class="nc-nav-item">
+            <a routerLink="/netconf/notifications" routerLinkActive="active" class="nc-nav-link">Notifications</a>
+        </li>
+        <li class="nc-nav-item status-info" *ngIf="statusMessage">
+            {{statusMessage}} <i class="fa fa-spinner fa-pulse fa-fw"></i>
+        </li>
+    </ul>
+</nav>
+<div class="nc-content">
+    <lib-now-connecting></lib-now-connecting>
+    <nc-notification-display></nc-notification-display>
+    <router-outlet></router-outlet>
+</div>

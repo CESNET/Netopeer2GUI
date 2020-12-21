@@ -1,0 +1,10 @@
+.confirm-commit-wrapper {
+  position: fixed;
+  bottom: 40px;
+  right: 40px;
+  width: calc(100vw - 80px);
+  z-index: 999;
+  background: lightyellow;
+  text-align: center;
+  border-radius: 5px;
+}

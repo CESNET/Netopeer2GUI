@@ -1,0 +1,9 @@
+<div class="tool-wrapper">
+  <lib-device-selection (devicesSelected)="onDevicesSelected($event)" *ngIf="sessions.length === 0"></lib-device-selection>
+  <lib-content-box *ngIf="sessions.length > 0" title="Example tool">
+    <h1>{{sessions.length}} device<span *ngIf="sessions.length !== 1">s</span> selected.</h1>
+    <h2>{{serviceText}}</h2>
+  </lib-content-box>
+</div>
+
+

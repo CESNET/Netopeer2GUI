@@ -1,0 +1,35 @@
+@import "../../styles/inputs";
+@import "../../colors";
+.card-content {
+  text-align: left;
+}
+
+.text-bold {
+  font-weight: bold;
+}
+
+.btn-attention {
+  font-size: 1.3em;
+  margin-top: 20px;
+  margin-bottom: 20px;
+  -webkit-animation: ping 0.8s ease-in-out infinite both;
+  animation: ping 0.8s ease-in-out infinite both;
+}
+
+
+@-webkit-keyframes ping {
+  0% {
+    box-shadow: 0 0 0 2px transparentize($colorMain, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 5px 22px transparent;
+  }
+}
+@keyframes ping {
+  0% {
+    box-shadow: 0 0 0 2px transparentize($colorMain, 0.2);
+  }
+  100% {
+    box-shadow: 0 0 5px 22px transparent;
+  }
+}

@@ -1,0 +1,75 @@
+@import "../colors";
+
+.nc-form-group {
+  display: block;
+  text-align: right;
+  margin-top: 10px;
+}
+
+.centered {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.nc-form-group-inline {
+  display: inline-block;
+  margin: 10px;
+}
+
+.nc-input {
+  text-align: left;
+  border: 1px solid $colorText;
+  border-radius: 5px;
+  font-size: 16px;
+  padding: 0 5px;
+  max-width: 95%;
+  &:focus {
+    border: 1px solid $colorMain;
+    outline: 1px solid $colorMain;
+  }
+}
+
+.nc-input-wide {
+  max-width: 100%;
+  width: 600px;
+}
+.nc-label {
+  text-align: right;
+  margin-right: 10px;
+  font-size: 14px;
+  color: $colorText;
+}
+.nc-label-center {
+  display: block;
+  text-align: center;
+}
+
+
+
+.nc-big-input-container {
+  margin-left: auto;
+  margin-right: auto;
+}
+.nc-big-input {
+  font-size: 1.6em;
+  padding: 10px;
+  border-radius: 5px;
+  border: 3px solid $colorText;
+  color: $colorText;
+  font-weight: bold;
+  &:focus {
+    border: 3px solid $colorMain;
+    outline: 1px solid $colorMain;
+  }
+}
+.nc-big-input-label {
+  font-size: 1rem;
+  margin-bottom: 0;
+  display: block;
+  color: $colorHeading;
+  text-transform: uppercase;
+}
+
+.text-bold {
+  font-weight: bold;
+}

@@ -1,0 +1,24 @@
+@import "../../../../../shared-styles/colors";
+
+.text-error {
+  font-weight: bolder;
+  color: #ee1d23;
+}
+
+.text-success {
+  font-weight: bolder;
+  color: green;
+}
+
+.upload-schema-label {
+  border: 1px solid #231f20;
+  padding: 0 5px;
+  margin-left: 5px;
+  border-radius: 30px;
+  cursor: pointer;
+  background: transparent;
+  transition: all ease-in-out 150ms;
+  &:hover {
+    background: lighten($colorHighlight, 15%);
+  }
+}

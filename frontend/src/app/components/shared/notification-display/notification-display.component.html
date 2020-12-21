@@ -1,0 +1,13 @@
+<div class="notification-display-wrapper" *ngIf="displayedNotifications && displayedNotifications.length > 0">
+    <div class="clear-btn-wrapper">
+        <a [routerLink]="null" (click)="clearClicked()" class="clear-btn">Clear notifications</a>
+    </div>
+
+    <div *ngFor="let notification of displayedNotifications" class="notification-wrapper">
+        <nc-notification-info [notification]="notification.notification"
+                              [currentState]="notification.state"
+                              (timedRemove)="removeNotification($event)"
+                              (forceRemove)="forceRemoveNotification($event)"
+        ></nc-notification-info>
+    </div>
+</div>

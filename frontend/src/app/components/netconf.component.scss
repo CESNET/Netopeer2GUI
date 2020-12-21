@@ -1,0 +1,35 @@
+@import "../colors";
+
+.nc-nav-container {
+  background: $colorMain;
+  width: calc(100% + 32px);
+  margin: -8px 0 0 -16px;
+}
+
+.nc-nav {
+  list-style: none;
+}
+
+.nc-nav-item {
+  display: inline-block;
+  color: $colorTextInverse;
+}
+
+.nc-nav-link {
+  display: inline-block;
+  padding: 5px 15px;
+  color: $colorTextInverse;
+  text-decoration: none;
+  border-bottom: 2px solid $colorMain;
+  transition: all ease-in-out 150ms;
+  &.active, &:hover {
+    background: $colorSelected;
+    border-bottom: 2px solid $colorBackground;
+  }
+}
+
+.status-info {
+  float: right;
+  margin-right: 15px;
+  margin-top: 5px;
+}

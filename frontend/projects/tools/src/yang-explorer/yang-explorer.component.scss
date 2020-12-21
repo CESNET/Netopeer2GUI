@@ -1,0 +1,25 @@
+// https://flatuicolors.com/palette/ca
+:host {
+  width: 100%;
+}
+
+.code::ng-deep {
+  background: #222f3e;
+  color: #fff;
+  font-family: "JetBrains Mono", "Source Code Pro", Consolas, monospace;
+  padding: 5px;
+  max-height: 80vh;
+  overflow: auto;
+  width: 100%;
+  .string::ng-deep {
+    color: #feca57;
+  }
+
+  .level::ng-deep {
+    margin-left: 10px;
+  }
+
+  .pattern::ng-deep {
+    color: #48dbfb;
+  }
+}

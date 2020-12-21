@@ -1,0 +1,11 @@
+<div class="notification-wrapper" (click)="forceRemoveSelf()">
+    <h1>{{notification.title}}</h1>
+    <span class="time">{{notification.time}}</span>
+    <div class="notification-text-wrapper">
+        <p *ngIf="notification.deviceName">Device: {{notification.deviceName}}</p>
+        <p *ngIf="notification.channel">Channel: {{notification.channel}}</p>
+    </div>
+
+    <div class="timeout-bar" [@changeDivSize]="currentState"
+         (@changeDivSize.done)="removeSelf()"></div>
+</div>

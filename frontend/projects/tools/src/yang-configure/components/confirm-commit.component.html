@@ -1,0 +1,8 @@
+<div class="confirm-commit-wrapper">
+  <p>Unsaved changes in <span *ngIf="session.device.name">{{session.device.name}}</span>
+    <span *ngIf="!session.device.name">{{session.device.hostname + ':' + session.device.port}}</span>
+  </p>
+  <p class="text-danger">{{error}}</p>
+  <button class="btn btn-danger mr-5" (click)="discardChanges()">Discard changes</button>
+  <button class="btn btn-primary" (click)="commitChanges()">Commit changes</button>
+</div>

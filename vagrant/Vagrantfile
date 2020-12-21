@@ -1,0 +1,140 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+$tools = <<SCRIPT
+apt-get update
+apt-get upgrade
+apt-get install -y pkg-config
+apt-get install -y git cmake clang
+apt-get install -y libpcre3-dev python3-dev swig
+apt-get install -y libssh-4 libssh-dev libssl-dev libssl-doc zlib1g-dev
+apt-get install -y libprotobuf-c-dev protobuf-c-compiler libavl-dev libev-dev
+SCRIPT
+
+$tools_ssl = <<SCRIPT
+apt-get install -y libssh-4 libssh-dev libssl-dev libssl-doc zlib1g-dev
+SCRIPT
+
+$tools_npm = <<SCRIPT
+apt-get install -y python3-pip virtualenv nodejs npm
+npm install -g n
+n stable
+ln -fs /usr/local/bin/node /usr/bin/node
+ln -fs /usr/local/bin/npm /usr/bin/npm
+ln -fs /usr/local/bin/npx /usr/bin/npx
+ln -fs /bin/bash /bin/sh
+SCRIPT
+
+$libyang = <<SCRIPT
+rm -rf libyang
+git clone -b devel https://github.com/CESNET/libyang.git
+cd libyang; mkdir build; cd build
+cmake -DGEN_LANGUAGE_BINDINGS=ON -DGEN_JAVA_BINDINGS=OFF .. && make && make install
+cd ../..
+ldconfig
+SCRIPT
+
+$libnetconf2 = <<SCRIPT
+rm -rf libnetconf2
+git clone -b devel https://github.com/CESNET/libnetconf2.git
+cd libnetconf2; mkdir build; cd build
+cmake -DENABLE_PYTHON=ON .. && make && make install
+cd ../..
+ldconfig
+SCRIPT
+
+$sysrepo = <<SCRIPT
+rm -rf sysrepo
+git clone -b devel https://github.com/sysrepo/sysrepo.git
+cd sysrepo; mkdir build; cd build
+cmake -DGEN_LANGUAGE_BINDINGS=OFF .. && make && make install
+cd ../..
+ldconfig
+SCRIPT
+
+# chown -R vagrant:vagrant ./sysrepo/build/repository
+$netopeer = <<SCRIPT
+rm -rf Netopeer2
+git clone -b devel https://github.com/CESNET/Netopeer2.git
+cd Netopeer2; mkdir build; cd build
+cmake .. && make && make install
+cd ..
+SCRIPT
+
+$netconf_tools = <<SCRIPT
+npm install --unsafe-perm -g @angular/cli typescript@2.9.2
+cd /home/vagrant/NetconfGUI/frontend
+npm install --unsafe-perm
+npm run build:tools
+cd
+SCRIPT
+
+$liberoutergui = <<SCRIPT
+rm -rf liberouter-gui
+git clone https://github.com/CESNET/liberouter-gui.git
+ln -s /home/vagrant/NetconfGUI liberouter-gui/modules/libnetconf-gui
+cd liberouter-gui
+cp -f modules/netopeer/app.config.json modules/
+python3 ./bootstrap.py
+virtualenv venv --system-site-packages -p python3
+source venv/bin/activate
+pip3 install --upgrade pip
+pip3 install -r backend/requirements.txt
+deactivate
+cd frontend
+npm install --unsafe-perm
+cd ../..
+SCRIPT
+
+$backend = <<SCRIPT
+cd liberouter-gui
+source venv/bin/activate
+python3 backend > backend.log 2>&1 &
+deactivate
+cd ..
+SCRIPT
+
+$frontend = <<SCRIPT
+cd liberouter-gui/frontend
+/usr/local/bin/ng serve --host 0.0.0.0 --proxy-config proxy.json > ../frontend.log 2>&1 &
+cd ../..
+SCRIPT
+
+$netconf = <<SCRIPT
+/usr/local/bin/sysrepod -d > sysrepod.log 2>&1 &
+/home/vagrant/sysrepo/build/examples/application_example turing-machine > turing_machine.log 2>&1 &
+/usr/local/bin/netopeer2-server -d > netopeer2.log 2>&1 &
+SCRIPT
+
+# uncomment the following line for vagrant < 2.0.0
+#Vagrant::DEFAULT_SERVER_URL.replace('https://vagrantcloud.com')
+Vagrant.configure("2") do |config|
+  config.vm.provider :virtualbox do |vb|
+    vb.customize ["modifyvm", :id, "--memory", "2048"]
+    vb.customize ["modifyvm", :id, "--cpus", "2"]
+    vb.customize ["modifyvm", :id, "--hwvirtex", "on"]
+    vb.customize ["modifyvm", :id, "--audio", "none"]
+    vb.customize ["modifyvm", :id, "--nictype1", "virtio"]
+  end
+
+  config.vm.define "NetconfGUI" do |gui|
+    gui.vm.synced_folder "../", "/home/vagrant/NetconfGUI", create: true
+    gui.vm.box = "ubuntu/bionic64"
+    gui.vm.network "forwarded_port", host: "4200", guest: "4200", auto_correct: true
+    gui.vm.network "forwarded_port", host: "8830", host_ip: "127.0.0.1", guest: "830", auto_correct: true
+    gui.ssh.shell = "sh"
+
+    gui.vm.provision :shell, inline: $tools
+    gui.vm.provision :shell, inline: $libyang
+    gui.vm.provision :shell, inline: $libnetconf2
+    gui.vm.provision :shell, inline: $sysrepo
+    gui.vm.provision :shell, inline: $netopeer
+    gui.vm.provision :shell, inline: $tools_npm
+    gui.vm.provision :shell, inline: $liberoutergui
+    gui.vm.provision :shell, inline: $tools_ssl
+    gui.vm.provision :shell, inline: $netconf_tools
+    gui.vm.provision :shell, inline: $netconf, run: "always"
+    gui.vm.provision :shell, inline: $backend, run: "always"
+    gui.vm.provision :shell, inline: $frontend, run: "always"
+  end
+end

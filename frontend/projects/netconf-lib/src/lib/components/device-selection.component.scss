@@ -1,0 +1,39 @@
+@import "../../../../shared-styles/colors";
+@import "../../../../shared-styles/netconf";
+
+.device-selection-title {
+  font-size: 1.2em;
+  margin-bottom: 0;
+}
+
+.device-name {
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+
+.device-item {
+  cursor: pointer;
+  border: 2px solid $colorHighlight;
+  background: $colorItemBackground;
+  border-radius: 5px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+  margin-bottom: 0;
+}
+
+.hostname {
+  font-size: 0.8em;
+  white-space: nowrap;
+  display: inline-block;
+  color: transparentize($colorText, 0.3);
+}
+
+.toolbox {
+  width: 100%;
+  @media only screen and (min-width: 600px) {
+    display: flex;
+  }
+  .right {
+    margin-left: auto;
+  }
+}
+

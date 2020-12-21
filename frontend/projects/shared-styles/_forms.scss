@@ -1,0 +1,61 @@
+@import "colors";
+.checkbox-container {
+  display: block;
+  position: relative;
+  padding-left: 35px;
+  margin-bottom: 32px;
+  cursor: pointer;
+  font-size: 22px;
+  line-height: 1;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  transition: all ease-in-out 150ms;
+  input {
+    position: absolute;
+    opacity: 0;
+    cursor: pointer;
+    height: 0;
+    width: 0;
+  }
+  &:hover {
+    input ~ .checkmark {
+      background-color: $colorSelected2;
+    }}
+  input:checked ~ .checkmark {
+    background-color: $colorText;
+  }
+  input:checked ~ .checkmark:after {
+    display: block;
+  }
+  .checkmark:after {
+    left: 7px;
+    top: -1px;
+    width: 12px;
+    height: 22px;
+    border: solid white;
+    border-width: 0 4px 4px 0;
+    border-radius: 2px;
+    -webkit-transform: rotate(45deg);
+    -ms-transform: rotate(45deg);
+    transform: rotate(45deg);
+  }
+}
+.checkmark {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 32px;
+  width: 32px;
+  background-color: $colorTextInverse;
+  border: 3px solid $colorText;
+  border-radius: 5px;
+  transition: all ease-in-out 150ms;
+
+  &:after {
+    content: "";
+    position: absolute;
+    display: none;
+  }
+}

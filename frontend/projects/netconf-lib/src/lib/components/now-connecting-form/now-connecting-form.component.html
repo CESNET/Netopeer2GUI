@@ -1,0 +1,68 @@
+<lib-nc-popup *ngIf="show"
+              title="Connecting devices"
+              submitBtnText="Continue"
+              [toolbox]="!connecting"
+              (submitted)="close()"
+              (canceled)="cancel()">
+  <div *ngIf="schemasRequired.length !== 0" class="mb-4 text-center">
+    <h2 class="text-error">Missing YANG schemas</h2>
+    <div *ngFor="let schema of schemasRequired">
+      <p class="d-inline-block">{{schema['name']}}@{{schema['revision']}}</p>
+      <div *ngIf="!schema['status']" class="d-inline-block">
+        <label class="d-inline-block upload-schema-label" for="schema-upload">
+          <i class="fa fa-upload" aria-hidden="true"></i> Browse...</label><br>
+        <input type="file" value="Upload schemas" class="d-none"
+               placeholder="Upload schemas..."
+               id="schema-upload"
+               name="schema-upload"
+               (change)="uploadSchema($event.target.files, schema)"
+        >
+      </div>
+      <p class="d-inline-block ml-3" *ngIf="schema['status'] == 1">
+        <i class="fa fa-spinner fa-pulse fa-fw"></i> Uploading...</p>
+      <p class="d-inline-block ml-3 text-success" *ngIf="schema['status'] == 2"><i class="fa fa-check"
+                                                                                   aria-hidden="true"></i> Uploaded.</p>
+
+    </div>
+
+    <button class="btn btn-danger" (click)="skipSchemaUpload()">Skip schema upload</button>
+  </div>
+  <table class="table table-hover">
+    <thead>
+    <tr>
+      <th>Device name</th>
+      <th>Address:port</th>
+      <th>Username</th>
+      <th>Hostkey</th>
+      <th>Status</th>
+      <th></th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let device of deviceService.nowConnectingDevices; let i = index" [attr.data-index]="i">
+      <td>{{device.device.name ? device.device.name : ""}}</td>
+      <td>{{device.device.hostname}}:{{device.device.port}}</td>
+      <td>{{device.device.username}}</td>
+      <td>{{device.device.fingerprint ? device.device.fingerprint : ""}}</td>
+      <td [class.text-error]="device.status > 1"
+          [class.text-success]="device.status == 1">{{device.status | libConnectionStatus}} <i *ngIf="device.status <= 0"
+                                                                                            class="fa fa-spinner fa-pulse fa-fw"></i>
+      </td>
+      <td>
+        <p *ngIf="device.status === 4">{{device['hostcheckMessage']}} Continue connecting?</p>
+        <button class="btn btn-danger" *ngIf="device.status == 4"
+                (click)="confirmHostkeyCheck(device['hostcheckMessageId'], false, i)">Cancel</button>
+        <button class="btn btn-primary ml-1" *ngIf="device.status == 4"
+                (click)="confirmHostkeyCheck(device['hostcheckMessageId'], true, i)">Connect</button>
+        <button class="btn btn-danger"
+                *ngIf="(device.status > 1 && device.status !== 3 && device.status !== 4) || isString(device.status)"
+                (click)="connectToDevice(device)">Retry
+        </button>
+        <input *ngIf="device.status === 3" type="text" class="nc-input" placeholder="Enter password">
+        <button *ngIf="device.status === 3" class="btn btn-primary">Connect</button>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+
+</lib-nc-popup>

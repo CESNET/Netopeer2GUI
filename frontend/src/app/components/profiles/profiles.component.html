@@ -1,0 +1,83 @@
+<div class="row" *ngIf="profiles.length > 0">
+  <div class="col-sm-12 col-md-6 text-center">
+    <lib-content-box title="Select active profile">
+      <div *ngIf="error">
+        <h1 class="text-danger">Error while handling profiles!</h1>
+        <p>{{error}}</p>
+      </div>
+      <label for="profileSelect" class="nc-big-input-label">Editing profile</label>
+      <select id="profileSelect" class="nc-big-input" [(ngModel)]="selectedProfile" (change)="reloadDevices()">
+        <option *ngFor="let profileName of profiles">{{profileName}}</option>
+      </select>
+
+      <p><a [routerLink]="null" (click)="addNewProfileShown = true">+ Add new profile</a></p>
+      <p><a [routerLink]="null" *ngIf="devices.length > 0 && !loading" (click)="showConnectProfileDialog()">Connect to
+        all devices in this profile</a></p>
+      <p><a [routerLink]="null" class="text-danger" (click)="removeProfile()">
+        <i class="fa fa-trash" aria-hidden="true"></i> Remove this profile</a>
+      </p>
+
+
+      <input type="checkbox" id="connectOnLogin" [ngModel]="connectOnLogin" [disabled]="connectOnLoginChangeLoading"
+             (change)="setShouldConnectOnLogin($event)">
+      <label for="connectOnLogin">Connect to this profile on login <i *ngIf="connectOnLoginChangeLoading"
+                                                                      class="fa fa-spinner fa-pulse fa-fw"></i></label>
+      <p class="text-bold">Active profile: {{activeProfile}} <i *ngIf="activationLoading"
+                                                                class="fa fa-spinner fa-pulse fa-fw"></i>
+      </p>
+      <button class="btn btn-primary"
+              (click)="setActiveProfile(selectedProfile)"
+              *ngIf="selectedProfile !== activeProfile">
+        Set {{selectedProfile}} as active profile
+      </button>
+    </lib-content-box>
+  </div>
+  <div class="col-sm-12 col-md-6">
+    <lib-content-box [title]="'Edit profile ' + selectedProfile">
+      <div *ngIf="!loading && devices.length === 0" class="text-center">
+        <h3 class="text-center">No devices in profile {{selectedProfile}}</h3>
+        <button class="btn btn-primary btn-attention" [routerLink]="['/netconf/profile', selectedProfile]">Add
+          devices
+        </button>
+      </div>
+      <div *ngIf="devices.length > 0">
+        <button class="btn btn-primary mb-3" [routerLink]="['/netconf/profile', selectedProfile]">
+          <i class="fa fa-pencil" aria-hidden="true"></i> Edit devices in profile
+        </button>
+        <table class="table table-responsive" *ngIf="!loading">
+          <thead>
+          <tr>
+            <th>Device name</th>
+            <th>Address:port</th>
+            <th>Username</th>
+            <th>Currently connected</th>
+          </tr>
+          </thead>
+          <tbody>
+          <tr *ngFor="let device of devices">
+            <td>{{device.name ? device.name : ""}}</td>
+            <td>{{device.hostname}}:{{device.port}}</td>
+            <td>{{device.username}}</td>
+            <td>Yes</td>
+          </tr>
+          </tbody>
+        </table>
+      </div>
+      <h3 *ngIf="loading">Loading devices...</h3>
+    </lib-content-box>
+  </div>
+</div>
+<lib-content-box title="Profiles" *ngIf="profiles.length === 0 && !loading">
+  <div class="text-center">
+    <h1 *ngIf="!error">You don't have any profiles</h1>
+    <p class="text-danger" *ngIf="error">{{error}}</p>
+    <button *ngIf="!error" class="btn btn-primary btn-attention" (click)="addNewProfileShown = true">Add profile
+    </button>
+  </div>
+</lib-content-box>
+<nc-add-profile *ngIf="addNewProfileShown"
+                (canceled)="addNewProfileShown = false"
+                (saved)="addProfile($event)"></nc-add-profile>
+
+<nc-connect-profile *ngIf="connectProfileShown" [profileName]="activeProfile" [devices]="devices"
+                    (shouldClose)="connectProfileShown = false"></nc-connect-profile>

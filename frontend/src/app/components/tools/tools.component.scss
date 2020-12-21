@@ -1,0 +1,46 @@
+@import "../../colors";
+
+.tool-wrapper {
+  background: $colorItemBackground;
+  border-radius: 15px;
+  padding: 10px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23);
+  overflow: hidden;
+}
+
+.tool-text-wrapper {
+  display: inline-block;
+  padding-left: 10px;
+  max-width: 70%;
+  h1 {
+    margin: 0;
+    font-weight: bolder;
+    color: $colorText;
+  }
+}
+
+.tool-icon {
+  width: 30%;
+  max-width: 100px;
+  height: auto;
+  display: inline-block;
+
+}
+
+.tool-btn {
+  float: right;
+}
+
+.text-error {
+  color: $red;
+}
+
+h1 {
+  font-size: 1.5rem;
+}
+
+.attribution {
+  position: absolute;
+  bottom: 0;
+  color: transparentize($colorText, 0.5);
+}

@@ -1,0 +1,10 @@
+@import "../../../colors";
+@import "../../../styles/inputs";
+
+.nc-label {
+  min-width: 105px;
+}
+.btn-primary:disabled, .btn-primary[disabled] {
+  background: lighten($colorMain, 10%);
+  cursor: not-allowed;
+}

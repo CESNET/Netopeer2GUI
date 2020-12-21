@@ -1,54 +1,43 @@
-# Netopeer2GUI
-Web-based NETCONF management center
+# netconf-gui
+A GUI for the libnetconf2 library.
+**This version is in development and NOT for production use yet!**
+We are unable to provide full support right now for this version since some parts are not yet finished.
 
-This tool is currently under development and not intended for production use.
-However, we welcome your feedback provided via the [issue tracker](https://github.com/CESNET/Netopeer2GUI/issues).
+## Installation
 
-<img src="./schema.svg" width="50%"/><img src="./docs/screenshots/configuration.png" width="50%"/>
+To install the NetconfGUI, follow these steps:
 
-Several screenshots can be found in the [`docs`](./docs/).
+1. Follow the instructions in the [libyang repository](https://github.com/CESNET/libyang) and install libyang.
+2. Follow the instructions in the [libnetconf2 repository](https://github.com/CESNET/libnetconf2) and install libnetconf2 with python bindings (Option `-DENABLE_PYTHON=on` when using cmake)
+3. Follow the quick start guide in the [liberouter GUI repository](https://github.com/CESNET/liberouter-gui). On step two, copy the NetconfGUI repository to liberouter GUI `modules` folder.
+4. Start the liberouter GUI and navigate to `http://localhost:4200` in your browser
 
-# Features List
 
-- [x] manage devices to connect to
-  - [ ] manage devices groupings for bulk configuration
-- [x] manage YANG schemas stored in GUI to represent received data
-  - [ ] interaction with user by asking unknown module used by the connected device
-- [x] display configuration and data of the connected device (data tree view)
-- [x] edit configuration data of the device
-- [ ] bulk configuration (set configuration of multiple device at once)
-- [x] YANG explorer to display/browse YANG schema (currently just basic textual information)
-- [ ] receive NETCONF notifications and present them to user
-- [ ] accept NETCONF Call Home connections
-- [ ] plugin interface for schema-specific applications
+## Docker
+Comming soon.
 
-# Dependencies
-The application is created as a module to the [liberouter-gui](https://github.com/CESNET/liberouter-gui)
-framework, so to install it, follow the [liberouter-gui instructions](https://github.com/CESNET/liberouter-gui/wiki/Deploying-LiberouterGUI). When you decide to deploy production version, there is pre-built Netopeer2GUI as a [release package](https://github.com/CESNET/Netopeer2GUI/releases). To configure your web server, please follow the mentioned liberouter-gui instructions or have a look at [`*-release` vagrant image(s)](./vagrant/).
 
-The backend is a Flask server written in Python 3 and utilizing [libyang](https://github.com/CESNET/libyang)
-and [libnetconf2](https://github.com/CESNET/libnetconf2) Python bindings.
-Unfortunatelly, the code of the bindings is not yet finished, so please use
-the devel branches of the mentioned libraries:
+## Vagrant
+To try out the NetconfGUI without installing it, clone this repository, install [VirtualBox](https://www.virtualbox.org/wiki/Downloads) and [Vagrant](https://www.vagrantup.com/docs/installation/)), navigate to the `vagrant` folder in this repository and type `vargant up`.
+
+This will bring up a virtual machine and install all dependencies automatically. The virtual machine also contains running `netopeer2-server` as a NETCONF enabled device.
+You can connect to this device using the following credentials:
+- Username: vagrant
+- Password: vagrant
+- Hostname: localhost
+- Port: 830
+
+To stop the virtual machine, use the `vagrang halt` command. To connect to the virtual machine, use `vagrant ssh`.
+
+You can connect to the GUI in the virtual machine just as if it was running on your machine. Just type `vagrant port` to check, which port in your system is the port 4200 from the virtual machine mapped to.
+
 ```
-$ git clone -b devel https://github.com/CESNET/libyang
-$ mkdir -p libyang/build && cd libyang/build
-$ cmake -DGEN_LANGUAGE_BINDINGS=ON ..
-$ make
-# make install
-```
-```
-$ git clone -b devel https://github.com/CESNET/libnetconf2
-$ mkdir -p libnetconf2/build && cd libnetconf2/build
-$ cmake -DENABLE_PYTHON=ON ..
-$ make
-# make install
-```
+$ vagrant port
+The forwarded ports for the machine are listed below. Please note that
+these values may differ from values configured in the Vagrantfile if the
+provider supports automatic port collision detection and resolution.
 
-Or alternatively install binary packages of [libyang](https://software.opensuse.org//download.html?project=home%3Aliberouter&package=libyang-experimental) and [libnetconf2](https://software.opensuse.org//download.html?project=home%3Aliberouter&package=libnetconf2-experimental).
-
-# Vagrant
-For fast and simple testing/development deployment, you can use the prepared
-Vagrantfiles for instantiating virtual machine. More information can be found
-[here](./vagrant/).
-
+    22 (guest) => 2203 (host)
+  4200 (guest) => 2201 (host)
+   830 (guest) => 2202 (host)
+```
