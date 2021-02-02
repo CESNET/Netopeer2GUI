@@ -1,5 +1,5 @@
 {
-  "logo": "Netopeer GUI",
+  "logo": "Netopeer2 GUI",
   "authorization" : true,
   "colorTheme" : {
     "colorMain" : "#354b68",
@@ -21,7 +21,7 @@
     "proto" : null
   },
   "assets": {
-    "input": "libnetconf-gui/assets",
+    "input": "netopeer2gui/assets",
     "output": "libnetconf"
   }
 }
