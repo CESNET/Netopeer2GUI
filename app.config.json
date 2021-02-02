@@ -1,0 +1,27 @@
+{
+  "logo": "Netopeer GUI",
+  "authorization" : true,
+  "colorTheme" : {
+    "colorMain" : "#354b68",
+    "colorHighlight" : "#3d5676",
+    "colorSelected" : "#3d5676",
+    "colorSelected2" : "#6888b1",
+    "colorBackground": "#fafafa",
+    "colorItemBackground": "#fff",
+    "colorText": "#231f20",
+    "colorTextInverse": "#fff",
+    "colorLink": "#0068a2",
+    "colorLinkHover": "#00a1e3",
+    "colorHeading": "#555"
+  },
+  "api" : {
+    "url" : "/libapi",
+    "host" : null,
+    "port" : null,
+    "proto" : null
+  },
+  "assets": {
+    "input": "libnetconf-gui/assets",
+    "output": "libnetconf"
+  }
+}
