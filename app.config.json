@@ -1,5 +1,6 @@
 {
-  "logo": "Netopeer2 GUI",
+  "logo": "assets/img/logo.png",
+  "name": "Netopeer2 GUI",
   "authorization" : true,
   "colorTheme" : {
     "colorMain" : "#354b68",
