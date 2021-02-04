@@ -8,59 +8,68 @@ RUN apt-get upgrade && apt-get update -y && apt-get install -y \
    libpcre3-dev swig \
    zlib1g-dev libgcrypt-dev libssl-dev \
    libprotobuf-c-dev protobuf-c-compiler libavl-dev libev-dev \
-   apache2 apache2-dev
+   apache2 apache2-dev libapache2-mod-wsgi-py3
 
 RUN curl -sL https://deb.nodesource.com/setup_15.x | bash - && apt-get install -y nodejs
 
 # Install libssh from source (Version from apt is incompatible with libnetconf2)
 RUN git clone -b v0-7 http://git.libssh.org/projects/libssh.git ; cd libssh; mkdir build; cd build ;\
-    cmake ..; make; make install ; cd
+    cmake ..; make; make install ; cd /
 
 # Install libyang
 RUN git clone -b devel https://github.com/CESNET/libyang.git && cd libyang; \
   mkdir build; cd build && \
-  cmake -DGEN_LANGUAGE_BINDINGS=ON -DGEN_JAVA_BINDINGS=OFF .. && make && make install && cd ../.. && ldconfig ; cd
+  cmake -DGEN_LANGUAGE_BINDINGS=ON -DGEN_JAVA_BINDINGS=OFF .. && make && make install && cd ../.. && ldconfig ; cd /
 
 # Install libnetconf2
-RUN git clone -b devel https://github.com/CESNET/libnetconf2.git && cd libnetconf2; \
-  mkdir build; cd build && \
-  cmake -DENABLE_PYTHON=ON .. && make && make install && cd ../.. && ldconfig ; cd
-
+RUN git clone -b devel https://github.com/CESNET/libnetconf2.git && cd libnetconf2 && \
+  mkdir build && cd build && \
+  cmake -DENABLE_PYTHON=ON .. && make && make install && cd ../.. && ldconfig &&  \
+  python3 /libnetconf2/build/python/setup.py install && cd /
+# Manually running setup.py is a temporary workaround because of a bug in libnetconf2
 
 # Install sysrepo
 RUN git clone -b devel https://github.com/sysrepo/sysrepo.git ; \
     cd sysrepo; mkdir build; cd build; \
     cmake -DGEN_LANGUAGE_BINDINGS=OFF .. && make && make install; \
     cd ../.. ; \
-    ldconfig ; cd
+    ldconfig ; cd /
 
 # Install netopeer
 RUN git clone -b devel https://github.com/CESNET/Netopeer2.git ;\
     cd Netopeer2; mkdir build; cd build ;\
-    cmake .. && make && make install ; cd
+    cmake .. && make && make install ; cd /
 
 # Prepare GUI 
-# TODO: Remove example and add app.config.json to import assets
-RUN git clone https://github.com/CESNET/liberouter-gui 
-RUN cd /liberouter-gui/modules && git clone -b v2 https://github.com/CESNET/Netopeer2GUI && cd
+RUN git clone https://github.com/CESNET/liberouter-gui
+RUN cd /liberouter-gui/modules && git clone -b v2 https://github.com/CESNET/netopeer2gui 
+# && rm -rf /liberouter-gui/modules/example
+RUN cp /liberouter-gui/modules/netopeer2gui/app.config.json /liberouter-gui/modules/app.config.json && rm /liberouter-gui/modules/netopeer2gui/app.config.json
 RUN cd /liberouter-gui && python3 bootstrap.py && \
     pip3 install -r backend/requirements.txt && \
-    cd frontend && npm i -g npm && \
-    npm i -g @angular/cli && npm install ; cd
+    cd frontend && npm install -g npm@7.5.2 && \
+    npm i -g @angular/cli && npm install --legacy-peer-deps
 
 # Build GUI
 RUN mkdir /etc/httpd ; mkdir /etc/httpd/conf.modules.d 
 RUN pip3 install mod_wsgi
 RUN mod_wsgi-express module-config >/etc/httpd/conf.modules.d/00-wsgi.conf
-RUN cd /liberouter-gui/modules/Netopeer2GUI/frontend && npm i && npm run build:tools && cd
+RUN pip3 uninstall mod_wsgi -y
+RUN cd /liberouter-gui/modules/netopeer2gui/frontend && npm i && npm run build:tools && cd
 RUN cd /liberouter-gui/frontend && npm run build && cp -R dist/* /var/www/html 
-RUN cp /liberouter-gui/modules/Netopeer2GUI/docker/wsgi.py /var/www/liberouter-gui/backend/wsgi.py
 
-# Expose ports and run services
-RUN mkdir -p /data/db 2>/dev/null \
-    mongod --fork --logpath /var/log/mongod.log
-RUN sysrepod
-RUN httpd
-RUN netopeer2-server
+# Setup apache server
+RUN mkdir -p /var/www/liberouter-gui && cp -r /liberouter-gui/backend /var/www/liberouter-gui
+RUN cp /liberouter-gui/modules/netopeer2gui/docker/wsgi.py /var/www/liberouter-gui/backend/wsgi.py
+COPY liberouter.conf /etc/apache2/sites-available
+RUN a2ensite liberouter && a2dissite 000-default
+COPY config.ini /var/www/liberouter-gui/backend/config.ini
+RUN chown -R www-data:www-data /var/www/liberouter-gui
+RUN chown -R www-data:www-data /liberouter-gui/modules
 
+# Expose HTTP
 EXPOSE 80/tcp
+
+
+COPY services.sh /root
+CMD ["/bin/bash", "/root/services.sh"]
