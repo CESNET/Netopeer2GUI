@@ -50,6 +50,12 @@ RUN cd /liberouter-gui && python3 bootstrap.py && \
     cd frontend && npm install -g npm@7.5.2 && \
     npm i -g @angular/cli && npm install --legacy-peer-deps
 
+# Temporary workaround until import is fixed for tools
+RUN rm /liberouter-gui/modules/netopeer2gui/frontend/projects/shared-styles/_colors.scss && \
+  cp /liberouter-gui/frontend/src/styles/_colors.scss /liberouter-gui/modules/netopeer2gui/frontend/projects/shared-styles/_colors.scss
+RUN echo "\$colorSuccess:     #44bd32;" >> /liberouter-gui/modules/netopeer2gui/frontend/projects/shared-styles/_colors.scss && \
+    echo "\$colorError:       #ee1d23;" >> /liberouter-gui/modules/netopeer2gui/frontend/projects/shared-styles/_colors.scss
+
 # Build GUI
 RUN mkdir /etc/httpd ; mkdir /etc/httpd/conf.modules.d 
 RUN pip3 install mod_wsgi
@@ -60,15 +66,25 @@ RUN cd /liberouter-gui/frontend && npm run build && cp -R dist/* /var/www/html
 
 # Setup apache server
 RUN mkdir -p /var/www/liberouter-gui && cp -r /liberouter-gui/backend /var/www/liberouter-gui
+RUN rm /var/www/liberouter-gui/backend/liberouterapi/modules/netconf && cp -r /liberouter-gui/modules/netopeer2gui/backend/. /var/www/liberouter-gui/backend/liberouterapi/modules/netopeer2gui
 RUN cp /liberouter-gui/modules/netopeer2gui/docker/wsgi.py /var/www/liberouter-gui/backend/wsgi.py
 COPY liberouter.conf /etc/apache2/sites-available
 RUN a2ensite liberouter && a2dissite 000-default
+RUN a2enmod rewrite
 COPY config.ini /var/www/liberouter-gui/backend/config.ini
+COPY .htaccess /var/www/html/.htaccess
 RUN chown -R www-data:www-data /var/www/liberouter-gui
-RUN chown -R www-data:www-data /liberouter-gui/modules
+RUN chown -R www-data:www-data /liberouter-gui/modules/netopeer2gui/backend
+# App needs to write configuration files
+RUN chmod -R +w /var/www/liberouter-gui
+
+# Change root password for netconf connection
+# DO NOT USE IN PRODUCTION ENVIRONMENT!
+RUN echo 'root:docker' | chpasswd
 
 # Expose HTTP
 EXPOSE 80/tcp
+EXPOSE 830
 
 
 COPY services.sh /root
