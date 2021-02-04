@@ -110,7 +110,7 @@ def connect_device():
     if not os.path.exists(path):
         os.makedirs(path)
     nc.setSearchpath(path)
-    if 'password' in data and data['password'] != '':
+    if 'password' in data and data['password'] != '' and data['password'] is not None:
         ssh = nc.SSH(data['username'], password=data['password'])
     else:
         ssh = nc.SSH(data['username'])
