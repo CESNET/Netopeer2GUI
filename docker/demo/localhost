@@ -1,0 +1,29 @@
+server {
+    listen 80;
+    listen [::]:80;
+
+    root /var/www/html;
+
+    location /socket.io {
+        include proxy_params;
+        proxy_http_version 1.1;
+        proxy_buffering off;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+        proxy_pass http://127.0.0.1:5555/socket.io;
+    }
+
+    location /libapi {
+        include proxy_params;
+        proxy_pass http://127.0.0.1:5555/;
+    }
+
+    location ~* .(js|css|ttf|ttc|otf|eot|woff|woff2)$ {
+        add_header access-control-allow-origin "*";
+        expires max;
+    }
+
+    location / {
+        try_files $uri$args  $uri$args/ $uri $uri/ /index.html;
+    }
+}

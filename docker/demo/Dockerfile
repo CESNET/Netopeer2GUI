@@ -8,12 +8,12 @@ RUN apt-get upgrade && apt-get update -y && apt-get install -y \
    libpcre3-dev swig \
    zlib1g-dev libgcrypt-dev libssl-dev \
    libprotobuf-c-dev protobuf-c-compiler libavl-dev libev-dev \
-   apache2 apache2-dev libapache2-mod-wsgi-py3
+   libffi-dev python3-setuptools nginx
 
 RUN curl -sL https://deb.nodesource.com/setup_15.x | bash - && apt-get install -y nodejs
 
 # Install libssh from source (Version from apt is incompatible with libnetconf2)
-RUN git clone -b v0-7 http://git.libssh.org/projects/libssh.git ; cd libssh; mkdir build; cd build ;\
+RUN git clone -b stable-0.8 http://git.libssh.org/projects/libssh.git ; cd libssh; mkdir build; cd build ;\
     cmake ..; make; make install ; cd /
 
 # Install libyang
@@ -57,26 +57,26 @@ RUN echo "\$colorSuccess:     #44bd32;" >> /liberouter-gui/modules/netopeer2gui/
     echo "\$colorError:       #ee1d23;" >> /liberouter-gui/modules/netopeer2gui/frontend/projects/shared-styles/_colors.scss
 
 # Build GUI
-RUN mkdir /etc/httpd ; mkdir /etc/httpd/conf.modules.d 
-RUN pip3 install mod_wsgi
-RUN mod_wsgi-express module-config >/etc/httpd/conf.modules.d/00-wsgi.conf
-RUN pip3 uninstall mod_wsgi -y
 RUN cd /liberouter-gui/modules/netopeer2gui/frontend && npm i && npm run build:tools && cd
 RUN cd /liberouter-gui/frontend && npm run build && cp -R dist/* /var/www/html 
 
-# Setup apache server
+# Setup ngix server with uwsgi
 RUN mkdir -p /var/www/liberouter-gui && cp -r /liberouter-gui/backend /var/www/liberouter-gui
 RUN rm /var/www/liberouter-gui/backend/liberouterapi/modules/netconf && cp -r /liberouter-gui/modules/netopeer2gui/backend/. /var/www/liberouter-gui/backend/liberouterapi/modules/netopeer2gui
 RUN cp /liberouter-gui/modules/netopeer2gui/docker/wsgi.py /var/www/liberouter-gui/backend/wsgi.py
-COPY liberouter.conf /etc/apache2/sites-available
-RUN a2ensite liberouter && a2dissite 000-default
-RUN a2enmod rewrite
+RUN pip3 install wheel && pip3 install uwsgi; mkdir /uwsgi; chown -R www-data:www-data /uwsgi
+
+COPY localhost /etc/nginx/sites-available/
+RUN ln /etc/nginx/sites-available/localhost /etc/nginx/sites-enabled
+
 COPY config.ini /var/www/liberouter-gui/backend/config.ini
 COPY .htaccess /var/www/html/.htaccess
 RUN chown -R www-data:www-data /var/www/liberouter-gui
 RUN chown -R www-data:www-data /liberouter-gui/modules/netopeer2gui/backend
 # App needs to write configuration files
-RUN chmod -R +w /var/www/liberouter-gui
+RUN chmod -R +w /var/www/liberouter-gui/backend/liberouterapi/modules/netopeer2gui/ ; mkdir -p /var/www/liberouter-gui/backend/liberouterapi/modules/netopeer2gui/userfiles
+RUN rm /etc/nginx/sites-enabled/default
+RUN pip3 install Flask-SocketIO==4.3.2
 
 # Change root password for netconf connection
 # DO NOT USE IN PRODUCTION ENVIRONMENT!
@@ -84,8 +84,8 @@ RUN echo 'root:docker' | chpasswd
 
 # Expose HTTP
 EXPOSE 80/tcp
-EXPOSE 830
-
+EXPOSE 5555/tcp
+# EXPOSE 830
 
 COPY services.sh /root
 CMD ["/bin/bash", "/root/services.sh"]

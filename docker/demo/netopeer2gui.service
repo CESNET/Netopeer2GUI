@@ -1,0 +1,17 @@
+[Unit]
+Description=uWSGI instance to serve netopeer2gui
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/uwsgi --ini netopeer2gui.ini
+User=www-data
+Group=www-data
+RuntimeDirectory=/uwsgi
+Restart=always
+KillSignal=SIGQUIT
+Type=notify
+StandardError=syslog
+NotifyAccess=all
+
+[Install]
+WantedBy=multi-user.target
