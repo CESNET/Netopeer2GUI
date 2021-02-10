@@ -28,8 +28,7 @@ export class DeviceService {
                     port: number,
                     username: string,
                     deviceName = '',
-                    password = '',
-                    connect = false): Observable<object> {
+                    password = ''): Observable<object> {
     const dev: Device = {
       fingerprint: '',
       id: '',
@@ -39,10 +38,6 @@ export class DeviceService {
       username,
       password
     };
-
-    if (connect) {
-      this.createConnectionRequest([dev]);
-    }
     return this.http.post<object>('/netconf/device', {device: dev});
   }
 

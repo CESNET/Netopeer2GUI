@@ -32,7 +32,7 @@ export class AddDeviceFormComponent implements OnInit {
   }
 
   onSubmit() {
-    if(this.deviceForm.value.connectToDevice) {
+    if (this.deviceForm.value.connectToDevice) {
       this.deviceService.createConnectionRequest([
         {
           id: '',
@@ -42,15 +42,14 @@ export class AddDeviceFormComponent implements OnInit {
           hostname: this.deviceForm.value.hostname,
           password: this.deviceForm.value.password
         }
-      ])
+      ]);
     }
-    if(this.deviceForm.value.saveDevice) {
+    if (this.deviceForm.value.saveDevice) {
       this.deviceService.saveDevice(this.deviceForm.value.hostname,
           this.deviceForm.value.port,
           this.deviceForm.value.username,
           this.deviceForm.value.deviceName,
-          this.deviceForm.value.password,
-          this.deviceForm.value.saveDevice
+          this.deviceForm.value.password
       ).subscribe(
           id => {
             this.deviceForm.reset();
@@ -61,5 +60,4 @@ export class AddDeviceFormComponent implements OnInit {
       );
     }
   }
-
 }
