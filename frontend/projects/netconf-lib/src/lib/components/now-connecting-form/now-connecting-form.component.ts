@@ -8,6 +8,7 @@ import {SessionService} from '../../services/session.service';
 import {SocketService} from '../../services/socket.service';
 import {ConnectionStatus} from '../../classes/ConnectionStatus';
 import {DeviceWithStatus} from '../../classes/DeviceWithStatus';
+import {NotificationService} from '../../services/notification.service';
 
 
 enum ssh_hostcheck_status {
@@ -35,7 +36,8 @@ export class NowConnectingFormComponent implements OnInit {
 
   constructor(public deviceService: DeviceService,
               public socketService: SocketService,
-              public sessionService: SessionService) {
+              public sessionService: SessionService,
+              public notificationService: NotificationService) {
   }
 
   ngOnInit() {
@@ -142,7 +144,8 @@ export class NowConnectingFormComponent implements OnInit {
       _ => {
         this.sessionService.sessions = [];
         this.deviceService.clearWaitList();
-        alert('Connecting canceled!');
+        this.notificationService.sendNotification(
+          this.notificationService.createNotification('Connecting canceled!', '', 'internal'));
         this.close();
       },
       err => {

@@ -3,8 +3,7 @@
  * Content of a single notification
  */
 import {Component, OnInit, Input, Output, EventEmitter} from '@angular/core';
-import {NotificationService} from "../../../services/notification.service";
-import {Notification} from "../../../classes/Notification";
+import {NotificationService, Notification} from '../../../netconf-lib';
 import {trigger, state, style, animate, transition} from '@angular/animations';
 
 @Component({

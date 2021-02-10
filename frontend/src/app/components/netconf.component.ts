@@ -4,11 +4,9 @@
  */
 
 import {Component, OnInit} from '@angular/core';
-import {ConfigService} from "../services/config.service";
-import {ProfileService} from "../services/profile.service";
-import {NotificationService} from "../services/notification.service";
-import {DeviceService, SessionService} from "../netconf-lib";
-import {DeviceWithStatus} from "../netconf-lib";
+import {ConfigService} from '../services/config.service';
+import {ProfileService} from '../services/profile.service';
+import {DeviceService, SessionService, NotificationService} from '../netconf-lib';
 
 @Component({
   selector: 'nc-base',
@@ -26,22 +24,21 @@ export class NetconfComponent implements OnInit {
   ) {
   }
 
-  statusMessage: string = "Loading...";
+  statusMessage = 'Loading...';
   config: object = {};
 
   ngOnInit() {
-    this.statusMessage = "Loading config...";
+    this.statusMessage = 'Loading config...';
     this.configService.getConfig().subscribe(
       config => {
         this.config = config;
-        this.statusMessage = "Checking open sessions...";
+        this.statusMessage = 'Checking open sessions...';
         this.sessionService.loadOpenSessions().subscribe(
           sessions => {
             if (sessions.length > 0) {
-                if(confirm('Found active device sessions. Load them? (Answering "cancel" will discard these sessions)')) {
+                if (confirm('Found active device sessions. Load them? (Answering "cancel" will discard these sessions)')) {
                   this.sessionService.sessions = sessions;
-                }
-                else {
+                } else {
                   this.sessionService.destroyAllSessions().subscribe();
                   this.loadProfile();
                 }
@@ -53,47 +50,47 @@ export class NetconfComponent implements OnInit {
         this.loadProfile();
       },
       err => {
-        this.statusMessage = "";
+        this.statusMessage = '';
       }
     );
   }
 
   loadProfile() {
-    this.statusMessage = "Loading profile...";
+    this.statusMessage = 'Loading profile...';
     this.profileService.getOnLoginProfile().subscribe(
       data => {
-        this.statusMessage = "";
+        this.statusMessage = '';
         if (data.connectOnLogin) {
           this.deviceService.createConnectionRequest(data.devices);
         }
       },
       err => {
-        this.statusMessage = "";
+        this.statusMessage = '';
       }
     );
 
-
-    /*setTimeout(() => {
+/*
+    setTimeout(() => {
         this.notificationService.sendNotification(
-            this.notificationService.createNotification("Notification 1", "Internal", "Channel 1")
+            this.notificationService.createNotification('Notification 1', 'Internal', 'Channel 1')
         );
     }, 250);
     setTimeout(() => {
         this.notificationService.sendNotification(
-            this.notificationService.createNotification("Notification 2", "Internal", "Channel 1")
+            this.notificationService.createNotification('Notification 2', 'Internal', 'Channel 1')
         );
     }, 1500);
     setTimeout(() => {
         this.notificationService.sendNotification(
-            this.notificationService.createNotification("Notification 3", "Internal", "Channel 1")
+            this.notificationService.createNotification('Notification 3', 'Internal', 'Channel 1')
         );
     }, 3000);
     setTimeout(() => {
         this.notificationService.sendNotification(
-            this.notificationService.createNotification("Notification 4", "Internal", "Channel 1")
+            this.notificationService.createNotification('Notification 4', 'Internal', 'Channel 1')
         );
-    }, 5000);*/
-
+    }, 5000);
+*/
   }
 
 }

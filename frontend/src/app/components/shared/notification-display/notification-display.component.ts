@@ -3,8 +3,8 @@
  * Container for notifications in the bottom-right corner of the screen
  */
 import {Component, OnInit} from '@angular/core';
-import {NotificationService} from "../../../services/notification.service";
-import {Notification} from "../../../classes/Notification";
+import {NotificationService} from '../../../netconf-lib';
+import {Notification} from '../../../netconf-lib';
 
 @Component({
     selector: 'nc-notification-display',
@@ -31,11 +31,11 @@ export class NotificationDisplayComponent implements OnInit {
 
 
     addNotification(notification: Notification) {
-        this.displayedNotifications.push({notification, state: "initial"});
+        this.displayedNotifications.push({notification, state: 'initial'});
         if (this.displayedNotifications.length > 3) {
-            for(let i = 0; i < this.displayedNotifications.length - 3; i++) {
+            for (let i = 0; i < this.displayedNotifications.length - 3; i++) {
                 this.toRemove.push(this.displayedNotifications[i].notification.id);
-                this.displayedNotifications[i].state = "final"
+                this.displayedNotifications[i].state = 'final';
             }
 
         }
