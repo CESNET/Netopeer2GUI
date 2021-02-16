@@ -3,11 +3,25 @@
  * A node of the configuration tree
  * This is a recursive component - renders all its children
  */
-import { Component, OnInit, Input } from '@angular/core';
+import {Component, OnInit, Input} from '@angular/core';
 import {NodeControlService} from '../services/node-control.service';
 // @ts-ignore
-import {ConfigurationService, SessionService} from 'netconf-lib';
+import {ConfigurationService, SchemasService, SessionService} from 'netconf-lib';
 
+/**
+ * Notes on the schema format
+ * Has value -> cannot have children
+ * Is key -> Cannot be deleted
+ * Is not editable -> Cannot add or remove anything
+ *
+ * load node schema, not a leaf:
+ * schema['node-name']['data'] - keys are possible children
+ * schema['node-name']['keys'] - array of key names
+ *
+ * load node schema, is a leaf:
+ * schema['node-name']['mandatory']: {value: "true"}
+ * schema['node-name']['type']: basetype, derived from, etc etc...
+ * */
 @Component({
   selector: 'nct-yang-schema-node',
   templateUrl: './yang-schema-node.component.html',
@@ -17,7 +31,9 @@ export class YangSchemaNodeComponent implements OnInit {
 
   constructor(public nodeControlService: NodeControlService,
               public configurationService: ConfigurationService,
-              public sessionService: SessionService) { }
+              public sessionService: SessionService,
+              public schemaService: SchemasService) {
+  }
 
   @Input() node: object;
   @Input() showChildren = false;
@@ -25,8 +41,9 @@ export class YangSchemaNodeComponent implements OnInit {
   showAllChildrenOnOpen = false;
   showHelp = false;
   editing = false;
-  originalValue = '';
+  originalValue;
   editingValue = '';
+  showMenu = false;
 
   ngOnInit() {
     this.showAllChildrenOnOpen = this.showChildren;
@@ -47,12 +64,16 @@ export class YangSchemaNodeComponent implements OnInit {
   }
 
   toggleAllChildren() {
-    this.showAllChildrenOnOpen = ! this.showAllChildrenOnOpen;
+    this.showAllChildrenOnOpen = !this.showAllChildrenOnOpen;
     this.showChildren = !this.showChildren;
   }
 
   toggleEdit() {
     this.editing = !this.editing;
+  }
+
+  toggleMenu() {
+    this.showMenu = !this.showMenu;
   }
 
   performGlobalAction(action: string) {
@@ -83,6 +104,16 @@ export class YangSchemaNodeComponent implements OnInit {
   restoreOriginal() {
     this.editingValue = this.originalValue;
     this.node['value'] = this.originalValue;
+  }
+
+  loadSchemaPath() {
+    this.schemaService.getParsedSchema(
+      'ietf-netconf-server@2019-07-02.yang', this.activeSession.key, this.node['info']['path']).subscribe(
+      schema => {
+        console.log('PARSED SCHEMA');
+        console.log(schema);
+      }
+    );
   }
 
 }

@@ -4,7 +4,7 @@
  */
 
 import { Injectable } from '@angular/core';
-import {HttpClient} from '@angular/common/http';
+import {HttpClient, HttpParams} from '@angular/common/http';
 import {Observable} from 'rxjs';
 import {GenericServerResponse} from '../classes/GenericServerResponse';
 
@@ -88,6 +88,13 @@ export class SchemasService {
 
   getSchema(schemaName: string): Observable<string> {
     return this.http.get<string>('/netconf/schema/' + schemaName);
+  }
+
+  getParsedSchema(schemaName: string, sessionKey: string, path: string = null): Observable<object> {
+    const params = new HttpParams()
+      .set('session', sessionKey)
+      .set('path', path);
+    return this.http.get<object>('/netconf/schemaParsed/' + schemaName, {params: params});
   }
 
   removeSchema(schemaName: string): Observable<GenericServerResponse> {
