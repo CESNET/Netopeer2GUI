@@ -131,3 +131,15 @@ def schemas_get_all():
 @auth.required()
 def schema_get(name):
     return json.dumps(get_schema_detail(get_username_from_session(), name))
+
+
+@auth.required()
+def schema_get_parsed(name):
+    req = request.args.to_dict()
+    if 'session' not in req:
+        return json.dumps({'success': False, 'code': 500, 'message': 'Missing session key'})
+    if 'path' in req:
+        return json.dumps(get_schema_json(get_username_from_session(), name, req['session'], req['path']))
+    else:
+        return json.dumps(get_schema_json(get_username_from_session(), name, req['session']))
+

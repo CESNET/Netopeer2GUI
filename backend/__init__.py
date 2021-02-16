@@ -45,3 +45,4 @@ netconf_bp.add_url_rule('/profileSet', view_func=profile_set, methods=['POST'])
 # Schemas
 netconf_bp.add_url_rule('/schemas', view_func=schemas_get_all, methods=['GET'])
 netconf_bp.add_url_rule('/schema/<name>', view_func=schema_get, methods=['GET'])
+netconf_bp.add_url_rule('/schemaParsed/<name>', view_func=schema_get_parsed, methods=['GET'])

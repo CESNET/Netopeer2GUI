@@ -57,6 +57,31 @@ def get_schema_detail(username, schema):
         return "Only files with .yang or .yin extension can be displayed"
 
 
+def get_schema_json(username, schema, session, path=None):
+    format = yang.LYS_IN_UNKNOWN
+    module = None
+    site_root = os.path.realpath(os.path.dirname(__file__))
+    try:
+        ctx = yang.Context(os.path.join(site_root, 'userfiles', username), yang.LY_CTX_PREFER_SEARCHDIRS)
+        ctx.set_module_imp_clb(get_schema, session)
+    except Exception as e:
+        return {'success': False, 'code': 500, 'message': str(e)}
+
+    try:
+        module = ctx.parse_module_path(os.path.join(site_root, 'userfiles', username, schema),
+                                       yang.LYS_IN_YANG if format == yang.LYS_IN_UNKNOWN else format)
+    except Exception as e:
+        if format == yang.LYS_IN_UNKNOWN:
+            try:
+                module = ctx.parse_module_path(os.path.join(site_root, 'userfiles', username, schema),
+                                               yang.LYS_IN_YIN)
+            except Exception as e:
+                return {'success': False, 'code': 500, 'message': str(e)}
+        else:
+            return {'success': False, 'code': 500, 'message': str(e)}
+    return json.loads(module.print_mem(yang.LYS_OUT_JSON, path, 0))
+
+
 def remove_schema(username, schema):
     site_root = os.path.realpath(os.path.dirname(__file__))
     path = os.path.join(site_root, 'userfiles', username, schema)
