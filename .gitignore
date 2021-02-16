@@ -49,8 +49,12 @@ Thumbs.db
 /backend/__pycache__
 # User configuration files
 /backend/userfiles
+# Backend IDE files
+/backed/.idea
+/backend/.code
 
 # Compiled tools
 /frontend/src/app/netconf-lib
 /assets/tools/*.js
 /assets/tools/index.html
+
