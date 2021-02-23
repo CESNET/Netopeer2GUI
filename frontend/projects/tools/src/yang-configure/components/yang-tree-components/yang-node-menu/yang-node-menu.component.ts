@@ -10,9 +10,9 @@ export class YangNodeMenuComponent implements OnInit {
   @Input() nodeType: number;
   @Input() isKey: boolean;
 
-  @Output() addChildClicked: EventEmitter<boolean>;
-  @Output() addSiblingClicked: EventEmitter<boolean>;
-  @Output() removeClicked: EventEmitter<boolean>;
+  @Output() addChildClicked = new EventEmitter<boolean>();
+  @Output() addSiblingClicked = new EventEmitter<boolean>();
+  @Output() removeClicked = new EventEmitter<boolean>();
 
   constructor() { }
 
