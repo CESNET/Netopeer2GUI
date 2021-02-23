@@ -36,28 +36,9 @@
   }
 }
 
-.description {
-  font-weight: normal;
-  margin-left: 5px;
-  color: transparentize($colorText, 0.3);
-  font-size: 12px;
-  font-family: "JetBrains Mono", "Source Code Pro", Consolas, monospace;
-}
-
 .child-container {
   padding-left: 5px;
   border-left: 1px solid transparentize($colorText, 0.5);
-}
-
-.schema-link {
-  color: transparentize($colorText, 0.2);
-  font-size: 11px;
-  font-weight: normal;
-  font-family: "JetBrains Mono", "Source Code Pro", Consolas, monospace;
-  &:hover {
-    color: $colorLinkHover;
-    text-decoration: underline;
-  }
 }
 
 .old-value {
@@ -79,47 +60,4 @@
   border: none;
   border-bottom: 1px solid $colorText;
   font-family: "JetBrains Mono", "Source Code Pro", Consolas, monospace;
-}
-
-.mini-menu-wrapper {
-  position: relative;
-  display: inline-block;
-}
-.mini-menu {
-  position: absolute;
-  display: inline-block;
-  visibility: hidden;
-  border: 1px solid $colorText;
-  width: 100px;
-  max-width: 80vw;
-  text-align: center;
-  border-radius: 5px;
-  z-index: 2;
-  background: $colorItemBackground;
-  ul {
-    list-style-type: none;
-    margin-top: 0;
-    margin-bottom: 1rem;
-    padding-left: 0;
-  }
-  ul li button {
-    background: none;
-    border: none;
-    color: $colorText;
-    cursor: pointer;
-    &:hover {
-      color: $colorMain;
-      background: rgba(0,0,0,0.1);
-    }
-  }
-}
-
-.mini-menu-toggle {
-  background: none;
-  border: none;
-}
-
-.mini-menu-toggle + .mini-menu:active,
-.mini-menu-toggle:focus + .mini-menu {
-  visibility: visible;
 }

@@ -7,6 +7,7 @@ import {Component, OnInit, Input} from '@angular/core';
 import {NodeControlService} from '../services/node-control.service';
 // @ts-ignore
 import {ConfigurationService, SchemasService, SessionService} from 'netconf-lib';
+import {Observable} from 'rxjs';
 
 /**
  * Notes on the schema format
@@ -39,11 +40,10 @@ export class YangSchemaNodeComponent implements OnInit {
   @Input() showChildren = false;
   @Input() activeSession;
   showAllChildrenOnOpen = false;
-  showHelp = false;
   editing = false;
   originalValue;
   editingValue = '';
-  showMenu = false;
+  newNode: { key: string, module: string, path: string };
 
   ngOnInit() {
     this.showAllChildrenOnOpen = this.showChildren;
@@ -72,18 +72,8 @@ export class YangSchemaNodeComponent implements OnInit {
     this.editing = !this.editing;
   }
 
-  toggleMenu() {
-    this.showMenu = !this.showMenu;
-  }
-
   performGlobalAction(action: string) {
     switch (action) {
-      case 'hideHelp':
-        this.showHelp = false;
-        break;
-      case 'showHelp':
-        this.showHelp = true;
-        break;
       case 'close':
         this.showChildren = false;
         this.showAllChildrenOnOpen = false;
@@ -106,14 +96,12 @@ export class YangSchemaNodeComponent implements OnInit {
     this.node['value'] = this.originalValue;
   }
 
-  loadSchemaPath() {
-    this.schemaService.getParsedSchema(
-      'ietf-netconf-server@2019-07-02.yang', this.activeSession.key, this.node['info']['path']).subscribe(
-      schema => {
-        console.log('PARSED SCHEMA');
-        console.log(schema);
-      }
-    );
+  addChildNode() {
+    this.newNode = {
+      key: this.activeSession.key,
+      module: this.node['info']['module'] + '.yang',
+      path: this.node['info']['path']
+    };
   }
 
 }

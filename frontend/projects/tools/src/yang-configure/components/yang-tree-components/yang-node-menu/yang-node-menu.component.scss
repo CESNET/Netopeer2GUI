@@ -1,0 +1,45 @@
+@import "../../../../../../shared-styles/colors";
+
+.mini-menu-wrapper {
+  position: relative;
+  display: inline-block;
+}
+.mini-menu {
+  position: absolute;
+  display: inline-block;
+  visibility: hidden;
+  border: 1px solid $colorText;
+  width: 100px;
+  max-width: 80vw;
+  text-align: center;
+  border-radius: 5px;
+  z-index: 2;
+  background: $colorItemBackground;
+  ul {
+    list-style-type: none;
+    margin-top: 0;
+    margin-bottom: 1rem;
+    padding-left: 0;
+  }
+  ul li button {
+    background: none;
+    border: none;
+    color: $colorText;
+    cursor: pointer;
+    width: 100%;
+    border-bottom: 1px solid transparentize($colorMain, 0.9);
+    &:hover {
+      background: transparentize($colorMain, 0.9);
+    }
+  }
+}
+
+.mini-menu-toggle {
+  background: none;
+  border: none;
+}
+
+.mini-menu-toggle + .mini-menu:active,
+.mini-menu-toggle:focus + .mini-menu {
+  visibility: visible;
+}

@@ -1,10 +1,6 @@
 <!-- Node -->
 <div class="node">
   <!-- Icon controls -->
-  <i class="fa fa-info-circle action-icon"
-     (click)="showHelp = !showHelp; loadSchemaPath()"
-     *ngIf="node['info'] && node['info']['dsc']"
-     [title]="node['info']['dsc']"></i>
   <i class="fa action-icon" [class.fa-sort-desc]="!showChildren" [class.fa-sort-up]="showChildren"
      (click)="toggleChildren()" *ngIf="node['children']"></i>
   <i class="fa fa-angle-double-down action-icon" [class.fa-rotate-180]="showAllChildrenOnOpen"
@@ -46,41 +42,26 @@
   </ng-container>
 
   <!-- Menu -->
-  <div class="mini-menu-wrapper" *ngIf="node['info']['config'] && !node['info']['key'] && node['info']['config']">
-    <button class="mini-menu-toggle" >
-      <i class="fa fa-bars"
-         title="More options"></i></button> <!-- (click)="toggleMenu()" -->
-    <nav class="mini-menu">
-      <ul>
-        <li>
-          <button>Add child</button>
-        </li>
-        <li>
-          <button>Add sibling</button>
-        </li>
-        <li>
-          <button>Remove node</button>
-        </li>
-      </ul>
-    </nav>
-  </div>
+  <nct-yang-node-menu *ngIf="node['info']['config']"
+                      [isKey]="!!node['info']['key']"
+                      [nodeType]="node['info']['type']"
+                      (addChildClicked)="addChildNode()"></nct-yang-node-menu>
 
   <!-- Node description -->
-
-  <span *ngIf="showHelp" class="description">{{node['info']['dsc']}}</span>
+  <nct-yang-node-description [description]="node['info']['dsc']"></nct-yang-node-description>
 
   <!-- Link to a schema -->
-  <span class="float-right">
-    <a [routerLink]="['/netconf', 'tool','yang-explorer',{'schema': node['info']['module'] + '.yang'}]"
-       class="schema-link">
-      {{node['info']['module'].split('@')[0]}}
-    </a>
-  </span>
+  <nct-yang-schema-link [module]="node['info']['module']"></nct-yang-schema-link>
 </div>
 <!-- /Node -->
+
 <!-- Children -->
 <div class="ml-3 child-container" *ngIf="showChildren && node['children']">
   <nct-yang-schema-node *ngFor="let child of node['children']" [node]="child"
                         [showChildren]="showAllChildrenOnOpen" [activeSession]="activeSession"></nct-yang-schema-node>
 </div>
 <!-- /Children -->
+<!-- Add a child -->
+<div class="ml-3 child-container" *ngIf="newNode">
+  <nct-yang-new-node [path]="newNode.path" [schema]="newNode.module" [sessionKey]="newNode.key"></nct-yang-new-node>
+</div>

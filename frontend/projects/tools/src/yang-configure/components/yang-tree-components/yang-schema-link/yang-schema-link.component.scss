@@ -1,0 +1,12 @@
+@import "../../../../../../shared-styles/colors";
+
+.schema-link {
+  color: transparentize($colorText, 0.2);
+  font-size: 11px;
+  font-weight: normal;
+  font-family: "JetBrains Mono", "Source Code Pro", Consolas, monospace;
+  &:hover {
+    color: $colorLinkHover;
+    text-decoration: underline;
+  }
+}

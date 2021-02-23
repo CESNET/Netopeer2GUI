@@ -1,0 +1,5 @@
+<i class="fa fa-info-circle action-icon"
+   (click)="showHelp = !showHelp"
+   *ngIf="description"
+   [title]="description"></i>
+<span *ngIf="showHelp" class="description">{{description}}</span>

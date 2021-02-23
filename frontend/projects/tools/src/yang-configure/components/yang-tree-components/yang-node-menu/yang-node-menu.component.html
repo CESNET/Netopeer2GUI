@@ -1,0 +1,18 @@
+<div class="mini-menu-wrapper">
+  <button class="mini-menu-toggle action-icon">
+    <i class="fa fa-bars"
+       title="More options"></i></button>
+  <nav class="mini-menu">
+    <ul>
+      <li *ngIf="nodeType !== 4">
+        <button (click)="addChildClicked.emit(true)">Add child</button>
+      </li>
+      <li>
+        <button (click)="addSiblingClicked.emit(true)">Add sibling</button>
+      </li>
+      <li *ngIf="!isKey">
+        <button (click)="removeClicked.emit(true)">Remove node</button>
+      </li>
+    </ul>
+  </nav>
+</div>
