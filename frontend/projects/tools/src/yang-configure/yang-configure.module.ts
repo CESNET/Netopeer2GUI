@@ -16,6 +16,7 @@ import { YangNewNodeComponent } from './components/yang-tree-components/yang-new
 import { YangNodeDescriptionComponent } from './components/yang-tree-components/yang-node-description/yang-node-description.component';
 import { YangSchemaLinkComponent } from './components/yang-tree-components/yang-schema-link/yang-schema-link.component';
 import { YangNodeMenuComponent } from './components/yang-tree-components/yang-node-menu/yang-node-menu.component';
+import { YangNodeEditableValueComponent } from './components/yang-tree-components/yang-node-editable-value/yang-node-editable-value.component';
 
 
 @NgModule({
@@ -26,7 +27,7 @@ import { YangNodeMenuComponent } from './components/yang-tree-components/yang-no
     RouterModule,
     FormsModule
   ],
-  declarations: [YangConfigureComponent, YangSchemaNodeComponent, ConfirmCommitComponent, YangNewNodeComponent, YangNodeDescriptionComponent, YangSchemaLinkComponent, YangNodeMenuComponent],
+  declarations: [YangConfigureComponent, YangSchemaNodeComponent, ConfirmCommitComponent, YangNewNodeComponent, YangNodeDescriptionComponent, YangSchemaLinkComponent, YangNodeMenuComponent, YangNodeEditableValueComponent],
   entryComponents: [YangConfigureComponent]
 })
 export class YangConfigureModule {

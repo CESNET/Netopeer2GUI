@@ -4,7 +4,7 @@
  */
 
 import {Component, EventEmitter, Input, OnInit, Output} from '@angular/core';
-import {ConfigurationService, SessionService} from 'netconf-lib';
+import {ConfigurationService, Session} from 'netconf-lib';
 import {NodeControlService} from '../services/node-control.service';
 
 @Component({
@@ -14,25 +14,25 @@ import {NodeControlService} from '../services/node-control.service';
 })
 export class ConfirmCommitComponent implements OnInit {
 
-  @Input() session;
+  @Input() session: Session;
   @Output() shouldClose: EventEmitter<boolean> = new EventEmitter<boolean>();
 
   error = '';
 
   constructor(public configurationService: ConfigurationService,
-              public sessionService: SessionService,
               public nodeControlService: NodeControlService) { }
 
   ngOnInit() {
   }
 
   commitChanges() {
-    this.configurationService.commitChanges(this.session).subscribe(
+    this.configurationService.commitChanges(this.session.key).subscribe(
       success => {
         if (!success.success) {
           this.error = success.message;
         } else {
           this.error = '';
+          this.nodeControlService.confirmNewValue();
           this.shouldClose.emit(true);
         }
       },
@@ -44,7 +44,7 @@ export class ConfirmCommitComponent implements OnInit {
 
   discardChanges() {
     this.nodeControlService.restoreOriginalValuesOnAll();
-    this.sessionService.discardModifications(this.session.key);
+    this.configurationService.discardModifications(this.session.key);
     this.shouldClose.emit(true);
   }
 

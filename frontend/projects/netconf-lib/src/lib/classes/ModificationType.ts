@@ -4,14 +4,14 @@
  */
 export const enum ModificationType {
   /** Creating a new node */
-  Create = "create",
+  Create = 'create',
   /** Changing value of a current leaf node */
-  Change = "change",
+  Change = 'change',
   /** Delete a current node */
-  Delete = "delete",
+  Delete = 'delete',
   /** Replacing a current node */
-  Replace = "replace",
+  Replace = 'replace',
   /** Reordering user-ordered lists or leaf-lists */
-  Reorder = "reorder"
+  Reorder = 'reorder'
 }
 

@@ -8,7 +8,11 @@ import {SchemasService} from 'netconf-lib';
   styleUrls: ['./yang-new-node.component.scss']
 })
 export class YangNewNodeComponent implements OnInit {
-
+  /*
+  * Move child generation to the session service
+  * Mark them with node['new']
+  * This component will only be the dropdown menu, node will be handleded by the schema-node component
+  */
   @Input() sessionKey: string;
   @Input() schema: string;
   @Input() path: string;

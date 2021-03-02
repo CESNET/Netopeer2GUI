@@ -35,7 +35,6 @@ export class SessionService {
   private _sessions: Session[] = [];
 
   public sessionsChanged: EventEmitter<Session[]> = new EventEmitter<Session[]>();
-  public modificationAdded: EventEmitter<Session> = new EventEmitter<Session>();
 
   addSession(key: string, device: Device) {
     if (!this.doesSessionExists(key)) {
@@ -57,7 +56,7 @@ export class SessionService {
     return this.http.delete('/netconf/session/' + key)
       .pipe(
         tap(
-          next => {
+          _ => {
             this._sessions.splice(idx, 1);
             this.sessionsChanged.emit(this.sessions);
           }
@@ -65,11 +64,17 @@ export class SessionService {
       );
   }
 
-  loadOpenSessions(): Observable<Session[]> {
-    return this.http.get<Session[]>('/netconf/sessions');
+  loadOpenSessions(forceReload = false): Observable<Session[]> {
+    if (!forceReload && this.sessions.length !== 0) {
+      return of(this.sessions);
+    }
+    return this.http.get<Session[]>('/netconf/sessions').pipe(
+      tap(data => this.sessions = data)
+    );
   }
 
   destroyAllSessions() {
+    this.sessions = [];
     return this.http.delete('/netconf/sessions');
   }
 
@@ -101,11 +106,7 @@ export class SessionService {
    * For more information see https://netopeer.liberouter.org/doc/libyang/devel/howtoxpath.html
    */
   public getCompatibleDeviceSessions(path: any): Observable<Session[]> {
-    if (this.sessions.length === 0) {
-      return this.loadOpenSessions();
-    } else {
-      return of(this.sessions);
-    }
+    return this.loadOpenSessions(); // TODO: Path filtering
 
   }
 
@@ -130,37 +131,6 @@ export class SessionService {
         params.append('path', path);
       }
       return this.http.get('/netconf/session/rpcGet', {params});
-    }
-
-  }
-
-  createChangeModification(sessionKey: string, path: string, node: object, newValue: string) {
-    if (node['value'] == newValue) {
-      // No change
-      console.log('Value did not change');
-      return;
-    }
-    const idx = this.findSessionIndex(sessionKey);
-    if (idx < 0) {
-      console.warn('Session "' + sessionKey + '" not found');
-      return;
-    }
-    if (!this.sessions[idx].modifications) {
-      this.sessions[idx].modifications = {};
-    }
-    this.sessions[idx].modifications[path] = {
-      'type': ModificationType.Change,
-      'original': node['value'],
-      'value': newValue,
-      'data': node
-    };
-    this.modificationAdded.emit(this.sessions[idx]);
-  }
-
-  discardModifications(sessionKey: string) {
-    const idx = this.findSessionIndex(sessionKey);
-    if (idx > 0) {
-      this.sessions[idx].modifications = {};
     }
 
   }

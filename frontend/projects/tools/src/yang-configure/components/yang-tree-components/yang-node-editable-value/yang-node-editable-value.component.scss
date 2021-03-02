@@ -1,0 +1,40 @@
+@import "../../../../../../shared-styles/colors";
+
+.editing-input {
+  border: none;
+  border-bottom: 1px solid $colorText;
+  font-family: "JetBrains Mono", "Source Code Pro", Consolas, monospace;
+}
+
+.disabled {
+  color: transparentize($colorText, 0.3);
+}
+
+.hidden {
+  display: none;
+}
+
+.value {
+  font-family: "JetBrains Mono", "Source Code Pro", Consolas, monospace;
+  margin-left: 10px;
+  /* cursor: pointer; */
+}
+
+.action-icon {
+  padding-left: 5px;
+  padding-right: 5px;
+  cursor: pointer;
+  &:first-child {
+    padding-left: 10px;
+  }
+  &:hover {
+    color: $colorMain;
+  }
+}
+
+.old-value {
+  text-decoration: line-through;
+  font-weight: lighter;
+  color: $colorError;
+  margin-left: 7px;
+}

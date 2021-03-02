@@ -1,0 +1,18 @@
+<span class="value" *ngIf="value && !editing">{{value}}</span>
+
+<ng-container *ngIf="editable">
+  <input [class.hidden]="!editing" type="text" autofocus class="editing-input" [(ngModel)]="editingValue">
+  <span class="old-value" *ngIf="value !== originalValue">{{originalValue}}</span>
+  <i class="fa fa-pencil action-icon" aria-hidden="true" [class.hidden]="editing"
+     (click)="editing = !editing"
+     title="Edit value"></i>
+
+
+  <i class="fa fa-times action-icon text-danger" aria-hidden="true" [class.hidden]="!editing"
+     (click)="editing = !editing"></i>
+  <i class="fa fa-check action-icon text-success" aria-hidden="true" [class.hidden]="!editing"
+     (click)="confirmEdit()"></i>
+  <span title="Current value" class="disabled" [class.hidden]="!editing || editingValue == originalValue"></span>
+
+</ng-container>
+<span class="type" *ngIf="datatype">{{datatype}}</span>

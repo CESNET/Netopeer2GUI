@@ -8,5 +8,5 @@ export class Session {
   public key: string;
   public device: Device;
   public data?: object[];
-  public modifications: object;
+  public modifications?: object;
 }

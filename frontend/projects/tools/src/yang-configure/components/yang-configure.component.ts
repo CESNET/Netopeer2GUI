@@ -19,6 +19,7 @@ export class YangConfigureComponent implements OnInit {
   constructor(
     public sessionService: SessionService,
     public nodeControlService: NodeControlService,
+    public configurationService: ConfigurationService,
     private deviceService: DeviceService,
     public schemaService: SchemasService
   ) {
@@ -38,13 +39,12 @@ export class YangConfigureComponent implements OnInit {
     this.sessionService.loadOpenSessions().subscribe(
       sessions => {
         console.log(sessions);
-        this.sessionService.sessions = sessions;
+        // this.sessionService.sessions = sessions;
       }
     );
-    this.sessionService.modificationAdded.subscribe(
-      session => {
-        if (session.key === this.selectedSession.key) {
-          this.selectedSession.modifications = session.modifications; // Update selected session value
+    this.configurationService.modificationsChanged.subscribe(
+      sessionKey => {
+        if (sessionKey === this.selectedSession.key) {
           this.commitChangesShown = true;
         }
       }

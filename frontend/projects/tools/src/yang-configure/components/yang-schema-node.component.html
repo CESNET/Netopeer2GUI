@@ -17,35 +17,24 @@
 
   <!-- Node has a value -->
   <span *ngIf="node['value']">:</span>
-  <span class="value" *ngIf="node['value'] && !editing">{{node['value']}}</span>
-  <ng-container *ngIf="node['info']['type'] == 4 || (node['new'] && node['info']['type'] == 8)">
-
-    <ng-container
-      *ngIf="node['info']['config'] &&
-            !node['deleted'] &&
-            (!node['info']['key'] || node['new'])
-            && node['info']['datatypebase'] != 'empty'">
-      <input [class.hidden]="!editing" type="text" autofocus class="editing-input" [(ngModel)]="editingValue">
-      <span class="old-value" *ngIf="node['value'] !== originalValue">{{originalValue}}</span>
-      <i class="fa fa-pencil action-icon" aria-hidden="true" [class.hidden]="editing"
-         (click)="toggleEdit()"
-         title="Edit value"></i>
-
-
-      <i class="fa fa-times action-icon text-danger" aria-hidden="true" [class.hidden]="!editing"
-         (click)="toggleEdit()"></i>
-      <i class="fa fa-check action-icon text-success" aria-hidden="true" [class.hidden]="!editing"
-         (click)="confirmEdit()"></i>
-      <span title="Current value" class="disabled" [class.hidden]="!editing || editingValue == originalValue"></span>
-
-    </ng-container>
-  </ng-container>
+  <nct-yang-node-editable-value
+            *ngIf="node['value']"
+             [editable]="(node['info']['type'] == 4 || (node['new'] && node['info']['type'] == 8)) &&
+                        (node['info']['config'] &&
+                        !node['deleted']) &&
+                        (!node['info']['key'] || node['new'])"
+            [value]="node['value']"
+            (changeSaved)="confirmEdit($event)"
+            (changeDiscarded)="discardChanges($event)"
+  ></nct-yang-node-editable-value>
 
   <!-- Menu -->
   <nct-yang-node-menu *ngIf="node['info']['config']"
                       [isKey]="!!node['info']['key']"
                       [nodeType]="node['info']['type']"
                       (addChildClicked)="addChildNode()"></nct-yang-node-menu>
+
+  <span class="type" *ngIf="node['info']['datatype']">{{node['info']['datatype']}}</span>
 
   <!-- Node description -->
   <nct-yang-node-description [description]="node['info']['dsc']"></nct-yang-node-description>

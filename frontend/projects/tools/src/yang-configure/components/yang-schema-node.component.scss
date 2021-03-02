@@ -10,12 +10,6 @@
   display: none;
 }
 
-.value {
-  font-family: "JetBrains Mono", "Source Code Pro", Consolas, monospace;
-  margin-left: 10px;
-  /* cursor: pointer; */
-}
-
 .disabled {
   color: transparentize($colorText, 0.3);
 }
@@ -41,13 +35,6 @@
   border-left: 1px solid transparentize($colorText, 0.5);
 }
 
-.old-value {
-  text-decoration: line-through;
-  font-weight: lighter;
-  color: $colorError;
-  margin-left: 7px;
-}
-
 .modified {
   color: $colorSuccess;
 }
@@ -56,8 +43,10 @@
   color: $colorError;
 }
 
-.editing-input {
-  border: none;
-  border-bottom: 1px solid $colorText;
+.type {
+  color: transparentize($colorText, 0.2);
   font-family: "JetBrains Mono", "Source Code Pro", Consolas, monospace;
+  margin-left: 15px;
 }
+
+

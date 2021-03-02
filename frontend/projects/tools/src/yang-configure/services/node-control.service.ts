@@ -37,6 +37,7 @@ export class NodeControlService {
     this.performNodeAction.emit('discardChanges');
   }
 
-
-
+  confirmNewValue() {
+    this.performNodeAction.emit('confirmNewValue');
+  }
 }

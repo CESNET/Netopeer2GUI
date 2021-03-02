@@ -40,22 +40,18 @@ export class YangSchemaNodeComponent implements OnInit {
   @Input() showChildren = false;
   @Input() activeSession;
   showAllChildrenOnOpen = false;
-  editing = false;
-  originalValue;
-  editingValue = '';
   newNode: { key: string, module: string, path: string };
 
   ngOnInit() {
     this.showAllChildrenOnOpen = this.showChildren;
     this.nodeControlService.performNodeAction.subscribe(
       action => {
-        this.performGlobalAction(action);
+        if (action === 'close') {
+          this.showChildren = false;
+          this.showAllChildrenOnOpen = false;
+        }
       }
     );
-    if (this.node['value']) {
-      this.originalValue = this.node['value'];
-      this.editingValue = this.node['value'];
-    }
   }
 
   toggleChildren() {
@@ -68,32 +64,13 @@ export class YangSchemaNodeComponent implements OnInit {
     this.showChildren = !this.showChildren;
   }
 
-  toggleEdit() {
-    this.editing = !this.editing;
+  confirmEdit(value) {
+    this.configurationService.createChangeModification(this.activeSession.key, this.node['info']['path'], this.node, value);
+    this.node['value'] = value;
   }
 
-  performGlobalAction(action: string) {
-    switch (action) {
-      case 'close':
-        this.showChildren = false;
-        this.showAllChildrenOnOpen = false;
-        break;
-      case 'discardChanges':
-        this.restoreOriginal();
-        break;
-    }
-  }
-
-  confirmEdit() {
-    this.editing = false;
-    this.sessionService.createChangeModification(this.activeSession.key, this.node['info']['path'], this.node, this.editingValue);
-    this.sessionService.modificationAdded.emit(this.activeSession);
-    this.node['value'] = this.editingValue;
-  }
-
-  restoreOriginal() {
-    this.editingValue = this.originalValue;
-    this.node['value'] = this.originalValue;
+  discardChanges(value) {
+    this.node['value'] = value;
   }
 
   addChildNode() {
