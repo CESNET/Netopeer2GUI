@@ -4,7 +4,7 @@
        title="More options"></i></button>
   <nav class="mini-menu">
     <ul>
-      <li *ngIf="nodeType !== 4">
+      <li *ngIf="nodeType !== 4 && nodeType !== 8">
         <button (click)="addChildClicked.emit(true)">Add child</button>
       </li>
       <li>

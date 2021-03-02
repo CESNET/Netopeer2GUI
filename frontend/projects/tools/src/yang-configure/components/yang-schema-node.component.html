@@ -31,7 +31,7 @@
   <!-- Menu -->
   <nct-yang-node-menu *ngIf="node['info']['config']"
                       [isKey]="!!node['info']['key']"
-                      [nodeType]="node['info']['type']"
+                      [nodeType]="+node['info']['type']"
                       (addChildClicked)="addChildNode()"></nct-yang-node-menu>
 
   <span class="type" *ngIf="node['info']['datatype']">{{node['info']['datatype']}}</span>
