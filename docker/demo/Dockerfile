@@ -10,26 +10,26 @@ RUN apt-get upgrade && apt-get update -y && apt-get install -y \
    libprotobuf-c-dev protobuf-c-compiler libavl-dev libev-dev \
    libffi-dev python3-setuptools nginx
 
-RUN curl -sL https://deb.nodesource.com/setup_15.x | bash - && apt-get install -y nodejs
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - && apt-get install -y nodejs
 
 # Install libssh from source (Version from apt is incompatible with libnetconf2)
 RUN git clone -b stable-0.8 http://git.libssh.org/projects/libssh.git ; cd libssh; mkdir build; cd build ;\
     cmake ..; make; make install ; cd /
 
 # Install libyang
-RUN git clone -b devel https://github.com/CESNET/libyang.git && cd libyang; \
+RUN git clone -b libyang1 https://github.com/CESNET/libyang.git && cd libyang; \
   mkdir build; cd build && \
   cmake -DGEN_LANGUAGE_BINDINGS=ON -DGEN_JAVA_BINDINGS=OFF .. && make && make install && cd ../.. && ldconfig ; cd /
 
 # Install libnetconf2
-RUN git clone -b devel https://github.com/CESNET/libnetconf2.git && cd libnetconf2 && \
+RUN git clone -b libyang1 https://github.com/CESNET/libnetconf2.git && cd libnetconf2 && \
   mkdir build && cd build && \
   cmake -DENABLE_PYTHON=ON .. && make && make install && cd ../.. && ldconfig &&  \
   python3 /libnetconf2/build/python/setup.py install && cd /
 # Manually running setup.py is a temporary workaround because of a bug in libnetconf2
 
 # Install sysrepo
-RUN git clone -b devel https://github.com/sysrepo/sysrepo.git ; \
+RUN git clone -b libyang1 https://github.com/sysrepo/sysrepo.git ; \
     cd sysrepo; mkdir build; cd build; \
     cmake -DGEN_LANGUAGE_BINDINGS=OFF .. && make && make install; \
     cd ../.. ; \
